@@ -89,6 +89,17 @@ svg.coin{width:1.1em;height:1.1em;flex:none;vertical-align:-.18em;filter:drop-sh
   font:800 34px/1.1 "Baloo 2",sans-serif;color:#5a3700;
   background:linear-gradient(180deg,#fff6cc,#ffd34d 55%,#ffbf1a);box-shadow:0 5px 0 var(--gold2),inset 0 2px 0 #fff,0 10px 20px rgba(224,142,0,.3)}
 .token svg.coin{width:44px;height:44px}
+/* ---------- lekeland ---------- */
+.lekgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;margin-bottom:22px}
+.lektile{position:relative;aspect-ratio:1;border:0;border-radius:36px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;
+  background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.55),transparent 45%),var(--k);box-shadow:0 9px 0 color-mix(in srgb,var(--k) 65%,#000),0 16px 26px rgba(0,0,0,.18);transition:transform .12s}
+.lektile:active{transform:translateY(6px);box-shadow:0 3px 0 color-mix(in srgb,var(--k) 65%,#000)}
+.lektile span{font-size:clamp(64px,9vw,92px);line-height:1;filter:drop-shadow(0 6px 0 rgba(0,0,0,.15));animation:lekwig 3s ease-in-out infinite}
+.lektile:nth-child(2n) span{animation-delay:-1.5s}
+.lektile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lektile b{position:relative;font:800 17px/1.1 "Baloo 2",sans-serif;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);background:rgba(0,0,0,.12);padding:2px 12px;border-radius:99px}
+@keyframes lekwig{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg) scale(1.05)}}
+@media (prefers-reduced-motion:reduce){.lektile span{animation:none}}
 /* ---------- familiepotten: diamanter ---------- */
 .token.gems{color:#2a1670;background:linear-gradient(180deg,#f1fcff,#9fe6ff 50%,#a98bff);box-shadow:0 5px 0 #5b3fd6,inset 0 2px 0 #fff,0 10px 20px rgba(91,63,214,.32)}
 .gemtxt{color:#6a45ff;font-weight:800}.gemtxt svg.coin{width:1.15em;height:1.15em;vertical-align:-.2em}
@@ -495,6 +506,7 @@ svg.clock .hh{stroke:var(--ink);stroke-width:8;stroke-linecap:round}svg.clock .m
 <div id="toast"></div>
 <canvas id="fx"></canvas>
 <script src="logic.js"></script>
+<script src="play.js"></script>
 <script>
 (() => {
 const L = window.GCLogic;
@@ -954,7 +966,9 @@ function makeRound(type, level) {
   });
 }
 /* ---------- 30 ekstra spill ---------- */
-const CATS_G = { matte: 'Matte', norsk: 'Norsk', engelsk: 'Engelsk', kunnskap: 'Kunnskap' };
+const CATS_G = { lek: 'Lekeland 🧸', matte: 'Matte', norsk: 'Norsk', engelsk: 'Engelsk', kunnskap: 'Kunnskap' };
+// Lekeland: ekte spill uten tekst (play.js)
+if (window.PLAY) for (const [id, m] of Object.entries(PLAY.META)) GAMES[id] = { name: m.name, desc: m.desc, glyph: '▶', age: m.age, color: m.color, cat: 'lek', play: true, emoji: m.emoji };
 Object.assign(GAMES.count, { cat: 'matte' }); Object.assign(GAMES.abc, { cat: 'norsk' }); Object.assign(GAMES.words, { cat: 'norsk' });
 Object.assign(GAMES.rhyme, { cat: 'norsk' }); Object.assign(GAMES.letter, { cat: 'norsk' }); Object.assign(GAMES.math, { cat: 'matte' });
 Object.assign(GAMES.clock, { cat: 'matte' }); Object.assign(GAMES.times, { cat: 'matte' }); Object.assign(GAMES.english, { cat: 'engelsk' }); Object.assign(GAMES.capitals, { cat: 'kunnskap' });
@@ -1113,15 +1127,20 @@ function kidGames(k) {
   return `<div class="card gcap"><div class="row" style="justify-content:space-between"><b>Coins fra spill i dag</b><span class="reward inline">${coin}${today} / ${cap}</span></div>
       <div class="save"><i style="width:${pct}%"></i></div>
       <small class="mute">${today >= cap ? 'Du har tjent maks for i dag – men du kan fortsatt øve!' : `${g.coinsPerCorrect} coin per riktig svar${g.perfectBonus ? ` · +${g.perfectBonus} bonus for alle riktige` : ''}`}</small></div>
-    ${(() => { const avail = Object.entries(GAMES).filter(([id]) => allowedLevels(k.id, id).length); const cats = Object.keys(CATS_G).filter((c) => avail.some(([, x]) => x.cat === c));
+    ${(() => { const lek = Object.entries(GAMES).filter(([id, x]) => x.play && allowedLevels(k.id, id).length);
+      return lek.length ? `<h2 class="sec"><span class="dot" style="--k:#ff7ac0"></span>Lekeland<span class="count">${g.playCoins ?? 2} coins per runde</span></h2>
+      <div class="lekgrid">${lek.map(([id, x]) => `<button class="lektile" data-act="playGame" data-v="${id}" style="--k:${x.color}" aria-label="${esc(x.name)}">${(A.S.gameIcons || {})[id] ? `<img src="${esc(A.S.gameIcons[id])}" alt="">` : `<span>${x.emoji}</span>`}<b>${esc(x.name)}</b></button>`).join('')}</div>
+      <h2 class="sec"><span class="dot" style="--k:#8b7bff"></span>Læringsspill</h2>` : ''; })()}
+    ${(() => { const avail = Object.entries(GAMES).filter(([id, x]) => !x.play && allowedLevels(k.id, id).length); const cats = Object.keys(CATS_G).filter((c) => c !== 'lek' && avail.some(([, x]) => x.cat === c));
       return cats.length > 1 ? `<div class="seg gcats" style="margin-bottom:14px"><button class="${!A.gcat ? 'on' : ''}" data-act="gcat" data-v="">Alle (${avail.length})</button>${cats.map((c) => `<button class="${A.gcat === c ? 'on' : ''}" data-act="gcat" data-v="${c}">${CATS_G[c]} (${avail.filter(([, x]) => x.cat === c).length})</button>`).join('')}</div>` : ''; })()}
-    <div class="appgrid">${Object.entries(GAMES).filter(([id, x]) => allowedLevels(k.id, id).length && (!A.gcat || x.cat === A.gcat)).sort((a, b) => parseInt(a[1].age) - parseInt(b[1].age)).map(([id, G2]) => `
+    <div class="appgrid">${Object.entries(GAMES).filter(([id, x]) => !x.play && allowedLevels(k.id, id).length && (!A.gcat || x.cat === A.gcat)).sort((a, b) => parseInt(a[1].age) - parseInt(b[1].age)).map(([id, G2]) => `
       <button class="appbtn" data-act="gameSheet" data-v="${id}">${appIcon(id)}<span class="aname">${G2.name}</span><span class="aage">${G2.age}</span></button>`).join('') || '<div class="empty">Ingen spill er åpnet for deg ennå. Spør mamma eller pappa!</div>'}</div>`;
 }
 const GAME_ART = { count: '🧮', abc: '🔤', words: '📖', rhyme: '🎵', letter: '✏️', math: '➗', clock: '⏰', times: '✖️', english: '🇬🇧', capitals: '🏛️',
   monster: '🧩', storst: '⚖️', tiervenner: '🔟', parodde: '🎲', dobbel: '👯', tallrekke: '🪜', penger: '💰', tid: '⏳', former: '🔷', maal: '📏', avrund: '🎯',
   romer: '🏺', brok: '🍕', likning: '🔍', negativ: '🌡️', prosent: '💯', forste: '🔠', motsatt: '🔄', flertall: '🐑', alfaord: '🗂️', ordklasse: '🏷️', kalender: '📅',
   engno: '💬', engfarger: '🌈', dyreunger: '🐣', farger: '🎨', trafikk: '🚦', natur: '🌿', rommet: '🚀', flagg: '🏁' };
+if (window.PLAY) for (const [id, m] of Object.entries(PLAY.META)) GAME_ART[id] = m.emoji;
 function appIcon(id, size) {
   const G2 = GAMES[id], img = (A.S.gameIcons || {})[id];
   return `<span class="appicon" style="--k:${G2.color}${size ? ';--s:' + size + 'px' : ''}">${img ? `<img src="${esc(img)}" alt="">` : `<span class="ae">${GAME_ART[id] || G2.glyph}</span><span class="ag">${esc(G2.glyph)}</span>`}</span>`;
@@ -1156,6 +1175,15 @@ function gameResult(k, G) {
       : `<div class="token big" style="margin:8px auto">${coin}<span>+${r.amount}</span></div>${r.gems ? `<div class="token gems" style="margin:4px auto 0">${gem}<span>+${r.gems}</span></div><p class="mute">til familiepotten!</p>` : ''}${r.capped ? '<p class="mute">Du har nådd dagens grense for coins fra spill.</p>' : ''}`}
     <div class="row" style="margin-top:16px"><button class="btn ghost" data-act="gameQuit">Velg et annet spill</button>
       <button class="btn" style="--b:${meta.color};--bs:color-mix(in srgb,${meta.color} 70%,#000)" data-act="game" data-v="${G.type}" data-l="${G.level || ''}">${ic('play')} Spill igjen</button></div></div>`;
+}
+function startPlay(id, kidId) {
+  if (!window.PLAY) return;
+  sound('open');
+  PLAY.start(id, {
+    soundOn: () => SFX.on,
+    onEnd: async ({ ms }) => { try { return await act({ type: 'playReward', kidId, game: id, startedAt: Date.now() - ms, name: GAMES[id].name }, true); } catch { return null; } },
+    onClose: () => render(),
+  });
 }
 async function answer(j) {
   const G = A.game; if (!G || G.picked != null || G.done) return;
@@ -1745,8 +1773,8 @@ function pGames() {
   const kids = A.S.kids;
   return `<div class="panel"><h3>Coins fra læringsspill</h3>
     ${swRow('games', 'enabled', 'Læringsspill gir coins', g.enabled)}
-    <div class="formgrid">${f2('games', 'coinsPerCorrect', 'Coins per riktig svar', g.coinsPerCorrect)}${f2('games', 'perfectBonus', 'Bonus for alle riktige', g.perfectBonus)}${f2('games', 'dailyCap', 'Maks coins fra spill per dag', g.dailyCap)}</div>
-    <p class="mute">Barna kan alltid øve, men får ikke flere coins enn grensen per dag. En runde på 10 spørsmål må ta minst 8 sekunder (stopper juks).</p>
+    <div class="formgrid">${f2('games', 'coinsPerCorrect', 'Coins per riktig svar', g.coinsPerCorrect)}${f2('games', 'perfectBonus', 'Bonus for alle riktige', g.perfectBonus)}${f2('games', 'playCoins', 'Coins per Lekeland-runde', g.playCoins ?? 2)}${f2('games', 'dailyCap', 'Maks coins fra spill per dag', g.dailyCap)}</div>
+    <p class="mute">Barna kan alltid øve, men får ikke flere coins enn grensen per dag. En runde på 10 spørsmål må ta minst 8 sekunder (stopper juks). Lekeland-spillene (bilspill, ballonger, tegning osv.) er for de minste og krever ingen lesing – en runde må vare minst 20 sekunder for å gi coins.</p>
     ${kids.length ? `<div class="row" style="gap:16px;margin-top:6px">${kids.map((k) => `<span class="chip">${icn(k.avatar)} ${esc(k.name)}: ${gamesToday(k)} / ${g.dailyCap} i dag</span>`).join('')}</div>` : ''}</div>
   <div class="panel aipanel"><div class="row" style="justify-content:space-between;align-items:flex-start">
       <div style="flex:1;min-width:240px"><h3 style="margin-bottom:4px">${ic('spark')} Spill-ikoner</h3>
@@ -1933,6 +1961,7 @@ $app.addEventListener('click', async (e) => {
         await act({ type: 'gameAccessSet', kidId: id, offGames }); toast(`Spill tilpasset ${age} år – ${Object.keys(GAMES).length - offGames.length} spill på`); break; }
       case 'gaAll': await act({ type: 'gameAccessAll', kidId: id, on: d.v === '1' }); break;
       case 'gameSheet': openModal(gameSheet(A.kidId, d.v)); break;
+      case 'playGame': startPlay(d.v, A.kidId); break;
       case 'game': { A.modal = null; const lv = d.l || null; A.game = { kidId: A.kidId, type: d.v, level: lv, qs: makeRound(d.v, lv || 'lett'), i: 0, correct: 0, picked: null, done: false, result: null, startedAt: now() }; A.paneFresh = true; sound('open'); render(); scrollTo(0, 0); break; }
       case 'gameQuit': A.game = null; sound('back'); render(); break;
       case 'ans': answer(Number(d.v)); break;

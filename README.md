@@ -143,3 +143,6 @@ Under Foreldre → Barn og enheter kan hvert barn få en egen 4-sifret PIN. Da m
 
 ## Automatisk godkjenning ⚡
 Under Foreldre → Godkjenn kan dere slå på automatisk godkjenning for alle eller utvalgte barn. Oppdrag godkjennes selv når de er levert innenfor fristen og barnet har brukt minst en viss andel av tiden (standard 25 %). Det som går mistenkelig fort, venter på dere merket «Veldig raskt». Automatisk godkjente oppdrag vises (og sendes på e-post hvis varsler er på) – trykk «Lurte» for å ta coinsene tilbake, trekke straff og stenge internett i noen minutter.
+
+## Lekeland 🧸 (for de minste)
+Ti ekte spill uten tekst, laget for barn fra 2–3 år: bilspill, ballonger, tegning med fingeren, fiske, formsortering, xylofon, memory, fang frukt, dyrelyder og togbane. Store knapper, lyder og en norsk stemme som forklarer. Ligger øverst under Spill-fanen, gir coins per runde (minst 20 sek), og kan slås av/på per barn under Foreldre → Læringsspill. Koden ligger i `public/play.js`.

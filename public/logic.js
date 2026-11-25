@@ -34,6 +34,9 @@
   const GAME_IDS = ['count', 'abc', 'words', 'rhyme', 'letter', 'math', 'clock', 'times', 'english', 'capitals',
     'monster', 'storst', 'tiervenner', 'parodde', 'dobbel', 'tallrekke', 'penger', 'tid', 'former', 'maal', 'avrund', 'romer', 'brok', 'likning', 'negativ', 'prosent',
     'forste', 'motsatt', 'flertall', 'alfaord', 'ordklasse', 'kalender', 'engno', 'engfarger', 'dyreunger', 'farger', 'trafikk', 'natur', 'rommet', 'flagg'];
+  // Lekeland: ekte spill for de minste (ingen lesing) – se public/play.js
+  const PLAY_IDS = ['bil', 'ballong', 'tegne', 'fiske', 'formsort', 'xylofon', 'memory', 'frukt', 'dyr', 'tog'];
+  GAME_IDS.push(...PLAY_IDS);
   class GameError extends Error {}
   const fail = (m) => { throw new GameError(m); };
 
@@ -117,7 +120,7 @@
         schedule: [day('10:00', '20:00'), day('16:00', '20:00'), day('16:00', '20:00'), day('16:00', '20:00'),
           day('16:00', '20:00'), day('15:00', '21:00'), day('09:00', '21:00')],
         router: { enabled: false, driver: '', url: '', user: '', pass: '', model: '' },
-        games: { enabled: true, coinsPerCorrect: 1, perfectBonus: 3, dailyCap: 30, off: [] },
+        games: { enabled: true, coinsPerCorrect: 1, perfectBonus: 3, playCoins: 2, dailyCap: 30, off: [] },
         loans: { enabled: true, needParent: false, maxAmount: 100 },
         ai: { style: 'flat', key: '' },
         notify: { enabled: false, to: '', host: '', port: 587, user: '', pass: '', from: '', appUrl: '' },
@@ -419,6 +422,21 @@
         break;
       }
       /* ----- læringsspill ----- */
+      case 'playReward': {
+        const k = kid(a.kidId), g = s.settings.games;
+        if (!g.enabled) fail('Spill er slått av');
+        const gm = String(a.game || '');
+        if (!PLAY_IDS.includes(gm)) fail('Ukjent spill');
+        if ((g.off || []).includes(k.id + '|' + gm)) fail('Dette spillet er ikke åpnet for deg');
+        const started = Number(a.startedAt);
+        if (!started || now - started < 20000 || now - started > 3600e3) { result = { amount: 0, short: true }; break; }
+        const today = dayKey(now);
+        if (k.gameDay !== today) { k.gameDay = today; k.gameCoins = 0; }
+        const want = g.playCoins ?? 2, amount = Math.max(0, Math.min(want, g.dailyCap - k.gameCoins));
+        k.gameCoins += amount; k.coins += amount; k.lifetime += amount;
+        if (amount) log(s, k.id, `Lekeland: ${String(a.name || gm).slice(0, 30)}`, amount, now);
+        result = { amount, capped: amount < want }; break;
+      }
       case 'gameReward': {
         const k = kid(a.kidId), g = s.settings.games;
         if (!g.enabled) fail('Læringsspill er slått av');
@@ -587,6 +605,7 @@
         if (p.games) { const g = s.settings.games; if (!Array.isArray(g.off)) g.off = [];
           if (p.games.enabled !== undefined) g.enabled = !!p.games.enabled;
           if (p.games.coinsPerCorrect !== undefined) g.coinsPerCorrect = num(p.games.coinsPerCorrect, 0, 20);
+          if (p.games.playCoins !== undefined) g.playCoins = num(p.games.playCoins, 0, 50);
           if (p.games.perfectBonus !== undefined) g.perfectBonus = num(p.games.perfectBonus, 0, 100);
           if (p.games.dailyCap !== undefined) g.dailyCap = num(p.games.dailyCap, 0, 1000); }
         if (p.loans) { const lc = s.settings.loans;
@@ -705,6 +724,6 @@
     return c;
   }
 
-  return { GAME_IDS, MODES, deviceStatus, allDevices, recordUsage, inSchedule, pendingItems, defaultState, migrate, apply, tick, windowInfo, bankLeft, taskAvailable, desiredDevices,
+  return { GAME_IDS, PLAY_IDS, MODES, deviceStatus, allDevices, recordUsage, inSchedule, pendingItems, defaultState, migrate, apply, tick, windowInfo, bankLeft, taskAvailable, desiredDevices,
     publicState, level, dayKey, DAYS, CATS, REPEATS, PARENT, GameError };
 });
