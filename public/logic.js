@@ -12,7 +12,7 @@
   const PARENT = new Set(['verifyPin', 'approve', 'reject', 'adjust', 'upsertKid', 'deleteKid',
     'upsertTask', 'deleteTask', 'upsertShop', 'deleteShop', 'setSchedule', 'setSettings', 'resetAll',
     'stopPlay', 'routerTest', 'routerClients', 'routerScan', 'fulfillReward', 'refundReward',
-    'loanParentApprove', 'loanCancel', 'notifyTest', 'gameAccess', 'gameAccessAll', 'gameAccessSet', 'setDeviceRule', 'upsertGroup', 'deleteGroup', 'aiImage', 'aiImagesAll', 'aiCancel', 'gameIconsClear', 'addTasks']);
+    'loanParentApprove', 'loanCancel', 'notifyTest', 'gameAccess', 'gameAccessAll', 'gameAccessSet', 'setDeviceRule', 'upsertGroup', 'deleteGroup', 'aiImage', 'aiImagesAll', 'aiCancel', 'gameIconsClear', 'addTasks', 'upsertFamilyShop', 'deleteFamilyShop', 'familyAdjust']);
 
   /* Ikon: emoji/tekst (maks 16 tegn) eller et opplastet bilde som data-URL */
   const ICON_RE = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
@@ -42,6 +42,26 @@
   function newKid(name, avatar, color) {
     return { id: uid(), name, avatar, color, coins: 30, lifetime: 0, bankSec: 0, playing: null,
       streak: 0, lastDoneDay: null, devices: [] };
+  }
+
+  function defaultFamilyShop() {
+    const F = (emoji, title, cost, desc) => ({ id: uid(), emoji, title, cost, desc });
+    return [
+      F('🍿', 'Filmkveld med snacks', 60, 'Hele familien ser film sammen – barna velger filmen.'),
+      F('🏊', 'Tur i svømmehallen', 150, 'Bading og sklie for hele familien.'),
+      F('🎳', 'Bowling', 180, 'Bowling og pizza etterpå.'),
+      F('🎪', 'Leos Lekeland', 200, 'En hel ettermiddag på Leos Lekeland.'),
+      F('🏡', 'Helg på hytta', 400, 'Fredag til søndag på hytta – bål, tur og kos.'),
+      F('🇸🇪', 'Tur til Sverige', 600, 'Dagstur til Sverige med handletur og godteri.'),
+    ];
+  }
+  /* legg diamanter i familiepotten */
+  function addGems(s, kidId, gems, text, now) {
+    if (!gems) return;
+    s.family.gems = Math.max(0, s.family.gems + gems);
+    if (kidId && gems > 0) s.family.by[kidId] = (s.family.by[kidId] || 0) + gems;
+    s.family.log.unshift({ t: now, kidId: kidId || '', text, gems });
+    if (s.family.log.length > 80) s.family.log.length = 80;
   }
 
   function defaultState() {
@@ -85,7 +105,11 @@
         loans: { enabled: true, needParent: false, maxAmount: 100 },
         ai: { style: 'flat', key: '' },
         notify: { enabled: false, to: '', host: '', port: 587, user: '', pass: '', from: '', appUrl: '' },
+        // familiepotten: diamanter alle barna samler sammen
+        family: { enabled: true, gamesGems: 1, taskPct: 10, coinsPerGem: 10, dailyCap: 10 },
       },
+      family: { gems: 40, by: {}, log: [] },
+      familyShop: defaultFamilyShop(),
       gameIcons: {}, devRules: {}, groups: [], stats: { days: {} }, deviceOnline: {},
       jobs: [], rewards: [], loans: [], log: [], routerStatus: null,
     };
@@ -99,13 +123,16 @@
     if (s.settings.router.driver === undefined) s.settings.router.driver = s.settings.router.pass ? 'asus' : '';
     for (const k of Object.keys(d.settings.router)) if (s.settings.router[k] === undefined) s.settings.router[k] = d.settings.router[k];
     for (const it of s.shop) if (!it.kind) it.kind = 'time';
-    for (const k of ['games', 'loans', 'notify', 'ai']) s.settings[k] = { ...d.settings[k], ...(s.settings[k] || {}) };
+    for (const k of ['games', 'loans', 'notify', 'ai', 'family']) s.settings[k] = { ...d.settings[k], ...(s.settings[k] || {}) };
     if (!Array.isArray(s.loans)) s.loans = [];
     if (!s.devRules || typeof s.devRules !== 'object') s.devRules = {};
     if (!Array.isArray(s.groups)) s.groups = [];
     if (!s.stats || !s.stats.days) s.stats = { days: {} };
     if (!s.deviceOnline) s.deviceOnline = {};
     if (!s.gameIcons || typeof s.gameIcons !== 'object') s.gameIcons = {};
+    if (!s.family || typeof s.family !== 'object') s.family = { gems: 0, by: {}, log: [] };
+    if (!s.family.by) s.family.by = {}; if (!Array.isArray(s.family.log)) s.family.log = [];
+    if (!Array.isArray(s.familyShop)) s.familyShop = defaultFamilyShop();
     return s;
   }
 
@@ -190,7 +217,7 @@
     const name = (id) => (s.kids.find((k) => k.id === id) || {}).name || '?';
     return [
       ...s.jobs.filter((j) => j.status === 'pending').map((j) => ({ id: 'job:' + j.id, text: `${name(j.kidId)} er ferdig med «${j.title}» (+${j.coins} coins)` })),
-      ...(s.rewards || []).filter((r) => r.status === 'pending').map((r) => ({ id: 'rew:' + r.id, text: `${name(r.kidId)} har kjøpt belønningen «${r.title}»` })),
+      ...(s.rewards || []).filter((r) => r.status === 'pending').map((r) => ({ id: 'rew:' + r.id, text: r.family ? `Familien har kjøpt «${r.title}» for ${r.cost} diamanter${r.kidId ? ' (valgt av ' + name(r.kidId) + ')' : ''}` : `${name(r.kidId)} har kjøpt belønningen «${r.title}»` })),
       ...(s.loans || []).filter((l) => l.status === 'parent').map((l) => ({ id: 'loan:' + l.id, text: `${name(l.borrowerId)} vil låne ${l.amount} coins av ${name(l.lenderId)}` })),
     ];
   }
@@ -248,6 +275,42 @@
         }
         break;
       }
+      /* ----- familiepotten ----- */
+      case 'familyDonate': {
+        const k = kid(a.kidId), fc = s.settings.family;
+        if (!fc.enabled) fail('Familiepotten er slått av');
+        const gems = Math.floor(Number(a.gems) || 0);
+        if (gems < 1 || gems > 100) fail('Ugyldig antall');
+        const cost = gems * fc.coinsPerGem;
+        if (k.coins < cost) fail(`Du trenger ${cost} coins for ${gems} 💎`);
+        k.coins -= cost; log(s, k.id, `Ga ${gems} 💎 til familien`, -cost, now);
+        addGems(s, k.id, gems, `${k.name} ga ${cost} coins`, now); result = gems; break;
+      }
+      case 'familyBuy': {
+        if (!s.settings.family.enabled) fail('Familiepotten er slått av');
+        const it = s.familyShop.find((x) => x.id === a.itemId) || fail('Finnes ikke i familiebutikken');
+        if (s.family.gems < it.cost) fail(`Familien mangler ${it.cost - s.family.gems} 💎`);
+        const by = a.kidId && s.kids.some((x) => x.id === a.kidId) ? a.kidId : '';
+        s.family.gems -= it.cost;
+        s.rewards.push({ id: uid(), family: true, kidId: by, itemId: it.id, emoji: it.emoji, image: it.image || '', title: it.title, cost: it.cost, at: now, status: 'pending' });
+        s.family.log.unshift({ t: now, kidId: by, text: 'Kjøpte: ' + it.title, gems: -it.cost }); break;
+      }
+      case 'familyAdjust': {
+        const gm = Math.round(Number(a.gems) || 0);
+        addGems(s, '', gm, gm > 0 ? 'Bonus fra mamma og pappa' : 'Trekk fra mamma og pappa', now); break;
+      }
+      case 'upsertFamilyShop': {
+        const src = a.item || {};
+        let it = s.familyShop.find((x) => x.id === src.id);
+        if (!it) { it = { id: uid(), emoji: '🎉', title: 'Ny familietur', cost: 200, desc: '' }; s.familyShop.push(it); }
+        if (src.title !== undefined) it.title = String(src.title).slice(0, 40);
+        if (src.emoji !== undefined) it.emoji = cleanIcon(src.emoji);
+        if (src.image !== undefined) it.image = cleanImage(src.image);
+        if (src.desc !== undefined) it.desc = String(src.desc).slice(0, 300);
+        if (src.cost !== undefined) it.cost = Math.max(1, Math.round(Number(src.cost) || 1));
+        s.familyShop.sort((x, y) => x.cost - y.cost); result = it.id; break;
+      }
+      case 'deleteFamilyShop': s.familyShop = s.familyShop.filter((x) => x.id !== a.itemId); break;
       /* ----- foreldre ----- */
       case 'verifyPin': break;
       case 'approve': {
@@ -260,7 +323,10 @@
         k.coins += amount; k.lifetime += amount;
         const today = dayKey(now), yest = dayKey(now - 864e5);
         if (k.lastDoneDay !== today) { k.streak = k.lastDoneDay === yest ? k.streak + 1 : 1; k.lastDoneDay = today; }
-        log(s, k.id, 'Godkjent: ' + j.title, amount, now); break;
+        log(s, k.id, 'Godkjent: ' + j.title, amount, now);
+        { const fc = s.settings.family; const gm = fc.enabled ? Math.round(amount * fc.taskPct / 100) : 0;
+          if (gm) { addGems(s, k.id, gm, `${k.name}: ${j.title}`, now); j.gems = gm; } }
+        break;
       }
       case 'reject': {
         const j = job(a.jobId);
@@ -278,7 +344,8 @@
         const r = s.rewards.find((x) => x.id === a.rewardId) || fail('Fant ikke belønningen');
         if (r.status !== 'pending') fail('Allerede behandlet');
         r.doneAt = now;
-        if (a.type === 'fulfillReward') { r.status = 'done'; log(s, r.kidId, 'Belønning innfridd: ' + r.title, 0, now); }
+        if (a.type === 'fulfillReward') { r.status = 'done'; if (!r.family) log(s, r.kidId, 'Belønning innfridd: ' + r.title, 0, now); }
+        else if (r.family) { r.status = 'refunded'; s.family.gems += r.cost; s.family.log.unshift({ t: now, kidId: '', text: 'Avlyst, diamantene er tilbake: ' + r.title, gems: r.cost }); }
         else { r.status = 'refunded'; const k = s.kids.find((x) => x.id === r.kidId); if (k) k.coins += r.cost;
           log(s, r.kidId, 'Belønning avlyst, coins tilbake: ' + r.title, r.cost, now); }
         break;
@@ -299,7 +366,13 @@
         const amount = Math.max(0, Math.min(want, g.dailyCap - k.gameCoins));
         k.gameCoins += amount; k.coins += amount; k.lifetime += amount;
         log(s, k.id, `${String(a.name || 'Læringsspill').slice(0, 30)}: ${correct} av ${total} riktige`, amount, now);
-        result = { amount, capped: amount < want, left: g.dailyCap - k.gameCoins }; break;
+        let gems = 0; const fc = s.settings.family;
+        if (fc.enabled && fc.gamesGems > 0 && correct >= Math.ceil(total * 0.8)) {
+          if (k.gemDay !== today) { k.gemDay = today; k.gemsToday = 0; }
+          gems = Math.max(0, Math.min(fc.gamesGems * (correct === total ? 2 : 1), fc.dailyCap - k.gemsToday));
+          if (gems) { k.gemsToday += gems; addGems(s, k.id, gems, `${k.name}: ${String(a.name || 'Læringsspill').slice(0, 30)} – ${correct} av ${total}`, now); }
+        }
+        result = { amount, capped: amount < want, left: g.dailyCap - k.gameCoins, gems }; break;
       }
       /* ----- lån mellom barn ----- */
       case 'loanRequest': {
@@ -397,7 +470,7 @@
           mac: String(d.mac || '').toUpperCase().replace(/-/g, ':').trim() }));
         result = k.id; break;
       }
-      case 'deleteKid': s.loans = (s.loans || []).filter((l) => l.borrowerId !== a.kidId && l.lenderId !== a.kidId); s.kids = s.kids.filter((k) => k.id !== a.kidId); s.jobs = s.jobs.filter((j) => j.kidId !== a.kidId); break;
+      case 'deleteKid': delete s.family.by[a.kidId]; s.loans = (s.loans || []).filter((l) => l.borrowerId !== a.kidId && l.lenderId !== a.kidId); s.kids = s.kids.filter((k) => k.id !== a.kidId); s.jobs = s.jobs.filter((j) => j.kidId !== a.kidId); break;
       case 'upsertTask': {
         const src = a.task || {};
         let t = s.tasks.find((x) => x.id === src.id);
@@ -455,6 +528,12 @@
           if (p.ai.style !== undefined && ['flat', '3d', 'akvarell', 'leire'].includes(p.ai.style)) ai.style = p.ai.style;
           if (p.ai.key) ai.key = String(p.ai.key).trim().slice(0, 200);
           if (p.ai.clearKey) ai.key = ''; }
+        if (p.family) { const fc = s.settings.family;
+          if (p.family.enabled !== undefined) fc.enabled = !!p.family.enabled;
+          if (p.family.gamesGems !== undefined) fc.gamesGems = num(p.family.gamesGems, 0, 20);
+          if (p.family.taskPct !== undefined) fc.taskPct = num(p.family.taskPct, 0, 100);
+          if (p.family.coinsPerGem !== undefined) fc.coinsPerGem = num(p.family.coinsPerGem, 1, 1000);
+          if (p.family.dailyCap !== undefined) fc.dailyCap = num(p.family.dailyCap, 0, 500); }
         if (p.notify) { const n = s.settings.notify;
           for (const f of ['to', 'host', 'user', 'from', 'appUrl']) if (p.notify[f] !== undefined) n[f] = String(p.notify[f]).trim().slice(0, 300);
           if (p.notify.port !== undefined) n.port = num(p.notify.port, 1, 65535);

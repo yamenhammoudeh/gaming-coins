@@ -104,13 +104,14 @@ async function aiFetch(prompt, w = 768, h = 576) {
   }
   throw new Error('For mange omdirigeringer fra AI-tjenesten');
 }
+const listFor = (kind) => kind === 'shop' ? state.shop : kind === 'fshop' ? (state.familyShop || []) : state.tasks;
 async function aiWork() {
   if (AI.busy) return;
   AI.busy = true;
   try {
     while (AI.queue.length) {
       const job = AI.queue.shift();
-      const list = job.kind === 'shop' ? state.shop : state.tasks;
+      const list = listFor(job.kind);
       const item = job.kind === 'game' ? { title: job.name, desc: job.desc, image: (state.gameIcons || {})[job.id] } : list.find((x) => x.id === job.id);
       if (!item || (item.image && !job.force)) continue;
       // gratis-nivået tåler omtrent én forespørsel per 15 sekunder
@@ -126,7 +127,7 @@ async function aiWork() {
       try {
         const img = job.kind === 'game' ? await aiFetch(prompt, 512, 512) : await aiFetch(prompt);
         if (job.kind === 'game') { state.gameIcons = state.gameIcons || {}; state.gameIcons[job.id] = img; AI.done++; AI.error = ''; }
-        else { const cur = (job.kind === 'shop' ? state.shop : state.tasks).find((x) => x.id === job.id); if (cur) { cur.image = img; AI.done++; AI.error = ''; } }
+        else { const cur = (listFor(job.kind)).find((x) => x.id === job.id); if (cur) { cur.image = img; AI.done++; AI.error = ''; } }
       } catch (e) {
         AI.error = `${item.title}: ${e.message}`; console.error('AI-bilde:', AI.error);
         if (/opptatt/.test(e.message) && !job.retried) { AI.queue.push({ ...job, retried: true }); AI.last = Date.now() + 30000; }
@@ -270,7 +271,7 @@ http.createServer(async (req, res) => {
             if (!L.GAME_IDS.includes(gm.id) || AI.queue.some((q) => q.id === gm.id)) continue;
             AI.queue.push({ kind: 'game', id: gm.id, force: true, name: String(gm.name || gm.id).slice(0, 60), desc: String(gm.desc || '').slice(0, 120) }); n++;
           }
-        } else { const list = a.kind === 'shop' ? state.shop : state.tasks;
+        } else { const list = listFor(a.kind);
           for (const x of list) if (!x.image && !AI.queue.some((q) => q.id === x.id)) { AI.queue.push({ kind: a.kind, id: x.id }); n++; } }
         aiStatus(); aiWork();
         return send(res, 200, { now: Date.now(), mode: 'server', state: L.publicState(state), result: n });
@@ -307,7 +308,7 @@ http.createServer(async (req, res) => {
         } catch (e) { if (a.type === 'routerTest') setStatus(false, e.message); return send(res, 502, { error: e.message }); }
       } else {
         // produktbilde lagres som egen fil, ikke i databasen
-        const imgObj = a.type === 'upsertShop' ? a.item : a.type === 'upsertTask' ? a.task : null;
+        const imgObj = a.type === 'upsertShop' || a.type === 'upsertFamilyShop' ? a.item : a.type === 'upsertTask' ? a.task : null;
         if (imgObj && typeof imgObj.image === 'string' && imgObj.image.startsWith('data:')) {
           if (String(a.pin) !== String(state.settings.pin)) return send(res, 403, { error: 'Feil PIN-kode' });
           const m = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/=]+)$/.exec(imgObj.image);

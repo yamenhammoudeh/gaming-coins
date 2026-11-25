@@ -89,6 +89,34 @@ svg.coin{width:1.1em;height:1.1em;flex:none;vertical-align:-.18em;filter:drop-sh
   font:800 34px/1.1 "Baloo 2",sans-serif;color:#5a3700;
   background:linear-gradient(180deg,#fff6cc,#ffd34d 55%,#ffbf1a);box-shadow:0 5px 0 var(--gold2),inset 0 2px 0 #fff,0 10px 20px rgba(224,142,0,.3)}
 .token svg.coin{width:44px;height:44px}
+/* ---------- familiepotten: diamanter ---------- */
+.token.gems{color:#2a1670;background:linear-gradient(180deg,#f1fcff,#9fe6ff 50%,#a98bff);box-shadow:0 5px 0 #5b3fd6,inset 0 2px 0 #fff,0 10px 20px rgba(91,63,214,.32)}
+.gemtxt{color:#6a45ff;font-weight:800}.gemtxt svg.coin{width:1.15em;height:1.15em;vertical-align:-.2em}
+.famban{display:flex;align-items:center;gap:clamp(12px,2vw,22px);flex-wrap:wrap;width:100%;text-align:left;border-radius:30px;padding:16px clamp(16px,2.4vw,24px);margin-bottom:clamp(16px,2.4vw,26px);color:#fff;
+  background:radial-gradient(circle at 92% 10%,rgba(255,255,255,.35),transparent 38%),repeating-linear-gradient(135deg,rgba(255,255,255,.08) 0 16px,transparent 16px 32px),linear-gradient(130deg,#2fb8ff,#6a45ff 60%,#b04dff);
+  box-shadow:0 10px 0 #3a1f9e,0 22px 40px rgba(58,31,158,.35);transition:transform .15s}
+.famban:active{transform:translateY(4px);box-shadow:0 6px 0 #3a1f9e,0 14px 26px rgba(58,31,158,.3)}
+.famban .fbig{font-size:52px;line-height:1;filter:drop-shadow(0 4px 0 rgba(0,0,40,.25))}
+.famban h2{font-size:clamp(26px,3vw,34px);text-shadow:0 3px 0 rgba(0,0,40,.2)}
+.famban .fsub{font-weight:800;opacity:.92}
+.famban .fgoal{flex:1;min-width:200px}
+.fbar{position:relative;height:22px;border-radius:999px;background:rgba(0,0,40,.3);overflow:hidden;margin-top:6px}
+.fbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#b8f4ff,#fff)}
+.fbar span{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:800;color:#2a1670;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.famban .avs{display:flex}.famban .avs span{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:#fff;margin-left:-8px;box-shadow:0 0 0 3px rgba(255,255,255,.6)}
+.khead.fam{--c:#6a45ff}
+.waylist{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin-bottom:18px}
+.way{display:flex;gap:12px;align-items:center;background:var(--card);color:var(--ink);border-radius:22px;padding:14px 16px;box-shadow:0 6px 0 var(--edge)}
+.way .wi{font-size:34px}.way b{display:block;font:800 18px/1.2 "Baloo 2",sans-serif}.way small{color:var(--mute);font-weight:700}
+.contrib{display:grid;gap:10px}
+.crow{display:grid;grid-template-columns:44px minmax(80px,140px) 1fr auto;gap:12px;align-items:center}
+.crow .av{width:44px;height:44px;font-size:26px;box-shadow:none;background:color-mix(in srgb,var(--c) 22%,var(--card));animation:none}
+.contrib{padding:16px 18px;margin-bottom:18px;color:var(--ink)}
+.crow .cbar{height:16px;border-radius:999px;background:var(--card3);overflow:hidden}.crow .cbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#4fc8ff,#8a5cff)}
+.card.product.fam .save i{background:linear-gradient(90deg,#4fc8ff,#8a5cff)}
+.card.product.fam .price{color:#6a45ff}
+.pbadge.gemb{background:linear-gradient(90deg,#2fb8ff,#8a5cff)}
+.btn.gemb{--b:#6a45ff;--bs:#3a1f9e}
 .token.big{font-size:clamp(34px,4vw,46px);padding:6px 24px 6px 10px}.token.big svg.coin{width:54px;height:54px}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;margin-top:4px}
 .stat{background:var(--card2);border-radius:16px;padding:9px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:center}
@@ -427,7 +455,13 @@ svg.clock .hh{stroke:var(--ink);stroke-width:8;stroke-linecap:round}svg.clock .m
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <radialGradient id="cg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff3b0"/><stop offset=".45" stop-color="#ffc21a"/><stop offset="1" stop-color="#d98300"/></radialGradient>
+    <radialGradient id="cg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff3b0"/><stop offset=".45" stop-color="#ffc21a"/><stop offset="1" stop-color="#d98300"/></radialGradient><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b8f4ff"/><stop offset=".45" stop-color="#4fc8ff"/><stop offset="1" stop-color="#8a5cff"/></linearGradient>
+    <symbol id="gem" viewBox="0 0 64 64">
+      <path d="M32 60 4 25l11-15h34l11 15z" fill="#3a1f9e"/>
+      <path d="M32 57 4 22l11-15h34l11 15z" fill="url(#gg)"/>
+      <path d="M4 22h56M20 7l-6 15 18 35 18-35-6-15M14 22l18-15 18 15" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M15 7h17L20 22H4z" fill="#fff" fill-opacity=".45"/>
+    </symbol>
     <symbol id="coin" viewBox="0 0 64 64">
       <circle cx="32" cy="34" r="28" fill="#b86a00"/>
       <circle cx="32" cy="31" r="28" fill="url(#cg)"/>
@@ -471,6 +505,7 @@ const now = () => Date.now() + A.offset;
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ic = (n) => `<svg class="i"><use href="#i-${n}"/></svg>`;
 const coin = '<svg class="coin"><use href="#coin"/></svg>';
+const gem = '<svg class="coin gem"><use href="#gem"/></svg>';
 const hhmm = (t) => new Date(t).toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' });
 const fmtDur = (sec) => { sec = Math.max(0, Math.round(sec)); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
   return h ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`; };
@@ -549,7 +584,7 @@ function render() {
   A.pending = false;
   if (A.screen === 'kid' && !kidById(A.kidId)) A.screen = 'home';
   if (A.screen === 'parent' && !A.pin) A.screen = 'home';
-  const body = A.screen === 'kid' ? viewKid(kidById(A.kidId)) : A.screen === 'parent' ? viewParent() : viewHome();
+  const body = A.screen === 'kid' ? viewKid(kidById(A.kidId)) : A.screen === 'parent' ? viewParent() : A.screen === 'family' ? viewFamily() : viewHome();
   const y = window.scrollY;
   $app.innerHTML = `<div class="wrap">${A.offline ? '<div class="offline">Mistet kontakt med hjemmeserveren – prøver igjen…</div>' : ''}${body}</div>${A.modal ? `<div class="scrim${A.modalFresh ? ' anim' : ''}" data-act="closeModal"><div class="modal" data-stop>${A.modal()}</div></div>` : ''}`;
   window.scrollTo(0, y);
@@ -571,10 +606,11 @@ function viewHome() {
     <div class="grow"></div>
     <div class="status"><span class="win ${w.open ? 'open' : ''}">${esc(w.label)}</span><span class="clock" data-clock></span></div>
   </header>
+  ${famBanner()}
   <main class="kids">${A.S.kids.map((k) => {
     const act = A.S.jobs.filter((j) => j.kidId === k.id && j.status === 'active').length;
     const pen = A.S.jobs.filter((j) => j.kidId === k.id && j.status === 'pending').length;
-    const rew = (A.S.rewards || []).some((r) => r.kidId === k.id && r.status === 'pending');
+    const rew = (A.S.rewards || []).some((r) => r.kidId === k.id && r.status === 'pending' && !r.family);
     const lreq = (A.S.loans || []).filter((l) => l.lenderId === k.id && l.status === 'requested').length;
     const lv = L.level(k.lifetime);
     return `<button class="kid ${k.playing ? 'playing' : ''}" style="--c:${esc(k.color)}" data-act="openKid" data-id="${k.id}">
@@ -597,6 +633,72 @@ function viewHome() {
   <div class="dock"><span>${A.mode === 'demo' ? `<button class="note" data-act="openGuide">Demo-modus · PIN 1234 · <u>Slik setter du opp</u></button>` : ''}</span>
     <span class="row" style="gap:10px"><button class="pill round" data-act="toggleSound" aria-label="${SFX.on ? 'Slå av lyd' : 'Slå på lyd'}">${ic(SFX.on ? 'sound' : 'mute')}</button>
     <button class="pill" data-act="openParent">${ic('lock')} Foreldre ${pend ? `<span class="badge">${pend}</span>` : ''}</button></span></div>`;
+}
+
+/* ---------- familiepotten ---------- */
+const famOn = () => A.S.family && (A.S.settings.family || {}).enabled !== false;
+function famGoal() {
+  const g = A.S.family.gems, list = (A.S.familyShop || []).slice().sort((a, b) => a.cost - b.cost);
+  return list.find((it) => it.cost > g) || list[list.length - 1] || null;
+}
+function famBanner() {
+  if (!famOn()) return '';
+  const g = A.S.family.gems, goal = famGoal();
+  const pct = goal ? Math.min(100, Math.round(g / goal.cost * 100)) : 0;
+  return `<button class="famban" data-act="openFamily">
+    <span class="fbig">💎</span>
+    <div><h2>Familien</h2><div class="fsub">Felles pott – alle samler sammen</div></div>
+    <div class="token gems">${gem}<span>${g}</span></div>
+    ${goal ? `<div class="fgoal"><div class="fsub">${g >= goal.cost ? 'Dere har nok til' : 'Neste mål'}: ${icn(goal.emoji)} ${esc(goal.title)}</div>
+      <div class="fbar"><i style="width:${Math.max(4, pct)}%"></i><span>${Math.min(g, goal.cost)} / ${goal.cost} 💎</span></div></div>` : '<div class="grow"></div>'}
+    <span class="avs">${A.S.kids.slice(0, 5).map((k) => `<span style="background:${esc(k.color)}">${icn(k.avatar)}</span>`).join('')}</span></button>`;
+}
+function famCard(it, i) {
+  const g = A.S.family.gems, can = g >= it.cost, pct = Math.min(100, Math.round(g / it.cost * 100));
+  return `<div class="card product fam ${can ? '' : 'locked'}" style="--k:${TINTS[(i + 4) % TINTS.length]}">
+    <div class="pmedia ${it.image ? 'photo' : ''}" style="--k:${TINTS[(i + 4) % TINTS.length]}">${it.image ? `<img src="${esc(it.image)}" alt="" loading="lazy">` : `<span class="qicon">${icn(it.emoji)}</span>`}<span class="pbadge gemb">Familie</span></div>
+    <div class="pbody"><h3>${esc(it.title)}</h3>${it.desc ? `<p class="pdesc">${esc(it.desc)}</p>` : ''}
+      <div class="pfoot"><div class="price">${gem} ${it.cost}</div>
+        <button class="btn gemb sm" data-act="fbuy" data-id="${it.id}" ${can ? '' : 'disabled'}>${can ? 'Kjøp' : `Mangler ${it.cost - g}`}</button></div>
+      ${can ? '' : `<div class="save" title="Spart ${pct} %"><i style="width:${pct}%"></i></div>`}</div></div>`;
+}
+function viewFamily() {
+  const F = A.S.family, fc = A.S.settings.family || {}, g = F.gems;
+  const by = F.by || {}, max = Math.max(1, ...A.S.kids.map((k) => by[k.id] || 0));
+  const nm = (id) => { const x = kidById(id); return x ? `${icn(x.avatar)} ${esc(x.name)}` : '👨‍👩‍👧 Familien'; };
+  const rw = (A.S.rewards || []).filter((r) => r.family).sort((a, b) => b.at - a.at).slice(0, 8);
+  const st = { pending: ['gold', 'Venter på mamma og pappa'], done: ['go', 'Gjennomført 🎉'], refunded: ['', 'Avlyst – diamanter tilbake'] };
+  const kidPick = A.S.kids.length > 1 ? `<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:12px"><span class="mute" style="font-weight:800">Hvem er du?</span>${A.S.kids.map((k) => `<button class="lpick ${A.famKid === k.id ? 'on' : ''}" data-act="famKid" data-id="${k.id}" style="--c:${esc(k.color)}"><span class="av">${icn(k.avatar)}</span><b>${esc(k.name)}</b><small>${k.coins} coins</small></button>`).join('')}</div>` : '';
+  const me = kidById(A.famKid) || (A.S.kids.length === 1 ? A.S.kids[0] : null);
+  const cpg = fc.coinsPerGem || 10;
+  return `<div class="khead fam">
+    <button class="back" data-act="home" aria-label="Tilbake">${ic('back')}</button>
+    <div class="av" style="background:#fff">💎</div>
+    <div class="kinfo"><h1>Familien</h1><div class="kmeta"><span>Felles diamanter for hele familien</span></div>
+      ${(() => { const goal = famGoal(); if (!goal) return ''; const pct = Math.min(100, Math.round(g / goal.cost * 100));
+        return `<div class="xpbar"><i style="width:${Math.max(3, pct)}%;background:linear-gradient(90deg,#b8f4ff,#fff)"></i><span style="color:#2a1670;text-shadow:0 1px 0 rgba(255,255,255,.7)">${Math.min(g, goal.cost)} / ${goal.cost} 💎 til ${esc(goal.title)}</span></div>`; })()}</div>
+    <div class="token gems big">${gem}<span>${g}</span></div></div>
+  <div class="pane${A.paneFresh ? ' anim' : ''}">
+  <h2 class="sec"><span class="dot" style="--k:#4fc8ff"></span>Slik samler dere diamanter</h2>
+  <div class="waylist">
+    ${fc.gamesGems ? `<div class="way"><span class="wi">🎮</span><div><b>Læringsspill</b><small>${fc.gamesGems} 💎 for minst 8 av 10 riktige – dobbelt ved alt riktig</small></div></div>` : ''}
+    ${fc.taskPct ? `<div class="way"><span class="wi">✅</span><div><b>Oppdrag</b><small>${fc.taskPct} % av coinsene blir også diamanter i potten</small></div></div>` : ''}
+    <div class="way"><span class="wi">🤝</span><div><b>Gi coins</b><small>${cpg} coins = 1 💎 til familien</small></div></div></div>
+  ${A.S.kids.length ? `<h2 class="sec"><span class="dot" style="--k:#8a5cff"></span>Hvem har bidratt</h2>
+  <div class="card contrib">${A.S.kids.map((k) => `<div class="crow"><span class="av" style="--c:${esc(k.color)}">${icn(k.avatar)}</span><b>${esc(k.name)}</b>
+    <span class="cbar"><i style="width:${Math.round((by[k.id] || 0) / max * 100)}%"></i></span><b class="gemtxt">${by[k.id] || 0} ${gem}</b></div>`).join('')}</div>` : ''}
+  <h2 class="sec"><span class="dot" style="--k:#6a45ff"></span>Familiebutikken</h2>
+  <div class="grid shop">${(A.S.familyShop || []).map((it, i) => famCard(it, i)).join('') || '<div class="empty">Mamma eller pappa kan legge inn familieturer under Foreldre → Butikk.</div>'}</div>
+  <h2 class="sec"><span class="dot" style="--k:var(--gold)"></span>Gi coins til familien</h2>
+  <div class="card loanform">${kidPick}
+    ${me ? `<div class="row" style="gap:8px;flex-wrap:wrap">${[1, 2, 5, 10].map((n) => `<button class="btn gemb sm" data-act="fdonate" data-id="${me.id}" data-v="${n}" ${me.coins >= n * cpg ? '' : 'disabled'}>${coin} ${n * cpg} → ${n} 💎</button>`).join('')}</div>
+      <small class="mute">${esc(me.name)} har ${me.coins} coins.</small>` : '<small class="mute">Velg hvem du er først.</small>'}</div>
+  ${rw.length ? `<h2 class="sec"><span class="dot" style="--k:#ff5fa2"></span>Det familien har kjøpt</h2><div class="list">${rw.map((r) => `<div class="li">
+    <span class="qicon xs">${icn(r.emoji)}</span><div class="grow"><b>${esc(r.title)}</b><div class="when">${new Date(r.at).toLocaleDateString('no-NO', { weekday: 'short', day: 'numeric', month: 'short' })}${r.kidId ? ' · valgt av ' + esc(kidById(r.kidId)?.name || '') : ''}</div></div>
+    <span class="chip ${st[r.status][0]}">${st[r.status][1]}</span></div>`).join('')}</div>` : ''}
+  ${F.log.length ? `<h2 class="sec"><span class="dot" style="--k:#16c28f"></span>Siste diamanter</h2><div class="list">${F.log.slice(0, 15).map((l) => `<div class="li"><div class="grow">${esc(l.text)}</div>
+    <span class="${l.gems > 0 ? 'plus' : 'minus'}">${l.gems > 0 ? '+' : ''}${l.gems} 💎</span><span class="when">${new Date(l.t).toLocaleDateString('no-NO', { weekday: 'short' })} ${hhmm(l.t)}</span></div>`).join('')}</div>` : ''}
+  </div>`;
 }
 
 function viewKid(k) {
@@ -701,7 +803,7 @@ function itemModal(kidId, id, i) {
   };
 }
 function myRewards(k) {
-  const rs = (A.S.rewards || []).filter((r) => r.kidId === k.id).sort((a, b) => b.at - a.at).slice(0, 8);
+  const rs = (A.S.rewards || []).filter((r) => r.kidId === k.id && !r.family).sort((a, b) => b.at - a.at).slice(0, 8);
   if (!rs.length) return '';
   const st = { pending: ['gold', 'Venter på mamma eller pappa'], done: ['go', 'Innfridd'], refunded: ['', 'Avlyst – coins tilbake'] };
   return `<h2 class="sec"><span class="dot" style="--k:#8b7bff"></span>Mine belønninger</h2><div class="list">${rs.map((r) => `<div class="li">
@@ -1026,7 +1128,7 @@ function gameResult(k, G) {
     <h2>${G.correct} av ${n} riktige!</h2>
     <p class="mute">${G.correct === n ? 'Helt perfekt – superbra!' : G.correct >= n * 0.7 ? 'Kjempebra jobba!' : 'Godt forsøk – øvelse gjør mester!'}</p>
     ${r === null ? '<p>Lagrer …</p>' : r.error ? `<p class="tag late" style="font-size:15px">${esc(r.error)}</p>`
-      : `<div class="token big" style="margin:8px auto">${coin}<span>+${r.amount}</span></div>${r.capped ? '<p class="mute">Du har nådd dagens grense for coins fra spill.</p>' : ''}`}
+      : `<div class="token big" style="margin:8px auto">${coin}<span>+${r.amount}</span></div>${r.gems ? `<div class="token gems" style="margin:4px auto 0">${gem}<span>+${r.gems}</span></div><p class="mute">til familiepotten!</p>` : ''}${r.capped ? '<p class="mute">Du har nådd dagens grense for coins fra spill.</p>' : ''}`}
     <div class="row" style="margin-top:16px"><button class="btn ghost" data-act="gameQuit">Velg et annet spill</button>
       <button class="btn" style="--b:${meta.color};--bs:color-mix(in srgb,${meta.color} 70%,#000)" data-act="game" data-v="${G.type}" data-l="${G.level || ''}">${ic('play')} Spill igjen</button></div></div>`;
 }
@@ -1088,6 +1190,10 @@ function kidWallet(k) {
   };
   if (iOwe.length || owedMe.length) h += `<h2 class="sec"><span class="dot" style="--k:var(--coral)"></span>Oversikt over lån</h2><div class="list">
     ${iOwe.map((l) => loanRow(l, true)).join('')}${owedMe.map((l) => loanRow(l, false)).join('')}</div>`;
+  if (famOn()) { const cpg = (A.S.settings.family || {}).coinsPerGem || 10;
+    h += `<h2 class="sec"><span class="dot" style="--k:#6a45ff"></span>Gi til familiepotten</h2>
+    <div class="card loanform"><div class="row" style="gap:8px;flex-wrap:wrap">${[1, 2, 5, 10].map((n) => `<button class="btn gemb sm" data-act="fdonate" data-id="${k.id}" data-v="${n}" ${k.coins >= n * cpg ? '' : 'disabled'}>${coin} ${n * cpg} → ${n} 💎</button>`).join('')}</div>
+      <small class="mute">Familien har ${A.S.family.gems} 💎 – <a href="#" data-act="openFamily">se familiebutikken</a></small></div>`; }
   return h + `<h2 class="sec"><span class="dot" style="--k:#16c28f"></span>Historikk</h2>` + kidHist(k);
 }
 
@@ -1247,9 +1353,9 @@ function pApprove() {
         <button class="btn bad sm" data-act="reject" data-id="${j.id}">${ic('x')}</button></div></div>`;
   }).join('') : '<p class="mute">Ingenting å godkjenne akkurat nå.</p>'}</div>`;
   const rw = (A.S.rewards || []).filter((r) => r.status === 'pending').sort((a, b) => a.at - b.at);
-  if (rw.length) h += `<div class="panel"><h3>Belønninger som skal innfris</h3>${rw.map((r) => { const k = kidById(r.kidId) || { avatar: '?', name: '?', color: '#999' };
-    return `<div class="appr"><div class="av" style="--c:${esc(k.color)}">${icn(k.avatar)}</div>
-      <div><b style="font-size:19px">${icn(r.emoji)} ${esc(r.title)}</b><div class="mute">${esc(k.name)} · kjøpt ${new Date(r.at).toLocaleDateString('no-NO', { weekday: 'short', day: 'numeric', month: 'short' })} kl. ${hhmm(r.at)} · ${r.cost} coins</div></div>
+  if (rw.length) h += `<div class="panel"><h3>Belønninger som skal innfris</h3>${rw.map((r) => { const k = kidById(r.kidId) || (r.family ? { avatar: '💎', name: 'Familien', color: '#6a45ff' } : { avatar: '?', name: '?', color: '#999' });
+    return `<div class="appr"><div class="av" style="--c:${r.family ? '#6a45ff' : esc(k.color)}">${r.family ? '💎' : icn(k.avatar)}</div>
+      <div><b style="font-size:19px">${icn(r.emoji)} ${esc(r.title)}</b>${r.family ? ' <span class="tag" style="background:#6a45ff;color:#fff">Familie</span>' : ''}<div class="mute">${r.family ? 'Familiepotten' + (r.kidId ? ' · valgt av ' + esc(k.name) : '') : esc(k.name)} · kjøpt ${new Date(r.at).toLocaleDateString('no-NO', { weekday: 'short', day: 'numeric', month: 'short' })} kl. ${hhmm(r.at)} · ${r.cost} ${r.family ? 'diamanter' : 'coins'}</div></div>
       <div class="row acts"><button class="btn ok sm" data-act="fulfill" data-id="${r.id}">${ic('check')} Innfridd</button>
         <button class="btn ghost sm" data-act="refund" data-id="${r.id}">Avlys</button></div></div>`; }).join('')}</div>`;
   const loans = A.S.loans || [];
@@ -1404,7 +1510,31 @@ function pShop() {
     <button class="ib" data-act="delShop" data-id="${it.id}" aria-label="Slett">${ic('trash')}</button>
     ${imgRow('shop', it, `<label class="fld" style="flex:1;min-width:220px">Beskrivelse (vises i butikken)<input value="${esc(it.desc || '')}" data-up="shop" data-id="${it.id}" data-k="desc" placeholder="${it.kind === 'reward' ? 'F.eks. Middag på McDonald\'s sammen med en voksen' : 'F.eks. Gjelder PlayStation og iPad'}" maxlength="300"></label>`)}</div>`).join('')}
   <div class="row" style="margin-top:14px"><button class="btn gold" data-act="addShop" data-v="time">${ic('plus')} Ny spilletid-pakke</button>
-    <button class="btn" data-act="addShop" data-v="reward">${ic('plus')} Ny belønning</button></div></div>`;
+    <button class="btn" data-act="addShop" data-v="reward">${ic('plus')} Ny belønning</button></div></div>${pFamily()}`;
+}
+function pFamily() {
+  const fc = A.S.settings.family || {}, F = A.S.family || { gems: 0 };
+  const numf = (k, label, help, min, max) => `<label class="fld">${label}<input type="number" min="${min}" max="${max}" value="${fc[k]}" data-up="set2" data-g="family" data-k="${k}"><small class="mute">${help}</small></label>`;
+  return `<div class="panel"><h3>💎 Familiepotten og familiebutikken</h3>
+  <p class="mute">Alle barna samler diamanter i én felles pott – fra læringsspill, oppdrag og ved å gi bort coins. Diamantene brukes i familiebutikken på ting dere gjør sammen. Kjøp havner under Godkjenn, der dere krysser av når turen er gjennomført eller avlyser og gir diamantene tilbake.</p>
+  <div class="row" style="gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+    <button class="btn sm ${fc.enabled !== false ? 'ok' : 'ghost'}" data-act="setFlag" data-g="family" data-k="enabled">${fc.enabled !== false ? 'Familiepotten er på' : 'Familiepotten er av'}</button>
+    <span class="token gems">${gem}<span>${F.gems}</span></span>
+    ${[10, 50].map((n) => `<button class="btn ok sm" data-act="famAdjust" data-v="${n}">+${n} 💎</button>`).join('')}
+    <button class="btn bad sm" data-act="famAdjust" data-v="-10">−10 💎</button></div>
+  <div class="erow" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+    ${numf('gamesGems', '💎 per god spillrunde', 'Minst 8 av 10 riktige. Dobbelt ved alt riktig.', 0, 20)}
+    ${numf('dailyCap', 'Maks 💎 fra spill per barn per dag', '', 0, 500)}
+    ${numf('taskPct', '% av oppdrags-coins som 💎', 'Kommer i tillegg til coinsene.', 0, 100)}
+    ${numf('coinsPerGem', 'Coins for 1 💎', 'Når barna gir coins til familien.', 1, 1000)}</div>
+  <h3 style="margin-top:18px">Familiebutikken</h3>
+  ${(A.S.familyShop || []).map((it) => `<div class="erow shopr">
+    <div class="fld">Ikon${icBtn('fshop', it.id, 'emoji', it.emoji)}</div>
+    <label class="fld wide">Navn<input value="${esc(it.title)}" data-up="fshop" data-id="${it.id}" data-k="title"></label>
+    <label class="fld">Pris (💎)<input type="number" min="1" value="${it.cost}" data-up="fshop" data-id="${it.id}" data-k="cost"></label>
+    <button class="ib" data-act="delFshop" data-id="${it.id}" aria-label="Slett">${ic('trash')}</button>
+    ${imgRow('fshop', it, `<label class="fld" style="flex:1;min-width:220px">Beskrivelse<input value="${esc(it.desc || '')}" data-up="fshop" data-id="${it.id}" data-k="desc" placeholder="F.eks. Dagstur med handletur og godteri" maxlength="300"></label>`)}</div>`).join('')}
+  <div class="row" style="margin-top:14px"><button class="btn gemb" data-act="addFshop">${ic('plus')} Ny familietur</button></div></div>`;
 }
 
 const DRIVERS = {
@@ -1637,7 +1767,7 @@ function iconModal() {
 }
 function currentIcon(t) {
   if (!t) return '';
-  const src = t.up === 'kid' ? kidById(t.id) : t.up === 'task' ? A.S.tasks.find((x) => x.id === t.id) : A.S.shop.find((x) => x.id === t.id);
+  const src = t.up === 'kid' ? kidById(t.id) : t.up === 'task' ? A.S.tasks.find((x) => x.id === t.id) : t.up === 'fshop' ? (A.S.familyShop || []).find((x) => x.id === t.id) : A.S.shop.find((x) => x.id === t.id);
   return src ? src[t.k] : '';
 }
 async function setIcon(v) {
@@ -1645,6 +1775,7 @@ async function setIcon(v) {
   A.modal = null;
   if (t.up === 'kid') await act({ type: 'upsertKid', kid: { id: t.id, avatar: v } });
   else if (t.up === 'task') await act({ type: 'upsertTask', task: { id: t.id, emoji: v } });
+  else if (t.up === 'fshop') await act({ type: 'upsertFamilyShop', item: { id: t.id, emoji: v } });
   else await act({ type: 'upsertShop', item: { id: t.id, emoji: v } });
 }
 function imageToIcon(file) {
@@ -1709,6 +1840,15 @@ $app.addEventListener('click', async (e) => {
       case 'home': A.screen = 'home'; A.modal = null; render(); scrollTo(0, 0); break;
       case 'openKid': A.screen = 'kid'; A.kidId = id; A.tab = 'tasks'; A.game = null; A.loanForm = {}; render(); scrollTo(0, 0); break;
       case 'tab': A.tab = d.v; A.paneFresh = true; render(); break;
+      case 'openFamily': e.preventDefault(); A.screen = 'family'; A.modal = null; A.paneFresh = true; if (A.kidId && kidById(A.kidId)) A.famKid = A.kidId; sound('open'); render(); scrollTo(0, 0); break;
+      case 'famKid': A.famKid = id; render(); break;
+      case 'fbuy': { const it = (A.S.familyShop || []).find((x) => x.id === id); if (!it) break;
+        openModal(confirmModal('Kjøpe for hele familien?', `${icn(it.emoji)} ${esc(it.title)} for <b>${it.cost} diamanter</b> fra familiepotten.<br><small class="mute">Mamma og pappa får beskjed og bestemmer dag.</small>`, 'fbuyYes', 'Ja, kjøp!', 'gold', `data-id="${id}"`)); break; }
+      case 'fbuyYes': A.modal = null; await act({ type: 'familyBuy', itemId: id, kidId: A.famKid || '' }); sound('buy'); boom(70); toast('Kjøpt for hele familien! 💎🎉'); break;
+      case 'fdonate': { const n = await act({ type: 'familyDonate', kidId: id, gems: Number(d.v) }); sound('coin'); toast(`Takk! +${n} 💎 til familien`); break; }
+      case 'famAdjust': await act({ type: 'familyAdjust', gems: Number(d.v) }); sound('coin'); break;
+      case 'addFshop': await act({ type: 'upsertFamilyShop', item: {} }); break;
+      case 'delFshop': await act({ type: 'deleteFamilyShop', itemId: id }); break;
       case 'take': await act({ type: 'take', kidId: k.id, taskId: id }); toast('Oppgaven er din – lykke til! 💪'); break;
       case 'done': await act({ type: 'done', jobId: id }); sound('success'); toast('Supert! Nå må en voksen godkjenne ⭐'); boom(18); break;
       case 'cancel': await act({ type: 'cancel', jobId: id }); break;
@@ -1746,7 +1886,7 @@ $app.addEventListener('click', async (e) => {
       case 'notifyTest': { b.disabled = true; b.textContent = 'Sender …'; const m = await act({ type: 'notifyTest' }); toast(m); sound('success'); break; }
       case 'viewItem': openModal(itemModal(A.kidId, id, Number(d.i) || 0)); break;
       case 'pickImage': A.imgTarget = { kind: d.v || 'shop', id }; document.getElementById('prodfile').click(); break;
-      case 'delImage': await act(d.v === 'task' ? { type: 'upsertTask', task: { id, image: '' } } : { type: 'upsertShop', item: { id, image: '' } }); toast('Bildet er fjernet'); break;
+      case 'delImage': await act(d.v === 'task' ? { type: 'upsertTask', task: { id, image: '' } } : { type: d.v === 'fshop' ? 'upsertFamilyShop' : 'upsertShop', item: { id, image: '' } }); toast('Bildet er fjernet'); break;
       case 'aiImage': await act({ type: 'aiImage', kind: d.v, id }); toast('Lager bilde med AI … det dukker opp om litt'); break;
       case 'aiImagesAll': { const n = await act({ type: 'aiImagesAll', kind: d.v }); toast(n ? `Lager ${n} bilder – ca. ${Math.ceil(n * 16 / 60)} min. Du kan gjøre andre ting imens.` : 'Alle har allerede bilde'); break; }
       case 'aiIconsAll': { const games = Object.entries(GAMES).map(([gid, x]) => ({ id: gid, name: x.name, desc: x.desc }));
@@ -1843,7 +1983,7 @@ const val = (id) => (document.getElementById(id) || {}).value || '';
 document.getElementById('prodfile').addEventListener('change', async (e) => {
   const f = e.target.files && e.target.files[0]; e.target.value = '';
   if (!f || !A.imgTarget) return;
-  try { toast('Laster opp bilde …'); const img = await imageToProduct(f); const tg = A.imgTarget; await act(tg.kind === 'task' ? { type: 'upsertTask', task: { id: tg.id, image: img } } : { type: 'upsertShop', item: { id: tg.id, image: img } }); sound('success'); toast('Bildet er lagt til'); }
+  try { toast('Laster opp bilde …'); const img = await imageToProduct(f); const tg = A.imgTarget; await act(tg.kind === 'task' ? { type: 'upsertTask', task: { id: tg.id, image: img } } : { type: tg.kind === 'fshop' ? 'upsertFamilyShop' : 'upsertShop', item: { id: tg.id, image: img } }); sound('success'); toast('Bildet er lagt til'); }
   catch (err) { if (err.message) toast(err.message, true); }
 });
 /* Produktbilde: beskjæres til 4:3 og krympes, så butikken blir rask */
@@ -1877,6 +2017,7 @@ $app.addEventListener('change', async (e) => {
   try {
     if (d.up === 'task') await act({ type: 'upsertTask', task: { id: d.id, [d.k]: d.k === 'kidIds' ? (v ? [v] : []) : v } });
     else if (d.up === 'shop') await act({ type: 'upsertShop', item: { id: d.id, [d.k]: v } });
+    else if (d.up === 'fshop') await act({ type: 'upsertFamilyShop', item: { id: d.id, [d.k]: v } });
     else if (d.up === 'kid') await act({ type: 'upsertKid', kid: { id: d.id, [d.k]: v } });
     else if (d.up === 'dev') { const kk = kidById(d.id); const devs = kk.devices.map((x) => ({ ...x })); devs[Number(d.i)][d.k] = v; await act({ type: 'upsertKid', kid: { id: d.id, devices: devs } }); }
     else if (d.up === 'sched') await act({ type: 'setSchedule', day: Number(d.id), patch: { [d.k]: v } });

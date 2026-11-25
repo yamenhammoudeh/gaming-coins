@@ -134,3 +134,6 @@ eller ruteren fra Telenor, Telia, Altibox eller Get)? Da har ruteren ikke et åp
 | `public/logic.js` | Spillereglene (coins, frister, butikk, tidsplan) |
 
 Uten server, for eksempel når du åpner `index.html` direkte, kjører appen i **demo-modus** på den enkelte enheten, uten ruterstyring.
+
+## Familiepotten 💎
+Alle barna samler diamanter i én felles pott: fra læringsspill (minst 8 av 10 riktige), en andel av oppdrags-coinsene, og ved å gi bort coins (10 coins = 1 💎 som standard). Diamantene brukes i familiebutikken på ting dere gjør sammen – Leos Lekeland, svømmehallen, hytta, tur til Sverige. Kjøp havner under Godkjenn. Alt kan justeres under Foreldre → Butikk.
