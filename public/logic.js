@@ -14,7 +14,7 @@
     'stopPlay', 'routerTest', 'routerClients', 'routerScan', 'fulfillReward', 'refundReward',
     'loanParentApprove', 'loanCancel', 'notifyTest', 'gameAccess', 'gameAccessAll', 'gameAccessSet', 'setDeviceRule', 'upsertGroup', 'deleteGroup', 'aiImage', 'aiImagesAll', 'aiCancel', 'gameIconsClear', 'addTasks', 'upsertFamilyShop', 'deleteFamilyShop', 'familyAdjust', 'autoReview', 'autoCheat']);
   // handlinger et barn gjør selv – krever barnets PIN hvis barnet har en
-  const KID_ACTS = new Set(['take', 'done', 'cancel', 'buy', 'play', 'gameReward', 'familyDonate', 'familyBuy', 'loanRequest', 'loanAnswer', 'loanRepay', 'verifyKidPin']);
+  const KID_ACTS = new Set(['setFace', 'raceCreate', 'raceJoin', 'raceDecline', 'raceStart', 'raceAnswer', 'raceLeave', 'take', 'done', 'cancel', 'buy', 'play', 'gameReward', 'familyDonate', 'familyBuy', 'loanRequest', 'loanAnswer', 'loanRepay', 'verifyKidPin']);
 
   /* Ikon: emoji/tekst (maks 16 tegn) eller et opplastet bilde som data-URL */
   const ICON_RE = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
@@ -120,7 +120,7 @@
         schedule: [day('10:00', '20:00'), day('16:00', '20:00'), day('16:00', '20:00'), day('16:00', '20:00'),
           day('16:00', '20:00'), day('15:00', '21:00'), day('09:00', '21:00')],
         router: { enabled: false, driver: '', url: '', user: '', pass: '', model: '' },
-        games: { enabled: true, coinsPerCorrect: 1, perfectBonus: 3, playCoins: 2, dailyCap: 30, off: [] },
+        games: { enabled: true, coinsPerCorrect: 1, perfectBonus: 3, playCoins: 2, raceWin: 5, dailyCap: 30, off: [] },
         loans: { enabled: true, needParent: false, maxAmount: 100 },
         ai: { style: 'flat', key: '' },
         notify: { enabled: false, to: '', host: '', port: 587, user: '', pass: '', from: '', appUrl: '' },
@@ -155,6 +155,7 @@
     if (!s.family || typeof s.family !== 'object') s.family = { gems: 0, by: {}, log: [] };
     if (!s.family.by) s.family.by = {}; if (!Array.isArray(s.family.log)) s.family.log = [];
     if (!Array.isArray(s.familyShop)) s.familyShop = defaultFamilyShop();
+    if (!Array.isArray(s.races)) s.races = [];
     if (needFamTasks) { s.tasks.push(...defaultFamilyTasks()); s.famTasksAdded = true; }
     return s;
   }
@@ -193,8 +194,17 @@
   }
 
   /* ---------- tick: utløpte frister, forbruk av spilletid ---------- */
+  const RACE_GOAL = 10;
   function tick(s, now) {
     let changed = false;
+    for (const r of s.races || []) {
+      if (r.status === 'count' && now >= r.startAt) { r.status = 'run'; changed = true; }
+      if (r.status === 'lobby' && now - r.created > 180000) { r.status = 'cancel'; r.reason = 'Ingen svarte på invitasjonen'; changed = true; }
+      if (r.status === 'run' && now - r.updated > 300000) { r.status = 'cancel'; r.reason = 'Løpet ble stående'; changed = true; }
+    }
+    const nRaces = (s.races || []).length;
+    s.races = (s.races || []).filter((r) => !(['done', 'cancel'].includes(r.status) && now - r.updated > 3600000));
+    if (s.races.length !== nRaces) changed = true;
     for (const j of s.jobs) {
       if (j.status === 'active' && now > j.deadline) {
         j.status = 'expired'; changed = true;
@@ -265,6 +275,33 @@
       const kk = s.kids.find((x) => x.id === kidId);
       if (kk && kk.pin && String((a.kidPins || {})[kk.id]) !== kk.pin && String(a.pin) !== String(s.settings.pin)) fail(`Feil PIN for ${kk.name}`);
     }
+    const race = (id) => (s.races || []).find((r) => r.id === id) || fail('Fant ikke løpet');
+    const raceGo = (r) => { r.status = 'count'; r.startAt = now + 4000; r.updated = now; };
+    const raceLeave = (r, id) => {
+      const p = r.players.find((x) => x.id === id); if (!p) return;
+      if (r.status === 'lobby' && id === r.host) { r.status = 'cancel'; r.reason = 'Løpet ble avlyst'; }
+      else if (r.status === 'lobby') p.declined = true;
+      else if (r.status === 'count' || r.status === 'run') {
+        p.left = true;
+        const humans = r.players.filter((x) => x.id !== 'bot' && !x.left);
+        if (humans.length === 0) { r.status = 'cancel'; r.reason = 'Alle gikk ut'; }
+        else if (r.players.filter((x) => !x.left).length < 2) { r.winner = humans[0].id; raceFinish(r); }
+      }
+      r.updated = now;
+    };
+    const raceFinish = (r) => {
+      r.status = 'done'; r.endAt = now;
+      const g = s.settings.games, today = dayKey(now);
+      for (const p of r.players) {
+        const k = s.kids.find((x) => x.id === p.id); if (!k) continue;
+        if (k.gameDay !== today) { k.gameDay = today; k.gameCoins = 0; }
+        const base = Math.max(0, Math.min(p.correct * g.coinsPerCorrect, g.dailyCap - k.gameCoins));
+        const bonus = p.id === r.winner && r.players.length > 1 ? (g.raceWin ?? 5) : 0;
+        p.coins = base + bonus; k.gameCoins += base; k.coins += p.coins; k.lifetime += p.coins;
+        const vs = r.players.filter((x) => x.id !== p.id).map((x) => x.id === 'bot' ? 'Robot' : (s.kids.find((y) => y.id === x.id) || {}).name).join(', ');
+        log(s, k.id, `Kunnskapsløpet mot ${vs}: ${p.id === r.winner ? 'vant! 🏆' : p.correct + ' riktige'}`, p.coins, now);
+      }
+    };
     const approveJob = (j, pct, auto) => {
       const amount = Math.round(j.coins * pct / 100), k = kid(j.kidId);
       j.status = 'approved'; j.awarded = amount; if (auto) { j.auto = true; j.reviewed = false; }
@@ -337,6 +374,53 @@
         }
         break;
       }
+      /* ----- Kunnskapsløpet (live mot hverandre) ----- */
+      case 'setFace': { const k = kid(a.kidId); k.face = a.face ? cleanImage(a.face) : ''; break; }
+      case 'raceCreate': {
+        const k = kid(a.kidId), lv = ['lett', 'middels', 'vansk'].includes(a.level) ? a.level : 'lett';
+        const subj = ['blandet', 'matte', 'norsk', 'engelsk', 'kunnskap'].includes(a.subject) ? a.subject : 'blandet';
+        for (const r of s.races) if (['lobby', 'count', 'run'].includes(r.status) && r.players.some((p) => p.id === k.id && !p.left)) raceLeave(r, k.id);
+        const inv = [...new Set((a.invite || []).filter((id) => id !== k.id && s.kids.some((x) => x.id === id)))].slice(0, 5);
+        if (!inv.length && !a.bot) fail('Velg hvem du vil spille mot');
+        const P = (id, joined, level) => ({ id, level, joined, step: 0, correct: 0, wrong: 0, lastAt: 0 });
+        const r = { id: uid(), status: 'lobby', host: k.id, subject: subj, goal: RACE_GOAL, created: now, updated: now,
+          players: [P(k.id, true, lv), ...inv.map((id) => P(id, false, '')), ...(a.bot ? [P('bot', true, lv)] : [])] };
+        if (!inv.length) raceGo(r);
+        s.races.push(r); if (s.races.length > 12) s.races = s.races.slice(-12);
+        result = r.id; break;
+      }
+      case 'raceJoin': case 'raceDecline': {
+        const r = race(a.raceId), p = r.players.find((x) => x.id === a.kidId) || fail('Du er ikke invitert');
+        if (r.status !== 'lobby') fail('Løpet har allerede startet');
+        if (a.type === 'raceJoin') { p.joined = true; p.declined = false; p.level = ['lett', 'middels', 'vansk'].includes(a.level) ? a.level : 'lett'; }
+        else { p.declined = true; }
+        const open = r.players.filter((x) => !x.declined && !x.joined);
+        const others = r.players.filter((x) => x.id !== r.host && !x.declined);
+        if (!others.length) { r.status = 'cancel'; r.reason = 'Ingen ville være med denne gangen'; }
+        else if (!open.length) raceGo(r);
+        r.updated = now; break;
+      }
+      case 'raceStart': {
+        const r = race(a.raceId); if (r.host !== a.kidId) fail('Bare den som startet kan sette i gang');
+        if (r.status !== 'lobby') break;
+        r.players = r.players.filter((x) => x.joined);
+        if (r.players.length < 2) fail('Vent til minst én er med');
+        raceGo(r); break;
+      }
+      case 'raceAnswer': {
+        const r = race(a.raceId);
+        if (r.status === 'count' && now >= r.startAt) r.status = 'run';
+        if (r.status !== 'run') break;
+        const p = r.players.find((x) => x.id === a.kidId) || fail('Du er ikke med i løpet');
+        if (p.id === 'bot' && a.hostKid !== r.host) fail('Ugyldig');
+        if (p.left || p.finishedAt) break;
+        if (now - p.lastAt < 600) break; // for raske trykk teller ikke
+        p.lastAt = now;
+        if (a.ok) { p.step++; p.correct++; } else p.wrong++;
+        if (p.step >= r.goal) { p.finishedAt = now; if (!r.winner) { r.winner = p.id; raceFinish(r); } }
+        r.updated = now; result = { step: p.step }; break;
+      }
+      case 'raceLeave': { const r = race(a.raceId); raceLeave(r, a.kidId); break; }
       /* ----- familiepotten ----- */
       case 'familyDonate': {
         const k = kid(a.kidId), fc = s.settings.family;
@@ -605,6 +689,7 @@
         if (p.games) { const g = s.settings.games; if (!Array.isArray(g.off)) g.off = [];
           if (p.games.enabled !== undefined) g.enabled = !!p.games.enabled;
           if (p.games.coinsPerCorrect !== undefined) g.coinsPerCorrect = num(p.games.coinsPerCorrect, 0, 20);
+          if (p.games.raceWin !== undefined) g.raceWin = num(p.games.raceWin, 0, 100);
           if (p.games.playCoins !== undefined) g.playCoins = num(p.games.playCoins, 0, 50);
           if (p.games.perfectBonus !== undefined) g.perfectBonus = num(p.games.perfectBonus, 0, 100);
           if (p.games.dailyCap !== undefined) g.dailyCap = num(p.games.dailyCap, 0, 1000); }

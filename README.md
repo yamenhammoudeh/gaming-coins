@@ -146,3 +146,6 @@ Under Foreldre → Godkjenn kan dere slå på automatisk godkjenning for alle el
 
 ## Lekeland 🧸 (for de minste)
 Ti ekte spill uten tekst, laget for barn fra 2–3 år: bilspill, ballonger, tegning med fingeren, fiske, formsortering, xylofon, memory, fang frukt, dyrelyder og togbane. Store knapper, lyder og en norsk stemme som forklarer. Ligger øverst under Spill-fanen, gir coins per runde (minst 20 sek), og kan slås av/på per barn under Foreldre → Læringsspill. Koden ligger i `public/play.js`.
+
+## Kunnskapsløpet 🏁 (live mot hverandre)
+Et lærerikt racerspill der hvert barn kjører en bil med **sitt eget fjes** som hode. Ta bilde av fjeset under Spill-fanen eller Foreldre → Barn og enheter. Et barn starter et løp og inviterer søsken (eller Robo 🤖); invitasjonen dukker opp på de andres skjerm, og de spiller live fra hver sin iPad. Hvert riktig svar kjører bilen ett felt frem – først til 10 vinner. Alle velger sitt eget nivå, så små og store kan spille mot hverandre. Spørsmålene hentes fra læringsspillene barnet har tilgang til (matte, norsk, engelsk, kunnskap eller blandet). Coins: 1 per riktig svar (innenfor dagsgrensen) + vinnerbonus (standard 5). Andre i huset ser «LIVE»-løpet på forsiden og kan se på.

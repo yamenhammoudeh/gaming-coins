@@ -310,6 +310,16 @@ http.createServer(async (req, res) => {
         } catch (e) { if (a.type === 'routerTest') setStatus(false, e.message); return send(res, 502, { error: e.message }); }
       } else {
         // produktbilde lagres som egen fil, ikke i databasen
+        // fjes-bilde fra barnet (barnets PIN sjekkes i logikken)
+        if (a.type === 'setFace' && typeof a.face === 'string' && a.face.startsWith('data:')) {
+          const m = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/=]+)$/.exec(a.face);
+          if (!m) return send(res, 400, { error: 'Ugyldig bilde' });
+          const buf = Buffer.from(m[2], 'base64');
+          if (buf.length > 600e3) return send(res, 400, { error: 'Bildet er for stort' });
+          const name = crypto.createHash('sha1').update(buf).digest('hex') + '.' + { png: 'png', jpeg: 'jpg', webp: 'webp' }[m[1]];
+          fs.mkdirSync(IMGDIR, { recursive: true }); fs.writeFileSync(path.join(IMGDIR, name), buf);
+          a.face = 'img/' + name;
+        }
         const imgObj = a.type === 'upsertShop' || a.type === 'upsertFamilyShop' ? a.item : a.type === 'upsertTask' ? a.task : null;
         if (imgObj && typeof imgObj.image === 'string' && imgObj.image.startsWith('data:')) {
           if (String(a.pin) !== String(state.settings.pin)) return send(res, 403, { error: 'Feil PIN-kode' });
