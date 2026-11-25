@@ -18,16 +18,16 @@ Skriptet gjør dette selv:
 * finner Node.js 18 eller nyere (også versjoner installert med aaPanels Node.js version manager), eller laster ned Node hvis den mangler
 * gjør klar data-mappen og setter riktige rettigheter
 * lager en tjeneste som starter automatisk når serveren starter på nytt
-* åpner port 8080 i brannmuren (ufw/firewalld) hvis den er aktiv
+* åpner port 8012 i brannmuren (ufw/firewalld) hvis den er aktiv
 * sjekker at appen svarer, og skriver ut adressen du skal bruke
 
 ## 3. Åpne appen og koble til ruteren
-Gå til adressen skriptet skriver ut, f.eks. `http://192.168.50.10:8080`, på iPaden eller veggskjermen.
+Gå til adressen skriptet skriver ut, f.eks. `http://192.168.50.10:8012`, på iPaden eller veggskjermen.
 Trykk Del → **Legg til på Hjem-skjerm**. Foreldre-PIN første gang er **1234**.
 
 Gå deretter til Foreldre → **Ruter** → **Skann nettverket**. Appen finner ruteren og viser merke og modell.
 
-Svarer ikke siden? Åpne port **8080** under aaPanel → **Security** → Add port rule.
+Svarer ikke siden? Åpne port **8012** under aaPanel → **Security** → Add port rule.
 
 ---
 
@@ -86,15 +86,15 @@ Mappen `data/` (passord, barn, coins) lastes aldri opp til GitHub.
 Last ned `/www/wwwroot/gaming-coins/data/data.json` fra Files en gang iblant.
 
 ### Bruke appen utenfor hjemmet? (valgfritt)
-Ikke åpne port 8080 mot internett. Barnas knapper har ingen innlogging, og ruterpassordet ligger på serveren.
-Vil du likevel nå appen ute, bruk aaPanel → Website → Add site (ditt domene) → **Reverse proxy** til `http://127.0.0.1:8080`.
+Ikke åpne port 8012 mot internett. Barnas knapper har ingen innlogging, og ruterpassordet ligger på serveren.
+Vil du likevel nå appen ute, bruk aaPanel → Website → Add site (ditt domene) → **Reverse proxy** til `http://127.0.0.1:8012`.
 Slå på **SSL** og **passordbeskyttelse** (Encrypted access) på den siden. Alternativet er å bruke VPN hjem, for eksempel Asus sin innebygde VPN-server.
 
 ### Bruker du heller aaPanels «Node Project»?
 Det går også: Website → **Node Project** → Add.
 * Prosjektmappe: `/www/wwwroot/gaming-coins`
 * Run opt: `start`
-* Port: `8080`
+* Port: `8012`
 * Bruker: `www`
 * Node-versjon: 18 eller nyere
 

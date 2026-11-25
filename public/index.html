@@ -1585,7 +1585,7 @@ const GUIDE_TABS = {
   aapanel: { name: 'aaPanel', steps: [
     ['Last opp', 'I aaPanel: <b>Files</b> → gå til <code>/www/wwwroot</code> → <b>Upload</b> → velg <b>gaming-coins.zip</b>. Høyreklikk på filen → <b>Unzip</b>.'],
     ['Installer', 'Åpne <b>Terminal</b> i aaPanel og lim inn kommandoen under. Den finner Node.js, lager en tjeneste som starter automatisk og viser adressen til appen.', 'cd /www/wwwroot/gaming-coins && bash install.sh'],
-    ['Åpne port', 'Svarer ikke siden? aaPanel → <b>Security</b> → legg til port <b>8080</b> (TCP).'],
+    ['Åpne port', 'Svarer ikke siden? aaPanel → <b>Security</b> → legg til port <b>8012</b> (TCP).'],
   ] },
   linux: { name: 'Raspberry Pi / Linux', steps: [
     ['Kopier pakken', 'Legg <b>gaming-coins.zip</b> på maskinen (f.eks. med en minnepinne eller <code>scp</code>).'],
@@ -1611,7 +1611,7 @@ function guideHtml() {
     <div class="seg" style="margin-bottom:12px">${Object.entries(GUIDE_TABS).map(([k, v]) => `<button class="${t === k ? 'on' : ''}" data-act="gtab" data-v="${k}">${v.name}</button>`).join('')}</div>
     ${g.steps.map((s, i) => step(i + 1, s[0], s[1], s[2])).join('')}
     <h4>2. Åpne appen fra serveren</h4>
-    ${step('A', 'Åpne adressen', 'Installasjonen skriver ut en adresse, f.eks. <code>http://192.168.1.50:8080</code>. Åpne den i Safari på iPaden eller veggskjermen.')}
+    ${step('A', 'Åpne adressen', 'Installasjonen skriver ut en adresse, f.eks. <code>http://192.168.1.50:8012</code>. Åpne den i Safari på iPaden eller veggskjermen.')}
     ${step('B', 'Legg den på Hjem-skjermen', 'Trykk Del → <b>Legg til på Hjem-skjerm</b>. Da åpnes den i fullskjerm. Slå gjerne på <b>Veiledet tilgang</b> så barna ikke går ut av appen.')}
     <h4>3. Koble til ruteren</h4>
     ${step('C', 'Skann', 'Foreldre → <b>Ruter</b> → <b>Skann nettverket</b>. Appen finner ruteren og viser merke og modell.')}
@@ -1619,7 +1619,7 @@ function guideHtml() {
     ${step('E', 'Legg inn enhetene', 'Barn og enheter → <b>Hent fra ruteren</b> → velg PlayStation, iPad osv. for hvert barn. På iPad/iPhone: slå av <b>Privat Wi-Fi-adresse</b> for hjemmenettet (Innstillinger → Wi-Fi → ⓘ).')}
     <h4>Hvis noe ikke virker</h4>
     <ul class="trouble">
-      <li><b>Siden åpner ikke:</b> sjekk at serveren er på, og at port 8080 er åpen i brannmuren (aaPanel → Security).</li>
+      <li><b>Siden åpner ikke:</b> sjekk at serveren er på, og at port 8012 er åpen i brannmuren (aaPanel → Security).</li>
       <li><b>Skanningen finner ikke ruteren:</b> skriv inn ruterens IP selv i skannefeltet. Du finner den på iPaden under Innstillinger → Wi-Fi → ⓘ → <b>Ruter</b>, eller på etiketten under ruteren.</li>
       <li><b>Ruteren kan ikke styres direkte</b> (f.eks. Telenor, Telia, TP-Link Deco): velg <b>AdGuard Home</b> under Rutertype – det virker med alle rutere.</li>
       <li><b>Feil passord:</b> bruk ruterens admin-passord (det du logger inn på ruterens nettside med), ikke Wi-Fi-passordet.</li>
@@ -1701,7 +1701,7 @@ function settingsPanels() {
       ${f2('notify', 'user', 'Brukernavn (e-postadresse)', n.user, 'text', 'placeholder="deg@gmail.com" autocapitalize="off" autocomplete="off"')}
       <label class="fld">Passord / app-passord<input type="password" data-up="set2" data-g="notify" data-k="pass" placeholder="${n.hasPass ? '•••••• (lagret)' : 'App-passord'}" autocomplete="new-password"></label>
       ${f2('notify', 'from', 'Avsender (valgfritt)', n.from, 'text', 'placeholder="Gaming Coins &lt;deg@gmail.com&gt;"')}
-      ${f2('notify', 'appUrl', 'Lenke til appen i e-posten (valgfritt)', n.appUrl, 'url', 'placeholder="http://192.168.1.50:8080" autocapitalize="off"')}
+      ${f2('notify', 'appUrl', 'Lenke til appen i e-posten (valgfritt)', n.appUrl, 'url', 'placeholder="http://192.168.1.50:8012" autocapitalize="off"')}
     </div>
     <div class="row" style="margin-top:12px"><button class="btn ghost" data-act="notifyTest">Send testvarsel</button></div>
     ${ns ? `<p><span class="tag ${ns.ok ? '' : 'late'}">${ns.ok ? 'OK' : 'Feil'}</span> ${esc(ns.msg)} <span class="mute">(${hhmm(ns.at)})</span></p>` : ''}

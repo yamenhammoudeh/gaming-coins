@@ -1,6 +1,6 @@
 /* Gaming Coins – hjemmeserver
  * Start:  node server.js          (Node 18 eller nyere, ingen pakker trengs)
- * Åpne:   http://<denne-maskinens-ip>:8080 på iPad / veggskjerm
+ * Åpne:   http://<denne-maskinens-ip>:8012 på iPad / veggskjerm
  */
 const http = require('http');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const drivers = require('./drivers');
 const net = require('./net');
 const { sendMail } = require('./mailer');
 
-const PORT = Number(process.env.PORT) || 8080;
+const PORT = Number(process.env.PORT) || 8012;
 const DATA = process.env.GC_DATA || path.join(__dirname, 'data', 'data.json');
 const crypto = require('crypto');
 fs.mkdirSync(path.dirname(DATA), { recursive: true });

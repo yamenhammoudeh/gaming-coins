@@ -71,7 +71,7 @@ Du trenger en maskin som alltid står på i huset, for eksempel en Raspberry Pi,
    cd gaming-coins
    node server.js
    ```
-3. Serveren skriver ut en adresse, f.eks. `http://192.168.50.10:8080`. Åpne den på iPaden eller veggskjermen.
+3. Serveren skriver ut en adresse, f.eks. `http://192.168.50.10:8012`. Åpne den på iPaden eller veggskjermen.
 4. iPad: trykk Del → **Legg til på Hjem-skjerm**. Da åpnes appen i fullskjerm.
    Slå på **Veiledet tilgang** (Innstillinger → Tilgjengelighet) hvis barna ikke skal kunne gå ut av appen.
 5. Standard foreldre-PIN er **1234**. Bytt den under Foreldre → Mer.

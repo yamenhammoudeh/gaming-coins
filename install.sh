@@ -11,12 +11,12 @@
 #     bash install.sh uninstall   fjern tjenesten (data beholdes)
 #
 #  Valg (sett foran kommandoen):
-#     PORT=8080  APP_DIR=/www/wwwroot/gaming-coins  TZ_NAME=Europe/Oslo
+#     PORT=8012  APP_DIR=/www/wwwroot/gaming-coins  TZ_NAME=Europe/Oslo
 # ============================================================
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/www/wwwroot/gaming-coins}"
-PORT="${PORT:-8080}"
+PORT="${PORT:-8012}"
 TZ_NAME="${TZ_NAME:-Europe/Oslo}"
 SERVICE="gaming-coins"
 UNIT="/etc/systemd/system/${SERVICE}.service"
