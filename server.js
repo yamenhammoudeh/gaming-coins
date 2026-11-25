@@ -161,11 +161,13 @@ async function flushNotify() {
   const items = notifyQueue.splice(0).filter((i) => still.has(i.id)); // allerede godkjent? da droppes den
   if (!items.length) return;
   const n = state.settings.notify, url = appUrl();
-  const text = `Hei!\n\nDette venter på godkjenning i Gaming Coins:\n\n${items.map((i) => '• ' + i.text).join('\n')}\n\n` +
+  const wait = items.filter((i) => !i.info), info = items.filter((i) => i.info);
+  const text = `Hei!\n\n${wait.length ? `Dette venter på godkjenning i Gaming Coins:\n\n${wait.map((i) => '• ' + i.text).join('\n')}\n\n` : ''}` +
+    `${info.length ? `Godkjent automatisk (trykk «Lurte» under Godkjenn hvis noe ikke stemmer):\n\n${info.map((i) => '• ' + i.text).join('\n')}\n\n` : ''}` +
     (url ? `Åpne Gaming Coins: ${url}\nTrykk på «Foreldre» og skriv inn PIN-koden.\n` : 'Åpne Gaming Coins og trykk på «Foreldre».\n') +
     `\n– Gaming Coins`;
   try {
-    await sendMail(n, { to: n.to, subject: items.length === 1 ? 'Gaming Coins: ' + items[0].text : `Gaming Coins: ${items.length} ting venter på godkjenning`, text });
+    await sendMail(n, { to: n.to, subject: items.length === 1 ? 'Gaming Coins: ' + items[0].text : wait.length ? `Gaming Coins: ${items.length} nye hendelser` : `Gaming Coins: ${items.length} ting ble godkjent automatisk`, text });
     notifyStatus(true, `Sendte varsel om ${items.length} ${items.length === 1 ? 'ting' : 'ting'}`);
   } catch (e) { console.error('E-postfeil:', e.message); notifyStatus(false, e.message); }
 }

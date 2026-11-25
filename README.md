@@ -137,3 +137,9 @@ Uten server, for eksempel når du åpner `index.html` direkte, kjører appen i *
 
 ## Familiepotten 💎
 Alle barna samler diamanter i én felles pott: fra læringsspill (minst 8 av 10 riktige), en andel av oppdrags-coinsene, og ved å gi bort coins (10 coins = 1 💎 som standard). Diamantene brukes i familiebutikken på ting dere gjør sammen – Leos Lekeland, svømmehallen, hytta, tur til Sverige. Kjøp havner under Godkjenn. Alt kan justeres under Foreldre → Butikk.
+
+## Egen PIN per barn 🔒
+Under Foreldre → Barn og enheter kan hvert barn få en egen 4-sifret PIN. Da må PIN-koden tastes for å åpne kontoen, og serveren avviser handlinger for barnet uten riktig PIN.
+
+## Automatisk godkjenning ⚡
+Under Foreldre → Godkjenn kan dere slå på automatisk godkjenning for alle eller utvalgte barn. Oppdrag godkjennes selv når de er levert innenfor fristen og barnet har brukt minst en viss andel av tiden (standard 25 %). Det som går mistenkelig fort, venter på dere merket «Veldig raskt». Automatisk godkjente oppdrag vises (og sendes på e-post hvis varsler er på) – trykk «Lurte» for å ta coinsene tilbake, trekke straff og stenge internett i noen minutter.

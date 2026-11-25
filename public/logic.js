@@ -12,7 +12,9 @@
   const PARENT = new Set(['verifyPin', 'approve', 'reject', 'adjust', 'upsertKid', 'deleteKid',
     'upsertTask', 'deleteTask', 'upsertShop', 'deleteShop', 'setSchedule', 'setSettings', 'resetAll',
     'stopPlay', 'routerTest', 'routerClients', 'routerScan', 'fulfillReward', 'refundReward',
-    'loanParentApprove', 'loanCancel', 'notifyTest', 'gameAccess', 'gameAccessAll', 'gameAccessSet', 'setDeviceRule', 'upsertGroup', 'deleteGroup', 'aiImage', 'aiImagesAll', 'aiCancel', 'gameIconsClear', 'addTasks', 'upsertFamilyShop', 'deleteFamilyShop', 'familyAdjust']);
+    'loanParentApprove', 'loanCancel', 'notifyTest', 'gameAccess', 'gameAccessAll', 'gameAccessSet', 'setDeviceRule', 'upsertGroup', 'deleteGroup', 'aiImage', 'aiImagesAll', 'aiCancel', 'gameIconsClear', 'addTasks', 'upsertFamilyShop', 'deleteFamilyShop', 'familyAdjust', 'autoReview', 'autoCheat']);
+  // handlinger et barn gjør selv – krever barnets PIN hvis barnet har en
+  const KID_ACTS = new Set(['take', 'done', 'cancel', 'buy', 'play', 'gameReward', 'familyDonate', 'familyBuy', 'loanRequest', 'loanAnswer', 'loanRepay', 'verifyKidPin']);
 
   /* Ikon: emoji/tekst (maks 16 tegn) eller et opplastet bilde som data-URL */
   const ICON_RE = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
@@ -107,6 +109,8 @@
         notify: { enabled: false, to: '', host: '', port: 587, user: '', pass: '', from: '', appUrl: '' },
         // familiepotten: diamanter alle barna samler sammen
         family: { enabled: true, gamesGems: 1, taskPct: 10, coinsPerGem: 10, dailyCap: 10 },
+        // automatisk godkjenning: mode off | all | some
+        auto: { mode: 'off', kidIds: [], minPct: 25, penaltyCoins: 20, penaltyBlockMin: 15 },
       },
       family: { gems: 40, by: {}, log: [] },
       familyShop: defaultFamilyShop(),
@@ -123,7 +127,7 @@
     if (s.settings.router.driver === undefined) s.settings.router.driver = s.settings.router.pass ? 'asus' : '';
     for (const k of Object.keys(d.settings.router)) if (s.settings.router[k] === undefined) s.settings.router[k] = d.settings.router[k];
     for (const it of s.shop) if (!it.kind) it.kind = 'time';
-    for (const k of ['games', 'loans', 'notify', 'ai', 'family']) s.settings[k] = { ...d.settings[k], ...(s.settings[k] || {}) };
+    for (const k of ['games', 'loans', 'notify', 'ai', 'family', 'auto']) s.settings[k] = { ...d.settings[k], ...(s.settings[k] || {}) };
     if (!Array.isArray(s.loans)) s.loans = [];
     if (!s.devRules || typeof s.devRules !== 'object') s.devRules = {};
     if (!Array.isArray(s.groups)) s.groups = [];
@@ -180,6 +184,8 @@
     }
     const win = windowInfo(s, now);
     for (const k of s.kids) {
+      if (k.blockedUntil && k.blockedUntil <= now) { delete k.blockedUntil; changed = true; }
+      if (k.playing && k.blockedUntil > now) { k.bankSec = bankLeft(k, now); k.playing = null; changed = true; }
       if (!k.playing) continue;
       k.bankSec = bankLeft(k, now); k.playing.since = now;
       if (k.bankSec <= 0 || !win.open) {
@@ -218,6 +224,7 @@
     return [
       ...s.jobs.filter((j) => j.status === 'pending').map((j) => ({ id: 'job:' + j.id, text: `${name(j.kidId)} er ferdig med «${j.title}» (+${j.coins} coins)` })),
       ...(s.rewards || []).filter((r) => r.status === 'pending').map((r) => ({ id: 'rew:' + r.id, text: r.family ? `Familien har kjøpt «${r.title}» for ${r.cost} diamanter${r.kidId ? ' (valgt av ' + name(r.kidId) + ')' : ''}` : `${name(r.kidId)} har kjøpt belønningen «${r.title}»` })),
+      ...s.jobs.filter((j) => j.auto && !j.reviewed && j.status === 'approved').map((j) => ({ id: 'auto:' + j.id, text: `${name(j.kidId)}: «${j.title}» ble godkjent automatisk (+${j.awarded} coins) – sjekk at det stemmer`, info: true })),
       ...(s.loans || []).filter((l) => l.status === 'parent').map((l) => ({ id: 'loan:' + l.id, text: `${name(l.borrowerId)} vil låne ${l.amount} coins av ${name(l.lenderId)}` })),
     ];
   }
@@ -230,6 +237,26 @@
     const kid = (id) => s.kids.find((k) => k.id === id) || fail('Fant ikke barnet');
     const job = (id) => s.jobs.find((j) => j.id === id) || fail('Fant ikke oppgaven');
     let result = null;
+    // barnets egen PIN (foreldre-PIN går også)
+    if (KID_ACTS.has(a.type)) {
+      let kidId = a.kidId;
+      if (a.type === 'done' || a.type === 'cancel') kidId = (s.jobs.find((x) => x.id === a.jobId) || {}).kidId;
+      if (a.type === 'loanAnswer') kidId = ((s.loans || []).find((x) => x.id === a.loanId) || {}).lenderId;
+      if (a.type === 'loanRepay') kidId = ((s.loans || []).find((x) => x.id === a.loanId) || {}).borrowerId;
+      const kk = s.kids.find((x) => x.id === kidId);
+      if (kk && kk.pin && String((a.kidPins || {})[kk.id]) !== kk.pin && String(a.pin) !== String(s.settings.pin)) fail(`Feil PIN for ${kk.name}`);
+    }
+    const approveJob = (j, pct, auto) => {
+      const amount = Math.round(j.coins * pct / 100), k = kid(j.kidId);
+      j.status = 'approved'; j.awarded = amount; if (auto) { j.auto = true; j.reviewed = false; }
+      k.coins += amount; k.lifetime += amount;
+      const today = dayKey(now), yest = dayKey(now - 864e5);
+      if (k.lastDoneDay !== today) { k.streak = k.lastDoneDay === yest ? k.streak + 1 : 1; k.lastDoneDay = today; }
+      log(s, k.id, (auto ? 'Godkjent automatisk: ' : 'Godkjent: ') + j.title, amount, now);
+      const fc = s.settings.family, gm = fc.enabled ? Math.round(amount * fc.taskPct / 100) : 0;
+      if (gm) { addGems(s, k.id, gm, `${k.name}: ${j.title}`, now); j.gems = gm; }
+      return amount;
+    };
 
     switch (a.type) {
       case 'take': {
@@ -243,7 +270,14 @@
       case 'done': {
         const j = job(a.jobId);
         if (j.status !== 'active') fail('Oppgaven er ikke aktiv');
-        j.status = 'pending'; j.doneAt = now; log(s, j.kidId, 'Ferdig – venter på godkjenning: ' + j.title, 0, now); break;
+        j.status = 'pending'; j.doneAt = now;
+        const ac = s.settings.auto, t = s.tasks.find((x) => x.id === j.taskId);
+        const on = ac.mode === 'all' || (ac.mode === 'some' && (ac.kidIds || []).includes(j.kidId));
+        // «smart»: må ha brukt en rimelig del av tiden, og være innenfor fristen
+        const need = Math.max(60000, (t ? t.deadlineMin : (j.deadline - j.takenAt) / 60000) * 60000 * ac.minPct / 100);
+        if (on && now <= j.deadline && now - j.takenAt >= need) { result = { auto: true, amount: approveJob(j, 100, true) }; break; }
+        if (on && now - j.takenAt < need) j.flag = 'fast';
+        log(s, j.kidId, 'Ferdig – venter på godkjenning: ' + j.title, 0, now); break;
       }
       case 'cancel': {
         const j = job(a.jobId);
@@ -266,6 +300,7 @@
       case 'play': {
         const k = kid(a.kidId);
         if (a.on) {
+          if (k.blockedUntil > now) fail('Internett er stengt en stund – prøv igjen kl. ' + pad(new Date(k.blockedUntil).getHours()) + ':' + pad(new Date(k.blockedUntil).getMinutes()));
           if (k.bankSec < 1) fail('Du har ingen spilletid – kjøp i butikken!');
           const w = windowInfo(s, now);
           if (!w.open) fail(w.label);
@@ -313,19 +348,28 @@
       case 'deleteFamilyShop': s.familyShop = s.familyShop.filter((x) => x.id !== a.itemId); break;
       /* ----- foreldre ----- */
       case 'verifyPin': break;
+      case 'verifyKidPin': kid(a.kidId); break;
       case 'approve': {
         const j = job(a.jobId);
         if (j.status !== 'pending') fail('Allerede behandlet');
-        const pct = Math.max(0, Math.min(200, Number(a.pct ?? 100)));
-        const amount = Math.round(j.coins * pct / 100);
-        const k = kid(j.kidId);
-        j.status = 'approved'; j.awarded = amount;
-        k.coins += amount; k.lifetime += amount;
-        const today = dayKey(now), yest = dayKey(now - 864e5);
-        if (k.lastDoneDay !== today) { k.streak = k.lastDoneDay === yest ? k.streak + 1 : 1; k.lastDoneDay = today; }
-        log(s, k.id, 'Godkjent: ' + j.title, amount, now);
-        { const fc = s.settings.family; const gm = fc.enabled ? Math.round(amount * fc.taskPct / 100) : 0;
-          if (gm) { addGems(s, k.id, gm, `${k.name}: ${j.title}`, now); j.gems = gm; } }
+        approveJob(j, Math.max(0, Math.min(200, Number(a.pct ?? 100)))); break;
+      }
+      case 'autoReview': {
+        const j = job(a.jobId); j.reviewed = true; break;
+      }
+      case 'autoCheat': {
+        const j = job(a.jobId), k = kid(j.kidId), ac = s.settings.auto;
+        if (j.status !== 'approved') fail('Oppgaven er ikke godkjent');
+        const back = (j.awarded || 0) + ac.penaltyCoins;
+        k.coins = Math.max(0, k.coins - back); k.lifetime = Math.max(0, k.lifetime - (j.awarded || 0));
+        if (j.gems) s.family.gems = Math.max(0, s.family.gems - j.gems);
+        j.status = 'rejected'; j.cheat = true; j.reviewed = true;
+        log(s, k.id, `Ikke gjort likevel: ${j.title}${ac.penaltyCoins ? ` (straff ${ac.penaltyCoins} coins)` : ''}`, -back, now);
+        if (ac.penaltyBlockMin > 0) {
+          k.blockedUntil = Math.max(k.blockedUntil || 0, now) + ac.penaltyBlockMin * 60000;
+          if (k.playing) { k.bankSec = bankLeft(k, now); k.playing = null; }
+          log(s, k.id, `Internett stengt i ${ac.penaltyBlockMin} min`, 0, now);
+        }
         break;
       }
       case 'reject': {
@@ -466,6 +510,7 @@
         if (!k) { k = newKid(src.name || 'Nytt barn', src.avatar || '🐼', src.color || '#ffb020'); s.kids.push(k); }
         for (const f of ['name', 'color']) if (src[f] !== undefined) k[f] = String(src[f]).slice(0, 40);
         if (src.avatar !== undefined) k.avatar = cleanIcon(src.avatar);
+        if (src.pin !== undefined) { const p = String(src.pin || ''); if (p && !/^\d{4}$/.test(p)) fail('Barnets PIN må være 4 siffer'); k.pin = p; }
         if (Array.isArray(src.devices)) k.devices = src.devices.map((d) => ({ name: String(d.name || '').slice(0, 40),
           mac: String(d.mac || '').toUpperCase().replace(/-/g, ':').trim() }));
         result = k.id; break;
@@ -528,6 +573,12 @@
           if (p.ai.style !== undefined && ['flat', '3d', 'akvarell', 'leire'].includes(p.ai.style)) ai.style = p.ai.style;
           if (p.ai.key) ai.key = String(p.ai.key).trim().slice(0, 200);
           if (p.ai.clearKey) ai.key = ''; }
+        if (p.auto) { const ac = s.settings.auto;
+          if (p.auto.mode !== undefined && ['off', 'all', 'some'].includes(p.auto.mode)) ac.mode = p.auto.mode;
+          if (Array.isArray(p.auto.kidIds)) ac.kidIds = p.auto.kidIds.filter((id) => s.kids.some((k) => k.id === id));
+          if (p.auto.minPct !== undefined) ac.minPct = num(p.auto.minPct, 0, 100);
+          if (p.auto.penaltyCoins !== undefined) ac.penaltyCoins = num(p.auto.penaltyCoins, 0, 10000);
+          if (p.auto.penaltyBlockMin !== undefined) ac.penaltyBlockMin = num(p.auto.penaltyBlockMin, 0, 1440); }
         if (p.family) { const fc = s.settings.family;
           if (p.family.enabled !== undefined) fc.enabled = !!p.family.enabled;
           if (p.family.gamesGems !== undefined) fc.gamesGems = num(p.family.gamesGems, 0, 20);
@@ -570,6 +621,7 @@
     const o = s.settings.override;
     if (o === 'allOpen') return { open: true, reason: 'Alt åpent (overstyrt)' };
     if (o === 'allLocked') return { open: false, reason: 'Alt stengt (overstyrt)' };
+    if (kid && kid.blockedUntil > now) { const d = new Date(kid.blockedUntil); return { open: false, mode: 'penalty', reason: `Stengt som straff til ${pad(d.getHours())}:${pad(d.getMinutes())}` }; }
     const rule = (s.devRules || {})[mac] || {};
     const group = rule.groupId ? (s.groups || []).find((g) => g.id === rule.groupId) : null;
     let mode = rule.mode || 'inherit';
@@ -619,6 +671,7 @@
     const c = JSON.parse(JSON.stringify(s));
     delete c.settings.pin;
     delete c.knownDevices;
+    for (const k of c.kids) { k.hasPin = !!k.pin; delete k.pin; }
     c.settings.notify.hasPass = !!(s.settings.notify && s.settings.notify.pass);
     c.settings.notify.pass = '';
     c.settings.ai.hasKey = !!(s.settings.ai && s.settings.ai.key);

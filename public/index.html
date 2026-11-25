@@ -558,6 +558,7 @@ async function poll() {
 
 async function act(a, quiet) {
   if (L.PARENT.has(a.type)) a.pin = A.pin;
+  if (A.kidPins && Object.keys(A.kidPins).length) a.kidPins = A.kidPins;
   try {
     let res;
     if (A.mode === 'demo') {
@@ -766,6 +767,7 @@ function kidShop(k) {
       ? `<button class="btn bad bigbtn" data-act="play" data-v="0">${ic('pause')} Pause</button><p>Pause sparer resten av tiden til senere.</p>`
       : `<button class="btn ok bigbtn" data-act="play" data-v="1" ${left < 1 || !w.open ? 'disabled' : ''}>${ic('play')} Start spilling</button>
          <p>${left < 1 ? 'Kjøp spilletid nedenfor først.' : !w.open ? 'Du kan spille når spilletiden åpner.' : 'Internett åpnes på dine enheter.'}</p>`}</div></div>
+  ${k.blockedUntil > now() ? `<div class="card" style="margin-bottom:14px;background:#ffe3e0;color:#8a1c12"><b>⛔ Internett er stengt til kl. ${hhmm(k.blockedUntil)}</b><small>Et oppdrag var ikke gjort likevel. Spilletiden din er spart.</small></div>` : ''}
   ${kidDevices(k)}
   <h2 class="sec"><span class="dot" style="--k:var(--gold)"></span>Kjøp spilletid</h2>
   <div class="grid shop">${times.map((it, i) => shopCard(k, it, i)).join('')}</div>
@@ -1346,7 +1348,7 @@ function pApprove() {
     return `<div class="appr"><div class="av" style="--c:${esc(k.color)}">${icn(k.avatar)}</div>
       <div><b style="font-size:19px">${icn(j.emoji)} ${esc(j.title)}</b>
         <div class="mute">${esc(k.name)} · tatt ${hhmm(j.takenAt)} · ferdig ${hhmm(j.doneAt)} · frist ${hhmm(j.deadline)}</div>
-        <span class="tag ${onTime ? '' : 'late'}">${onTime ? 'Innenfor fristen' : 'For sent'}</span></div>
+        <span class="tag ${onTime ? '' : 'late'}">${onTime ? 'Innenfor fristen' : 'For sent'}</span>${j.flag === 'fast' ? ' <span class="tag late">Veldig raskt – sjekk</span>' : ''}</div>
       <div class="row acts">
         <button class="btn ok sm" data-act="approve" data-id="${j.id}" data-v="100">${ic('check')} +${j.coins}</button>
         ${part !== j.coins ? `<button class="btn gold sm" data-act="approve" data-id="${j.id}" data-v="${late}">Delvis +${part}</button>` : ''}
@@ -1376,6 +1378,14 @@ function pApprove() {
   }
   if (act.length) h += `<div class="panel"><h3>Oppgaver som er i gang</h3>${act.map((j) => { const k = kidById(j.kidId) || {};
     return `<div class="li">${icn(k.avatar)} <b>${esc(k.name)}</b> <span class="grow">${icn(j.emoji)} ${esc(j.title)}</span><span class="when">frist ${hhmm(j.deadline)}</span></div>`; }).join('')}</div>`;
+  const autoJ = A.S.jobs.filter((j) => j.auto && !j.reviewed && j.status === 'approved').sort((a, b) => b.doneAt - a.doneAt);
+  if (autoJ.length) h += `<div class="panel"><h3>Godkjent automatisk – stemmer det?</h3>
+    <p class="mute">Lurte noen? Trykk «Lurte» for å ta tilbake coinsene og gi straff.</p>${autoJ.map((j) => { const k = kidById(j.kidId) || { avatar: '?', name: '?', color: '#999' };
+    return `<div class="appr"><div class="av" style="--c:${esc(k.color)}">${icn(k.avatar)}</div>
+      <div><b style="font-size:19px">${icn(j.emoji)} ${esc(j.title)}</b><div class="mute">${esc(k.name)} · ${Math.round((j.doneAt - j.takenAt) / 60000)} min brukt · +${j.awarded} coins · ${hhmm(j.doneAt)}</div></div>
+      <div class="row acts"><button class="btn ok sm" data-act="autoOk" data-id="${j.id}">${ic('check')} OK</button>
+        <button class="btn bad sm" data-act="autoCheat" data-id="${j.id}">Lurte 😠</button></div></div>`; }).join('')}</div>`;
+  h += pAuto();
   h += `<div class="panel"><h3>Bonus og justering</h3>${A.S.kids.map((k) => `
     <div class="li" style="flex-wrap:wrap"><span style="font-size:30px">${icn(k.avatar)}</span><b class="grow">${esc(k.name)} · ${k.coins} coins · ${fmtMin(L.bankLeft(k, now()))}</b>
     <div class="row">${[5, 10, 25].map((c) => `<button class="btn ok sm" data-act="adjust" data-id="${k.id}" data-c="${c}">+${c}</button>`).join('')}
@@ -1385,6 +1395,19 @@ function pApprove() {
   return h;
 }
 
+function pAuto() {
+  const ac = A.S.settings.auto || {}, m = ac.mode || 'off';
+  const f = (k, label, help, max) => `<label class="fld">${label}<input type="number" min="0" max="${max}" value="${ac[k]}" data-up="set2" data-g="auto" data-k="${k}"><small class="mute">${help}</small></label>`;
+  return `<div class="panel"><h3>⚡ Automatisk godkjenning</h3>
+    <p class="mute">Appen godkjenner oppdrag selv når barnet er ferdig innenfor fristen og har brukt rimelig lang tid. Er det gjort mistenkelig fort, venter det på dere som vanlig, merket «Veldig raskt». Dere får beskjed (og e-post hvis det er på) og kan trykke «Lurte» for å gi straff.</p>
+    <div class="row" style="gap:8px;flex-wrap:wrap">${[['off', 'Av'], ['all', 'Alle barn'], ['some', 'Utvalgte barn']].map(([v, l]) => `<button class="btn sm ${m === v ? '' : 'ghost'}" data-act="autoMode" data-v="${v}">${l}</button>`).join('')}</div>
+    ${m === 'some' ? `<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:12px">${A.S.kids.map((k) => { const on = (ac.kidIds || []).includes(k.id);
+      return `<button class="lpick ${on ? 'on' : ''}" data-act="autoKid" data-id="${k.id}" style="--c:${esc(k.color)}"><span class="av">${icn(k.avatar)}</span><b>${esc(k.name)}</b><small>${on ? 'Automatisk' : 'Manuelt'}</small></button>`; }).join('')}</div>` : ''}
+    ${m !== 'off' ? `<div class="erow" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-top:12px">
+      ${f('minPct', 'Minst brukt tid (% av fristen)', 'F.eks. 25 % av 60 min = minst 15 min.', 100)}
+      ${f('penaltyCoins', 'Straff ved juks (coins)', 'Trekkes i tillegg til oppdragets coins.', 10000)}
+      ${f('penaltyBlockMin', 'Steng internett (minutter)', '0 = ikke steng.', 1440)}</div>` : ''}</div>`;
+}
 function pTime() {
   const s = A.S.settings, o = s.override;
   const playing = A.S.kids.filter((k) => k.playing);
@@ -1408,6 +1431,9 @@ function pKids() {
       <div class="fld">Avatar${icBtn('kid', k.id, 'avatar', k.avatar)}</div>
       <label class="fld">Farge<input type="color" value="${esc(k.color)}" data-up="kid" data-id="${k.id}" data-k="color" style="padding:4px"></label>
       <button class="ib" data-act="delKid" data-id="${k.id}" aria-label="Slett">${ic('trash')}</button></div>
+    <div class="row" style="gap:10px;align-items:end;margin-top:12px;flex-wrap:wrap">
+      <label class="fld" style="max-width:260px">${ic('lock')} Egen PIN for ${esc(k.name)} (4 siffer)<input type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="new-password" data-up="kidpin" data-id="${k.id}" placeholder="${k.hasPin || k.pin ? '•••• (satt)' : 'Ingen PIN'}"></label>
+      ${k.hasPin || k.pin ? `<span class="tag">PIN er på</span><button class="btn ghost sm" data-act="kidPinOff" data-id="${k.id}">Fjern PIN</button>` : '<span class="mute" style="font-size:14px">Uten PIN kan alle åpne kontoen.</span>'}</div>
     <h3 style="margin-top:16px">Enheter som styres (PlayStation, iPad, PC …)</h3>
     ${(k.devices || []).map((d, i) => `<div class="erow dev">
       <label class="fld">Navn<input value="${esc(d.name)}" data-up="dev" data-id="${k.id}" data-i="${i}" data-k="name" placeholder="PlayStation"></label>
@@ -1742,8 +1768,11 @@ function dotsHtml(added, cls = '') {
   return `<div class="dots ${cls}" id="pindots">${Array.from({ length: n }, (_, i) => `<i class="${A.pinEntry.length > i ? 'f' : ''}${added && i === A.pinEntry.length - 1 ? ' new' : ''}"></i>`).join('')}</div>`;
 }
 function setDots(added, cls) { const el = document.getElementById('pindots'); if (el) el.outerHTML = dotsHtml(added, cls); }
+const needKidPin = (k) => k && (k.hasPin || k.pin) && !(A.kidPins || {})[k.id];
+function askKidPin(k, then) { A.pinFor = k.id; A.pinThen = then; A.pinEntry = ''; openModal(pinModal); }
 function pinModal() {
-  return `<h2>Foreldre</h2><div class="mute">Skriv inn PIN-koden</div>
+  const kk = A.pinFor && kidById(A.pinFor);
+  return `${kk ? `<div class="av" style="--c:${esc(kk.color)};width:84px;height:84px;font-size:48px;margin:0 auto 8px;background:var(--c)">${icn(kk.avatar)}</div><h2>Hei ${esc(kk.name)}!</h2><div class="mute">Skriv inn PIN-koden din</div>` : '<h2>Foreldre</h2><div class="mute">Skriv inn PIN-koden</div>'}
     ${dotsHtml()}<div class="pinmsg" id="pinmsg"></div>
     <div class="keys">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button data-act="key" data-v="${n}">${n}</button>`).join('')}
       <button data-act="key" data-v="del" aria-label="Slett">⌫</button><button data-act="key" data-v="0">0</button>
@@ -1837,20 +1866,27 @@ $app.addEventListener('click', async (e) => {
   { const sn = d.act in ACT_SOUND ? ACT_SOUND[d.act] : 'click'; if (sn) sound(sn); if (d.act === 'key' && d.v !== 'ok') sound('key'); }
   try {
     switch (d.act) {
-      case 'home': A.screen = 'home'; A.modal = null; render(); scrollTo(0, 0); break;
-      case 'openKid': A.screen = 'kid'; A.kidId = id; A.tab = 'tasks'; A.game = null; A.loanForm = {}; render(); scrollTo(0, 0); break;
+      case 'home': A.screen = 'home'; A.modal = null; A.kidPins = {}; render(); scrollTo(0, 0); break;
+      case 'openKid': if (needKidPin(kidById(id))) { askKidPin(kidById(id), 'kid'); break; } A.screen = 'kid'; A.kidId = id; A.tab = 'tasks'; A.game = null; A.loanForm = {}; render(); scrollTo(0, 0); break;
       case 'tab': A.tab = d.v; A.paneFresh = true; render(); break;
       case 'openFamily': e.preventDefault(); A.screen = 'family'; A.modal = null; A.paneFresh = true; if (A.kidId && kidById(A.kidId)) A.famKid = A.kidId; sound('open'); render(); scrollTo(0, 0); break;
-      case 'famKid': A.famKid = id; render(); break;
+      case 'famKid': if (needKidPin(kidById(id))) { askKidPin(kidById(id), 'fam'); break; } A.famKid = id; render(); break;
       case 'fbuy': { const it = (A.S.familyShop || []).find((x) => x.id === id); if (!it) break;
         openModal(confirmModal('Kjøpe for hele familien?', `${icn(it.emoji)} ${esc(it.title)} for <b>${it.cost} diamanter</b> fra familiepotten.<br><small class="mute">Mamma og pappa får beskjed og bestemmer dag.</small>`, 'fbuyYes', 'Ja, kjøp!', 'gold', `data-id="${id}"`)); break; }
       case 'fbuyYes': A.modal = null; await act({ type: 'familyBuy', itemId: id, kidId: A.famKid || '' }); sound('buy'); boom(70); toast('Kjøpt for hele familien! 💎🎉'); break;
       case 'fdonate': { const n = await act({ type: 'familyDonate', kidId: id, gems: Number(d.v) }); sound('coin'); toast(`Takk! +${n} 💎 til familien`); break; }
+      case 'kidPinOff': await act({ type: 'upsertKid', kid: { id, pin: '' } }); toast('PIN fjernet'); break;
+      case 'autoMode': await act({ type: 'setSettings', patch: { auto: { mode: d.v } } }); break;
+      case 'autoKid': { const cur = A.S.settings.auto.kidIds || []; await act({ type: 'setSettings', patch: { auto: { kidIds: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] } } }); break; }
+      case 'autoOk': await act({ type: 'autoReview', jobId: id }); break;
+      case 'autoCheat': { const j = A.S.jobs.find((x) => x.id === id), ac = A.S.settings.auto, kk = kidById(j.kidId) || {};
+        openModal(confirmModal(`${esc(kk.name)} lurte?`, `«${esc(j.title)}» tas tilbake: <b>−${j.awarded} coins</b>${ac.penaltyCoins ? ` pluss <b>${ac.penaltyCoins} coins</b> i straff` : ''}${ac.penaltyBlockMin ? `, og internett stenges i <b>${ac.penaltyBlockMin} minutter</b>` : ''}.`, 'autoCheatYes', 'Ja, gi straff', 'bad', `data-id="${id}"`)); break; }
+      case 'autoCheatYes': A.modal = null; await act({ type: 'autoCheat', jobId: id }); sound('down'); toast('Straff gitt'); break;
       case 'famAdjust': await act({ type: 'familyAdjust', gems: Number(d.v) }); sound('coin'); break;
       case 'addFshop': await act({ type: 'upsertFamilyShop', item: {} }); break;
       case 'delFshop': await act({ type: 'deleteFamilyShop', itemId: id }); break;
       case 'take': await act({ type: 'take', kidId: k.id, taskId: id }); toast('Oppgaven er din – lykke til! 💪'); break;
-      case 'done': await act({ type: 'done', jobId: id }); sound('success'); toast('Supert! Nå må en voksen godkjenne ⭐'); boom(18); break;
+      case 'done': { const r = await act({ type: 'done', jobId: id }); if (r && r.auto) { sound('buy'); toast(`Godkjent med en gang! +${r.amount} coins 🎉`); boom(50); } else { sound('success'); toast('Supert! Nå må en voksen godkjenne ⭐'); boom(18); } break; }
       case 'cancel': await act({ type: 'cancel', jobId: id }); break;
       case 'devQuick': await act({ type: 'setDeviceRule', mac: id, patch: { mode: d.v } }); sound(d.v === 'block' ? 'down' : 'power'); break;
       case 'grpAdd': await act({ type: 'upsertGroup', group: { name: 'Ny gruppe' } }); break;
@@ -1907,14 +1943,31 @@ $app.addEventListener('click', async (e) => {
       case 'fulfill': await act({ type: 'fulfillReward', rewardId: id }); toast('Belønning innfridd ✓'); break;
       case 'refund': await act({ type: 'refundReward', rewardId: id }); toast('Avlyst – coins er gitt tilbake'); break;
       case 'play': await act({ type: 'play', kidId: k.id, on: d.v === '1' }); sound(d.v === '1' ? 'power' : 'down'); if (d.v === '1') { toast('God fornøyelse! Internett åpnes nå 🚀'); boom(30); } break;
-      case 'openParent': A.pinEntry = ''; openModal(pinModal); break;
+      case 'openParent': A.pinFor = null; A.pinEntry = ''; openModal(pinModal); break;
       case 'key': {
         if (A.pinBusy) break;
         const msg = document.getElementById('pinmsg'); if (msg) msg.textContent = '';
         if (d.v === 'del') { A.pinEntry = A.pinEntry.slice(0, -1); setDots(); break; }
         if (d.v !== 'ok') { if (A.pinEntry.length < 8) { A.pinEntry += d.v; setDots(true); } break; }
         if (A.pinEntry.length < 4) { if (msg) msg.textContent = 'Skriv minst 4 siffer'; break; }
-        const pin = A.pinEntry; A.pinBusy = true; A.pin = pin;
+        const pin = A.pinEntry; A.pinBusy = true;
+        if (A.pinFor) {
+          const kidId = A.pinFor;
+          try {
+            await act({ type: 'verifyKidPin', kidId, kidPins: { [kidId]: pin } }, true);
+            A.kidPins = { ...(A.kidPins || {}), [kidId]: pin };
+            setDots(false, 'ok'); sound('success');
+            setTimeout(() => { A.pinBusy = false; A.pinEntry = ''; A.modal = null; A.pinFor = null;
+              if (A.pinThen === 'fam') { A.famKid = kidId; render(); } else { A.screen = 'kid'; A.kidId = kidId; A.tab = 'tasks'; A.game = null; A.loanForm = {}; A.paneFresh = true; render(); scrollTo(0, 0); } }, 220);
+          } catch {
+            setDots(false, 'err'); sound('error');
+            const m = document.querySelector('.modal'); if (m) { m.classList.remove('shake'); void m.offsetWidth; m.classList.add('shake'); }
+            if (msg) msg.textContent = 'Feil PIN – spør mamma eller pappa hvis du har glemt den';
+            setTimeout(() => { A.pinBusy = false; A.pinEntry = ''; setDots(); }, 450);
+          }
+          break;
+        }
+        A.pin = pin;
         try {
           if (A.mode === 'demo') { if (String(pin) !== String(A.S.settings.pin)) throw new Error('bad'); }
           else await act({ type: 'verifyPin' }, true);
@@ -2019,6 +2072,7 @@ $app.addEventListener('change', async (e) => {
     else if (d.up === 'shop') await act({ type: 'upsertShop', item: { id: d.id, [d.k]: v } });
     else if (d.up === 'fshop') await act({ type: 'upsertFamilyShop', item: { id: d.id, [d.k]: v } });
     else if (d.up === 'kid') await act({ type: 'upsertKid', kid: { id: d.id, [d.k]: v } });
+    else if (d.up === 'kidpin') { if (!/^\d{4}$/.test(v)) { toast('PIN må være 4 siffer', true); return; } await act({ type: 'upsertKid', kid: { id: d.id, pin: v } }); toast('PIN lagret for ' + (kidById(d.id) || {}).name); }
     else if (d.up === 'dev') { const kk = kidById(d.id); const devs = kk.devices.map((x) => ({ ...x })); devs[Number(d.i)][d.k] = v; await act({ type: 'upsertKid', kid: { id: d.id, devices: devs } }); }
     else if (d.up === 'sched') await act({ type: 'setSchedule', day: Number(d.id), patch: { [d.k]: v } });
     else if (d.up === 'set') await act({ type: 'setSettings', patch: { [d.k]: v } });
