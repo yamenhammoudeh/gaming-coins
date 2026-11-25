@@ -7,7 +7,7 @@
   const uid = () => Math.random().toString(36).slice(2, 10);
   const pad = (n) => String(n).padStart(2, '0');
   const DAYS = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag'];
-  const CATS = { daglig: 'Hver dag', skole: 'Skole og læring', hjemme: 'Hjelp hjemme', ute: 'Ute og aktivitet', stort: 'Store oppdrag' };
+  const CATS = { daglig: 'Hver dag', skole: 'Skole og læring', hjemme: 'Hjelp hjemme', ute: 'Ute og aktivitet', stort: 'Store oppdrag', familie: 'Familieoppdrag 💎' };
   const REPEATS = { daily: 'Én gang per dag', weekly: 'Én gang per uke', unlimited: 'Så ofte du vil' };
   const PARENT = new Set(['verifyPin', 'approve', 'reject', 'adjust', 'upsertKid', 'deleteKid',
     'upsertTask', 'deleteTask', 'upsertShop', 'deleteShop', 'setSchedule', 'setSettings', 'resetAll',
@@ -66,6 +66,19 @@
     if (s.family.log.length > 80) s.family.log.length = 80;
   }
 
+  // oppdrag som gir diamanter til familiepotten i stedet for coins
+  function defaultFamilyTasks() {
+    const T = (emoji, title, gems, deadlineMin, repeat) => ({ id: uid(), emoji, title, coins: gems, deadlineMin, category: 'familie', repeat, kidIds: [] });
+    return [
+      T('🛋️', 'Rydd stua for hele familien', 8, 30, 'daily'),
+      T('🍳', 'Lag middag sammen med en voksen', 15, 90, 'daily'),
+      T('🚗', 'Vask bilen', 20, 60, 'weekly'),
+      T('🤝', 'Hjelp søsken med lekser', 10, 45, 'daily'),
+      T('🧺', 'Brett klesvasken til alle', 10, 30, 'unlimited'),
+      T('🌳', 'Rake løv eller måke snø', 20, 60, 'weekly'),
+    ];
+  }
+
   function defaultState() {
     const T = (emoji, title, coins, deadlineMin, category, repeat) =>
       ({ id: uid(), emoji, title, coins, deadlineMin, category, repeat, kidIds: [] });
@@ -86,7 +99,8 @@
         T('👨‍🍳', 'Hjelp til med middagen', 25, 60, 'hjemme', 'daily'),
         T('🥾', 'Bli med mamma eller pappa på tur', 50, 180, 'stort', 'unlimited'),
         T('🔨', 'Hjelp til med et prosjekt', 60, 180, 'stort', 'unlimited'),
-      ],
+      ].concat(defaultFamilyTasks()),
+      famTasksAdded: true,
       shop: [
         { id: uid(), emoji: '🎮', title: 'Kort runde', minutes: 15, cost: 20 },
         { id: uid(), emoji: '🕹️', title: 'Halvtime', minutes: 30, cost: 35 },
@@ -120,6 +134,7 @@
   }
 
   function migrate(s) {
+    const needFamTasks = !s.famTasksAdded;
     const d = defaultState();
     for (const k of Object.keys(d)) if (s[k] === undefined) s[k] = d[k];
     for (const k of Object.keys(d.settings)) if (s.settings[k] === undefined) s.settings[k] = d.settings[k];
@@ -137,6 +152,7 @@
     if (!s.family || typeof s.family !== 'object') s.family = { gems: 0, by: {}, log: [] };
     if (!s.family.by) s.family.by = {}; if (!Array.isArray(s.family.log)) s.family.log = [];
     if (!Array.isArray(s.familyShop)) s.familyShop = defaultFamilyShop();
+    if (needFamTasks) { s.tasks.push(...defaultFamilyTasks()); s.famTasksAdded = true; }
     return s;
   }
 
@@ -222,9 +238,9 @@
   function pendingItems(s) {
     const name = (id) => (s.kids.find((k) => k.id === id) || {}).name || '?';
     return [
-      ...s.jobs.filter((j) => j.status === 'pending').map((j) => ({ id: 'job:' + j.id, text: `${name(j.kidId)} er ferdig med «${j.title}» (+${j.coins} coins)` })),
+      ...s.jobs.filter((j) => j.status === 'pending').map((j) => ({ id: 'job:' + j.id, text: `${name(j.kidId)} er ferdig med «${j.title}» (+${j.coins} ${j.family ? 'diamanter til familien' : 'coins'})` })),
       ...(s.rewards || []).filter((r) => r.status === 'pending').map((r) => ({ id: 'rew:' + r.id, text: r.family ? `Familien har kjøpt «${r.title}» for ${r.cost} diamanter${r.kidId ? ' (valgt av ' + name(r.kidId) + ')' : ''}` : `${name(r.kidId)} har kjøpt belønningen «${r.title}»` })),
-      ...s.jobs.filter((j) => j.auto && !j.reviewed && j.status === 'approved').map((j) => ({ id: 'auto:' + j.id, text: `${name(j.kidId)}: «${j.title}» ble godkjent automatisk (+${j.awarded} coins) – sjekk at det stemmer`, info: true })),
+      ...s.jobs.filter((j) => j.auto && !j.reviewed && j.status === 'approved').map((j) => ({ id: 'auto:' + j.id, text: `${name(j.kidId)}: «${j.title}» ble godkjent automatisk (+${j.awarded} ${j.family ? 'diamanter' : 'coins'}) – sjekk at det stemmer`, info: true })),
       ...(s.loans || []).filter((l) => l.status === 'parent').map((l) => ({ id: 'loan:' + l.id, text: `${name(l.borrowerId)} vil låne ${l.amount} coins av ${name(l.lenderId)}` })),
     ];
   }
@@ -249,6 +265,14 @@
     const approveJob = (j, pct, auto) => {
       const amount = Math.round(j.coins * pct / 100), k = kid(j.kidId);
       j.status = 'approved'; j.awarded = amount; if (auto) { j.auto = true; j.reviewed = false; }
+      if (j.family) {
+        // familieoppdrag: hele belønningen går som diamanter til potten
+        const today = dayKey(now), yest = dayKey(now - 864e5);
+        if (k.lastDoneDay !== today) { k.streak = k.lastDoneDay === yest ? k.streak + 1 : 1; k.lastDoneDay = today; }
+        addGems(s, k.id, amount, `${k.name}: ${j.title}`, now); j.gems = amount;
+        log(s, k.id, `${auto ? 'Godkjent automatisk' : 'Godkjent'}: ${j.title} (+${amount} 💎 til familien)`, 0, now);
+        return amount;
+      }
       k.coins += amount; k.lifetime += amount;
       const today = dayKey(now), yest = dayKey(now - 864e5);
       if (k.lastDoneDay !== today) { k.streak = k.lastDoneDay === yest ? k.streak + 1 : 1; k.lastDoneDay = today; }
@@ -263,7 +287,7 @@
         const k = kid(a.kidId), t = s.tasks.find((x) => x.id === a.taskId) || fail('Oppgaven finnes ikke');
         if (!taskAvailable(s, t, k, now)) fail('Denne oppgaven er allerede tatt');
         if (s.jobs.filter((j) => j.kidId === k.id && j.status === 'active').length >= 3) fail('Du har allerede 3 oppgaver i gang – fullfør én først!');
-        const j = { id: uid(), taskId: t.id, kidId: k.id, title: t.title, emoji: t.emoji, coins: t.coins,
+        const j = { id: uid(), taskId: t.id, kidId: k.id, title: t.title, emoji: t.emoji, coins: t.coins, family: t.category === 'familie' || undefined,
           takenAt: now, deadline: now + t.deadlineMin * 60000, doneAt: null, status: 'active' };
         s.jobs.push(j); log(s, k.id, 'Tok oppgaven: ' + t.title, 0, now); result = j.id; break;
       }
@@ -360,8 +384,8 @@
       case 'autoCheat': {
         const j = job(a.jobId), k = kid(j.kidId), ac = s.settings.auto;
         if (j.status !== 'approved') fail('Oppgaven er ikke godkjent');
-        const back = (j.awarded || 0) + ac.penaltyCoins;
-        k.coins = Math.max(0, k.coins - back); k.lifetime = Math.max(0, k.lifetime - (j.awarded || 0));
+        const got = j.family ? 0 : (j.awarded || 0), back = got + ac.penaltyCoins;
+        k.coins = Math.max(0, k.coins - back); k.lifetime = Math.max(0, k.lifetime - got);
         if (j.gems) s.family.gems = Math.max(0, s.family.gems - j.gems);
         j.status = 'rejected'; j.cheat = true; j.reviewed = true;
         log(s, k.id, `Ikke gjort likevel: ${j.title}${ac.penaltyCoins ? ` (straff ${ac.penaltyCoins} coins)` : ''}`, -back, now);

@@ -594,7 +594,8 @@ function render() {
   tickUI();
 }
 
-const CATSTYLE = { daglig: '#16c28f', skole: '#8b7bff', hjemme: '#2fa4ff', ute: '#ffb020', stort: '#ff7a45' };
+const CATSTYLE = { daglig: '#16c28f', skole: '#8b7bff', hjemme: '#2fa4ff', ute: '#ffb020', stort: '#ff7a45', familie: '#6a45ff' };
+const rewardOf = (x) => x.family || x.category === 'familie' ? `${gem}+${x.coins}` : `${coin}+${x.coins}`;
 const TINTS = ['#ff7a45', '#2fa4ff', '#16c28f', '#ff5fa2', '#8b7bff', '#ffb020'];
 
 function viewHome() {
@@ -663,6 +664,31 @@ function famCard(it, i) {
         <button class="btn gemb sm" data-act="fbuy" data-id="${it.id}" ${can ? '' : 'disabled'}>${can ? 'Kjøp' : `Mangler ${it.cost - g}`}</button></div>
       ${can ? '' : `<div class="save" title="Spart ${pct} %"><i style="width:${pct}%"></i></div>`}</div></div>`;
 }
+function famActions(me, cpg, kidPick) {
+  const n = now();
+  const tasks = A.S.tasks.filter((t) => t.category === 'familie' && (!me || !t.kidIds?.length || t.kidIds.includes(me.id)));
+  const mine = me ? A.S.jobs.filter((j) => j.kidId === me.id && j.family && ['active', 'pending'].includes(j.status)) : [];
+  return `<h2 class="sec"><span class="dot" style="--k:var(--gold)"></span>Bli med og samle 💎</h2>
+  <div class="card loanform">${kidPick}
+    ${me ? `<div class="row" style="gap:10px;flex-wrap:wrap">
+      <button class="btn gemb" data-act="famPlay" data-id="${me.id}">${ic('game')} Spill læringsspill</button>
+      <button class="btn ghost" data-act="famTasksJump">${ic('list')} Se familieoppdrag</button></div>
+      <div class="fld" style="margin-top:6px">Gi coins til potten (${cpg} coins = 1 💎)</div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">${[1, 2, 5, 10].map((v) => `<button class="btn gemb sm" data-act="fdonate" data-id="${me.id}" data-v="${v}" ${me.coins >= v * cpg ? '' : 'disabled'}>${coin} ${v * cpg} → ${v} 💎</button>`).join('')}</div>
+      <small class="mute">${esc(me.name)} har ${me.coins} coins.</small>` : '<small class="mute">Trykk på deg selv for å spille, ta familieoppdrag eller gi coins.</small>'}</div>
+  ${mine.length ? `<div class="list" style="margin-top:12px">${mine.map((j) => `<div class="li"><span class="qicon xs">${icn(j.emoji)}</span><div class="grow"><b>${esc(j.title)}</b>
+    <div class="when">${j.status === 'active' ? 'Frist kl. ' + hhmm(j.deadline) : 'Venter på mamma eller pappa'}</div></div>
+    ${j.status === 'active' ? `<button class="btn ok sm" data-act="done" data-id="${j.id}">${ic('check')} Ferdig!</button>` : `<span class="reward inline">${gem}+${j.coins}</span>`}</div>`).join('')}</div>` : ''}
+  ${tasks.length ? `<h2 class="sec" id="famtasks"><span class="dot" style="--k:#6a45ff"></span>Familieoppdrag<span class="count">gir 💎 til potten</span></h2>
+  <div class="grid">${tasks.map((t) => {
+    const ok = me ? L.taskAvailable(A.S, t, me, n) : true;
+    return `<div class="card qcard ${ok ? '' : 'done'}" style="--k:#6a45ff">
+      <div class="qmedia">${t.image ? `<img src="${esc(t.image)}" alt="" loading="lazy">` : `<span class="qemoji">${icn(t.emoji)}</span>`}
+        <span class="qcoin">${gem}+${t.coins}</span><span class="qtime">${ic('clock')} ${t.deadlineMin} min</span>
+        ${ok ? '' : `<span class="qdone">${ic('check')} Tatt</span>`}</div>
+      <div class="qbody"><h3>${esc(t.title)}</h3>
+        ${ok ? `<button class="btn gemb" data-act="famTake" data-id="${t.id}" data-kid="${me ? me.id : ''}" ${me ? '' : 'disabled'}>${ic('play')} ${me ? 'Ta oppdraget' : 'Velg deg selv først'}</button>` : ''}</div></div>`; }).join('')}</div>` : ''}`;
+}
 function viewFamily() {
   const F = A.S.family, fc = A.S.settings.family || {}, g = F.gems;
   const by = F.by || {}, max = Math.max(1, ...A.S.kids.map((k) => by[k.id] || 0));
@@ -677,23 +703,20 @@ function viewFamily() {
     <div class="av" style="background:#fff">💎</div>
     <div class="kinfo"><h1>Familien</h1><div class="kmeta"><span>Felles diamanter for hele familien</span></div>
       ${(() => { const goal = famGoal(); if (!goal) return ''; const pct = Math.min(100, Math.round(g / goal.cost * 100));
-        return `<div class="xpbar"><i style="width:${Math.max(3, pct)}%;background:linear-gradient(90deg,#b8f4ff,#fff)"></i><span style="color:#2a1670;text-shadow:0 1px 0 rgba(255,255,255,.7)">${Math.min(g, goal.cost)} / ${goal.cost} 💎 til ${esc(goal.title)}</span></div>`; })()}</div>
+        return `<div class="xpbar" style="background:rgba(255,255,255,.45)"><i style="width:${Math.max(3, pct)}%;background:linear-gradient(90deg,#b8f4ff,#fff)"></i><span style="color:#2a1670;text-shadow:0 1px 0 rgba(255,255,255,.7)">${Math.min(g, goal.cost)} / ${goal.cost} 💎 til ${esc(goal.title)}</span></div>`; })()}</div>
     <div class="token gems big">${gem}<span>${g}</span></div></div>
   <div class="pane${A.paneFresh ? ' anim' : ''}">
+  ${famActions(me, cpg, kidPick)}
   <h2 class="sec"><span class="dot" style="--k:#4fc8ff"></span>Slik samler dere diamanter</h2>
   <div class="waylist">
     ${fc.gamesGems ? `<div class="way"><span class="wi">🎮</span><div><b>Læringsspill</b><small>${fc.gamesGems} 💎 for minst 8 av 10 riktige – dobbelt ved alt riktig</small></div></div>` : ''}
-    ${fc.taskPct ? `<div class="way"><span class="wi">✅</span><div><b>Oppdrag</b><small>${fc.taskPct} % av coinsene blir også diamanter i potten</small></div></div>` : ''}
+    ${1 ? `<div class="way"><span class="wi">✅</span><div><b>Oppdrag</b><small>Familieoppdrag gir bare 💎. Vanlige oppdrag gir ${fc.taskPct} % ekstra som 💎.</small></div></div>` : ''}
     <div class="way"><span class="wi">🤝</span><div><b>Gi coins</b><small>${cpg} coins = 1 💎 til familien</small></div></div></div>
   ${A.S.kids.length ? `<h2 class="sec"><span class="dot" style="--k:#8a5cff"></span>Hvem har bidratt</h2>
   <div class="card contrib">${A.S.kids.map((k) => `<div class="crow"><span class="av" style="--c:${esc(k.color)}">${icn(k.avatar)}</span><b>${esc(k.name)}</b>
     <span class="cbar"><i style="width:${Math.round((by[k.id] || 0) / max * 100)}%"></i></span><b class="gemtxt">${by[k.id] || 0} ${gem}</b></div>`).join('')}</div>` : ''}
   <h2 class="sec"><span class="dot" style="--k:#6a45ff"></span>Familiebutikken</h2>
   <div class="grid shop">${(A.S.familyShop || []).map((it, i) => famCard(it, i)).join('') || '<div class="empty">Mamma eller pappa kan legge inn familieturer under Foreldre → Butikk.</div>'}</div>
-  <h2 class="sec"><span class="dot" style="--k:var(--gold)"></span>Gi coins til familien</h2>
-  <div class="card loanform">${kidPick}
-    ${me ? `<div class="row" style="gap:8px;flex-wrap:wrap">${[1, 2, 5, 10].map((n) => `<button class="btn gemb sm" data-act="fdonate" data-id="${me.id}" data-v="${n}" ${me.coins >= n * cpg ? '' : 'disabled'}>${coin} ${n * cpg} → ${n} 💎</button>`).join('')}</div>
-      <small class="mute">${esc(me.name)} har ${me.coins} coins.</small>` : '<small class="mute">Velg hvem du er først.</small>'}</div>
   ${rw.length ? `<h2 class="sec"><span class="dot" style="--k:#ff5fa2"></span>Det familien har kjøpt</h2><div class="list">${rw.map((r) => `<div class="li">
     <span class="qicon xs">${icn(r.emoji)}</span><div class="grow"><b>${esc(r.title)}</b><div class="when">${new Date(r.at).toLocaleDateString('no-NO', { weekday: 'short', day: 'numeric', month: 'short' })}${r.kidId ? ' · valgt av ' + esc(kidById(r.kidId)?.name || '') : ''}</div></div>
     <span class="chip ${st[r.status][0]}">${st[r.status][1]}</span></div>`).join('')}</div>` : ''}
@@ -731,11 +754,11 @@ function kidTasks(k) {
     <div class="card running">
       <div class="liverow"><div class="ring" data-until="${j.deadline}" data-total="${j.deadline - j.takenAt}"><span></span></div>
         <div><span class="qicon sm">${(() => { const tk = A.S.tasks.find((x) => x.id === j.taskId); return tk && tk.image ? `<img class="icimg" src="${esc(tk.image)}" alt="">` : icn(j.emoji); })()}</span><h3>${esc(j.title)}</h3>
-          <div class="meta"><span class="reward inline">${coin}+${j.coins}</span><span>Frist kl. ${hhmm(j.deadline)}</span></div></div></div>
+          <div class="meta"><span class="reward inline">${rewardOf(j)}</span><span>Frist kl. ${hhmm(j.deadline)}</span></div></div></div>
       <div class="row"><button class="btn ok" data-act="done" data-id="${j.id}">${ic('check')} Ferdig!</button>
         <button class="btn ghost sm" data-act="cancel" data-id="${j.id}">Avbryt</button></div></div>`).join('')}</div>`;
   if (pending.length) h += `<h2 class="sec"><span class="dot" style="--k:#ff5fa2"></span>Venter på mamma eller pappa</h2><div class="list">${pending.map((j) => `
-    <div class="li"><span class="qicon xs">${icn(j.emoji)}</span><div class="grow"><b>${esc(j.title)}</b><div class="when">Ferdig kl. ${hhmm(j.doneAt)}</div></div><span class="reward inline">${coin}+${j.coins}</span></div>`).join('')}</div>`;
+    <div class="li"><span class="qicon xs">${icn(j.emoji)}</span><div class="grow"><b>${esc(j.title)}</b><div class="when">Ferdig kl. ${hhmm(j.doneAt)}</div></div><span class="reward inline">${rewardOf(j)}</span></div>`).join('')}</div>`;
   for (const [cat, label] of Object.entries(L.CATS)) {
     const tasks = A.S.tasks.filter((t) => t.category === cat && (!t.kidIds?.length || t.kidIds.includes(k.id)));
     if (!tasks.length) continue;
@@ -746,7 +769,7 @@ function kidTasks(k) {
       const busy = mine.some((j) => j.taskId === t.id && (j.status === 'active' || j.status === 'pending'));
       return `<div class="card qcard ${ok ? '' : 'done'}" style="--k:${CATSTYLE[cat]}">
         <div class="qmedia">${t.image ? `<img src="${esc(t.image)}" alt="" loading="lazy">` : `<span class="qemoji">${icn(t.emoji)}</span>`}
-          <span class="qcoin">${coin}+${t.coins}</span><span class="qtime">${ic('clock')} ${t.deadlineMin} min</span>
+          <span class="qcoin">${rewardOf(t)}</span><span class="qtime">${ic('clock')} ${t.deadlineMin} min</span>
           ${ok ? '' : `<span class="qdone">${busy ? 'Er i gang' : ic('check') + (t.repeat === 'weekly' ? ' Gjort denne uka' : ' Gjort i dag')}</span>`}</div>
         <div class="qbody"><h3>${esc(t.title)}</h3>
           ${ok ? `<button class="btn" data-act="take" data-id="${t.id}">${ic('play')} Ta oppdraget</button>` : ''}</div></div>`;
@@ -1350,7 +1373,7 @@ function pApprove() {
         <div class="mute">${esc(k.name)} · tatt ${hhmm(j.takenAt)} · ferdig ${hhmm(j.doneAt)} · frist ${hhmm(j.deadline)}</div>
         <span class="tag ${onTime ? '' : 'late'}">${onTime ? 'Innenfor fristen' : 'For sent'}</span>${j.flag === 'fast' ? ' <span class="tag late">Veldig raskt – sjekk</span>' : ''}</div>
       <div class="row acts">
-        <button class="btn ok sm" data-act="approve" data-id="${j.id}" data-v="100">${ic('check')} +${j.coins}</button>
+        <button class="btn ok sm" data-act="approve" data-id="${j.id}" data-v="100">${ic('check')} +${j.coins}${j.family ? ' 💎' : ''}</button>
         ${part !== j.coins ? `<button class="btn gold sm" data-act="approve" data-id="${j.id}" data-v="${late}">Delvis +${part}</button>` : ''}
         <button class="btn bad sm" data-act="reject" data-id="${j.id}">${ic('x')}</button></div></div>`;
   }).join('') : '<p class="mute">Ingenting å godkjenne akkurat nå.</p>'}</div>`;
@@ -1514,7 +1537,7 @@ function pTasks() {
   return `${aiPanel('task')}<div class="panel"><h3>Oppgaver</h3>${A.S.tasks.map((t) => `<div class="erow">
     <div class="fld">Ikon${icBtn('task', t.id, 'emoji', t.emoji)}</div>
     <label class="fld wide">Oppgave<input value="${esc(t.title)}" data-up="task" data-id="${t.id}" data-k="title"></label>
-    <label class="fld">Coins<input type="number" min="1" inputmode="numeric" value="${t.coins}" data-up="task" data-id="${t.id}" data-k="coins"></label>
+    <label class="fld">${t.category === 'familie' ? '💎 til familien' : 'Coins'}<input type="number" min="1" inputmode="numeric" value="${t.coins}" data-up="task" data-id="${t.id}" data-k="coins"></label>
     <label class="fld">Frist (min)<input type="number" min="1" inputmode="numeric" value="${t.deadlineMin}" data-up="task" data-id="${t.id}" data-k="deadlineMin"></label>
     <label class="fld">Type<select data-up="task" data-id="${t.id}" data-k="category">${Object.entries(L.CATS).map(([v, l]) => `<option value="${v}" ${t.category === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
     <label class="fld">Hvor ofte<select data-up="task" data-id="${t.id}" data-k="repeat">${Object.entries(L.REPEATS).map(([v, l]) => `<option value="${v}" ${t.repeat === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
@@ -1870,6 +1893,9 @@ $app.addEventListener('click', async (e) => {
       case 'openKid': if (needKidPin(kidById(id))) { askKidPin(kidById(id), 'kid'); break; } A.screen = 'kid'; A.kidId = id; A.tab = 'tasks'; A.game = null; A.loanForm = {}; render(); scrollTo(0, 0); break;
       case 'tab': A.tab = d.v; A.paneFresh = true; render(); break;
       case 'openFamily': e.preventDefault(); A.screen = 'family'; A.modal = null; A.paneFresh = true; if (A.kidId && kidById(A.kidId)) A.famKid = A.kidId; sound('open'); render(); scrollTo(0, 0); break;
+      case 'famPlay': A.screen = 'kid'; A.kidId = id; A.tab = 'games'; A.game = null; A.paneFresh = true; render(); scrollTo(0, 0); break;
+      case 'famTasksJump': { const el = document.getElementById('famtasks'); if (el) el.scrollIntoView({ behavior: 'smooth' }); break; }
+      case 'famTake': await act({ type: 'take', kidId: d.kid, taskId: id }); sound('success'); toast('Familieoppdraget er ditt – lykke til! 💎'); break;
       case 'famKid': if (needKidPin(kidById(id))) { askKidPin(kidById(id), 'fam'); break; } A.famKid = id; render(); break;
       case 'fbuy': { const it = (A.S.familyShop || []).find((x) => x.id === id); if (!it) break;
         openModal(confirmModal('Kjøpe for hele familien?', `${icn(it.emoji)} ${esc(it.title)} for <b>${it.cost} diamanter</b> fra familiepotten.<br><small class="mute">Mamma og pappa får beskjed og bestemmer dag.</small>`, 'fbuyYes', 'Ja, kjøp!', 'gold', `data-id="${id}"`)); break; }
