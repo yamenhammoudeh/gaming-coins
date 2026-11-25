@@ -349,4 +349,11 @@ http.createServer(async (req, res) => {
   console.log('\n🎮 Gaming Coins kjører!');
   for (const ip of ips) console.log('   Åpne på iPad/veggskjerm:  http://' + ip + ':' + PORT);
   console.log('');
+}).on('error', (e) => {
+  if (e.code === 'EADDRINUSE') {
+    console.error(`\n⚠ Port ${PORT} er allerede i bruk – trolig kjører Gaming Coins allerede (f.eks. som tjeneste fra install.sh).`);
+    console.error('   Sjekk med:            bash install.sh status');
+    console.error(`   Eller bruk en annen port, f.eks.:  PORT=${PORT + 10} node server.js\n`);
+  } else console.error('Kunne ikke starte serveren:', e.message);
+  process.exit(1);
 });
