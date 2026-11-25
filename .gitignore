@@ -1,0 +1,6 @@
+# Lokale data: barn, coins, ruter- og e-postpassord – skal ALDRI til GitHub
+data/
+data.json
+*.tmp
+node_modules/
+.DS_Store

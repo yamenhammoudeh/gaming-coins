@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gaming Coins">
+<meta name="theme-color" content="#2a36e0">
+<title>Gaming Coins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: lekent, varmt og tydelig – en spill-lobby hjemme; store mål for små fingre, rolig og ryddig for foreldre.
+   IDEA: arkade-token – alt tjenes, telles og brukes i preget gullmynt; oppgaver er «oppdrag», spilletid er en konsoll.
+   PICTURE: spillkort per barn med fargebanner, avatar og myntsaldo; nedtellingsringer; konsollpanel med stor timer.
+   COLOUR and TYPE: dyp kobolt med lysglød og prikkrutenett, myntgull som aksent, mint/korall for handlinger; Baloo 2 + Nunito.
+   LAYOUT: veggskjerm først – rutenett av spillkort; barnevisning med banner, segmenterte faner og kortrutenett. */
+:root{color-scheme:light dark;
+  --bg1:light-dark(#3a4cff,#1a2185);--bg2:light-dark(#1a1fae,#070a33);
+  --card:light-dark(#ffffff,#1b2272);--card2:light-dark(#f1f3ff,#262f8c);--card3:light-dark(#e6e9ff,#303a9e);
+  --ink:light-dark(#121640,#f4f5ff);--mute:light-dark(#5d6493,#b9bef0);--line:light-dark(#e3e6fb,#343d9c);
+  --edge:light-dark(rgba(12,16,110,.55),rgba(0,0,0,.55));
+  --gold:#ffc21a;--gold2:#e08e00;--coral:#ff5b4f;--ok:#14b86a;--blue:#2f45ff}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%}
+html{background:var(--bg2)}
+body{margin:0;color:#fff;font:600 17px/1.45 Nunito,system-ui,sans-serif;overflow-x:clip;user-select:none;-webkit-user-select:none}
+html::before{content:"";position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(1000px 640px at 8% -12%,rgba(130,200,255,.5),transparent 62%),
+    radial-gradient(900px 640px at 108% 108%,rgba(255,194,26,.32),transparent 60%),
+    linear-gradient(165deg,var(--bg1),var(--bg2))}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+  background-image:radial-gradient(rgba(255,255,255,.16) 1.3px,transparent 1.6px);background-size:28px 28px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0,rgba(0,0,0,.35) 70%,transparent);mask-image:linear-gradient(180deg,#000 0,rgba(0,0,0,.35) 70%,transparent)}
+#app{position:relative;z-index:1}
+.grid.wide{grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr))}
+.card.running h3{font-size:24px}
+input,select,textarea{user-select:text;-webkit-user-select:text}
+h1,h2,h3,.disp{font-family:"Baloo 2",Nunito,system-ui,sans-serif;font-weight:800;line-height:1.05;margin:0}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:clamp(16px,2.6vw,30px) max(3vw,14px) 120px}
+svg.i{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+svg.coin{width:1.1em;height:1.1em;flex:none;vertical-align:-.18em;filter:drop-shadow(0 2px 0 rgba(120,60,0,.25))}
+.grow{flex:1}
+
+/* ---------- topp ---------- */
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:clamp(18px,3vw,32px)}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:68px;height:68px;border-radius:22px;display:grid;place-items:center;font-size:46px;
+  background:linear-gradient(160deg,rgba(255,255,255,.28),rgba(255,255,255,.06));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 10px 30px rgba(0,0,40,.3);border:1px solid rgba(255,255,255,.25)}
+.logo svg.coin{width:1em;height:1em;animation:spin 7s ease-in-out infinite}
+@keyframes spin{0%,82%{transform:rotateY(0)}91%{transform:rotateY(180deg)}100%{transform:rotateY(360deg)}}
+.wm{font:800 clamp(30px,4.2vw,46px)/1 "Baloo 2",sans-serif;letter-spacing:.3px;text-shadow:0 3px 0 rgba(0,0,60,.25)}
+.wm b{color:var(--gold)}
+.sub{font-size:15px;opacity:.85;margin-top:4px}
+.status{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.clock{font:800 clamp(30px,3.6vw,44px)/1 "Baloo 2",sans-serif;font-variant-numeric:tabular-nums;text-shadow:0 3px 0 rgba(0,0,60,.25)}
+.win{display:inline-flex;align-items:center;gap:9px;padding:9px 16px;border-radius:999px;font-weight:800;font-size:15px;
+  background:rgba(8,10,60,.28);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.win::before{content:"";width:11px;height:11px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 4px rgba(255,91,79,.28)}
+.win.open::before{background:#3dff9a;box-shadow:0 0 0 4px rgba(61,255,154,.28),0 0 14px #3dff9a;animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(61,255,154,.1),0 0 18px #3dff9a}}
+
+/* ---------- barnekort (startskjerm) ---------- */
+.kids{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:clamp(16px,2.4vw,28px)}
+.kid{position:relative;text-align:center;background:var(--card);color:var(--ink);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 12px 0 var(--edge),0 26px 50px rgba(0,0,40,.32);transition:transform .15s ease,box-shadow .15s ease}
+.kid:active{transform:translateY(8px) scale(.99);box-shadow:0 4px 0 var(--edge),0 10px 24px rgba(0,0,40,.3)}
+.hero{position:relative;height:138px;
+  background:radial-gradient(circle at 85% 15%,rgba(255,255,255,.45),transparent 38%),
+    repeating-linear-gradient(135deg,rgba(255,255,255,.13) 0 16px,transparent 16px 32px),
+    linear-gradient(140deg,var(--c),color-mix(in srgb,var(--c) 62%,#10106a))}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:40px;background:var(--card);border-radius:50% 50% 0 0/100% 100% 0 0}
+.av{width:118px;height:118px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:66px;line-height:1;overflow:hidden;
+  box-shadow:0 0 0 6px var(--card),0 0 0 12px color-mix(in srgb,var(--c) 35%,transparent),0 14px 26px rgba(0,0,40,.25)}
+.hero .av{position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);z-index:2;animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateX(-50%) translateY(-5px)}}
+.lvl,.live{position:absolute;top:14px;padding:5px 12px;border-radius:999px;font-weight:800;font-size:14px;color:#fff;background:rgba(0,0,40,.28);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.lvl{right:14px}.live{left:14px;display:inline-flex;gap:6px;align-items:center;background:var(--ok)}
+.live svg.i{width:14px;height:14px}
+.kid.playing{box-shadow:0 12px 0 var(--edge),0 0 0 4px #3dff9a,0 26px 60px rgba(61,255,154,.35)}
+.kbody{padding:38px 20px 22px;display:flex;flex-direction:column;align-items:center;gap:12px;flex:1}
+.kid h2{font-size:clamp(30px,3vw,38px)}
+.token{display:inline-flex;align-items:center;gap:8px;padding:6px 20px 6px 8px;border-radius:999px;
+  font:800 34px/1.1 "Baloo 2",sans-serif;color:#5a3700;
+  background:linear-gradient(180deg,#fff6cc,#ffd34d 55%,#ffbf1a);box-shadow:0 5px 0 var(--gold2),inset 0 2px 0 #fff,0 10px 20px rgba(224,142,0,.3)}
+.token svg.coin{width:44px;height:44px}
+.token.big{font-size:clamp(34px,4vw,46px);padding:6px 24px 6px 10px}.token.big svg.coin{width:54px;height:54px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;margin-top:4px}
+.stat{background:var(--card2);border-radius:16px;padding:9px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:center}
+.stat small{font-size:12px;color:var(--mute);font-weight:800}
+.stat b{font:800 18px/1.1 "Baloo 2",sans-serif;white-space:nowrap}
+.xp{display:block;width:84%;height:9px;border-radius:9px;background:var(--card3);overflow:hidden;margin:4px 0}
+.xp i,.xpbar i,.save i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--gold),#ff9b3d)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--card2);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:800;white-space:nowrap}
+.chip.hot{background:var(--coral);color:#fff}.chip.go{background:var(--ok);color:#fff}.chip.gold{background:var(--gold);color:#3b2600}
+.chip.soft{background:none;color:var(--mute)}
+
+/* ---------- dock ---------- */
+.dock{position:fixed;left:0;right:0;bottom:0;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px max(3vw,14px) calc(14px + env(safe-area-inset-bottom));pointer-events:none;z-index:5}
+.dock>*{pointer-events:auto}
+.pill{display:inline-flex;align-items:center;gap:10px;min-height:58px;padding:0 24px;border-radius:999px;background:var(--card);color:var(--ink);font-weight:800;box-shadow:0 6px 0 var(--edge),0 14px 30px rgba(0,0,40,.3)}
+.pill:active{transform:translateY(4px);box-shadow:0 2px 0 var(--edge)}
+.badge{background:var(--coral);color:#fff;border-radius:999px;min-width:26px;height:26px;display:inline-grid;place-items:center;padding:0 8px;font-size:14px;font-weight:800}
+.note{font-size:14px;background:rgba(0,0,40,.3);padding:7px 14px;border-radius:999px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+
+/* ---------- barnevisning ---------- */
+.khead{position:relative;display:flex;align-items:center;gap:18px;flex-wrap:wrap;border-radius:32px;padding:20px 22px;color:#fff;overflow:hidden;margin-bottom:16px;
+  background:radial-gradient(circle at 90% 0%,rgba(255,255,255,.4),transparent 40%),repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 16px,transparent 16px 32px),linear-gradient(140deg,var(--c),color-mix(in srgb,var(--c) 60%,#10106a));
+  box-shadow:0 10px 0 rgba(0,0,40,.28),0 24px 44px rgba(0,0,40,.28)}
+.khead .av{width:92px;height:92px;font-size:54px;box-shadow:0 0 0 5px rgba(255,255,255,.75),0 10px 20px rgba(0,0,40,.25)}
+.kinfo{flex:1;min-width:200px}
+.kinfo h1{font-size:clamp(32px,4.2vw,48px);text-shadow:0 3px 0 rgba(0,0,40,.2)}
+.kmeta{display:flex;gap:14px;flex-wrap:wrap;font-weight:800;margin:2px 0 8px}
+.kmeta span{display:inline-flex;align-items:center;gap:5px}.kmeta svg.i{width:18px;height:18px}
+.xpbar{position:relative;height:24px;border-radius:999px;background:rgba(0,0,40,.28);overflow:hidden;max-width:360px}
+.xpbar span{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.back{width:58px;height:58px;border-radius:50%;background:rgba(0,0,40,.25);display:grid;place-items:center;color:#fff;flex:none}
+.back:active{transform:scale(.94)}
+.segtabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:6px;border-radius:24px;margin-bottom:22px;
+  background:rgba(8,10,60,.3);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.segtabs button{min-height:58px;border-radius:18px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:background .15s}
+.segtabs button.on{background:var(--card);color:var(--ink);box-shadow:0 4px 0 var(--edge)}
+.pane.anim{animation:rise .25s ease}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tab{min-height:52px;padding:0 18px;border-radius:999px;background:rgba(8,10,60,.28);font-weight:800;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.14)}
+.tab.on{background:var(--card);color:var(--ink);border-color:transparent}
+.sec{margin:8px 0 14px;font-size:26px;display:flex;align-items:center;gap:12px;text-shadow:0 2px 0 rgba(0,0,40,.2)}
+.dot{width:14px;height:14px;border-radius:5px;background:var(--k);box-shadow:0 0 0 4px color-mix(in srgb,var(--k) 30%,transparent);flex:none;transform:rotate(45deg)}
+.count{margin-left:auto;font:800 14px Nunito,sans-serif;background:rgba(8,10,60,.3);padding:5px 12px;border-radius:999px;text-shadow:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,232px),1fr));gap:16px;margin-bottom:30px}
+.card{position:relative;background:var(--card);color:var(--ink);border-radius:26px;padding:16px;display:flex;flex-direction:column;gap:10px;
+  box-shadow:0 7px 0 var(--edge),0 16px 30px rgba(0,0,40,.22)}
+.card h3{font-size:22px;line-height:1.1}
+.qtop{display:flex;justify-content:space-between;align-items:flex-start}
+.qicon{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;font-size:42px;line-height:1;overflow:hidden;flex:none;
+  background:linear-gradient(150deg,color-mix(in srgb,var(--k,#2fa4ff) 22%,#fff),color-mix(in srgb,var(--k,#2fa4ff) 40%,#fff));box-shadow:inset 0 -4px 0 color-mix(in srgb,var(--k,#2fa4ff) 35%,transparent)}
+.qicon .icimg{width:100%;height:100%;border-radius:0}
+.qicon.sm{width:52px;height:52px;font-size:30px;border-radius:16px;margin-bottom:6px}
+.qicon.xs{width:46px;height:46px;font-size:26px;border-radius:14px;--k:#8b7bff}
+.reward{display:inline-flex;align-items:center;gap:4px;padding:5px 12px 5px 6px;border-radius:999px;font:800 20px/1 "Baloo 2",sans-serif;color:#5a3700;
+  background:linear-gradient(180deg,#fff3bf,#ffcd3c);box-shadow:0 3px 0 var(--gold2);white-space:nowrap}
+.reward svg.coin{width:24px;height:24px}
+.reward.inline{font-size:17px;padding:3px 10px 3px 4px}.reward.inline svg.coin{width:20px;height:20px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;color:var(--mute);font-size:15px;font-weight:800}
+.meta>span{display:inline-flex;align-items:center;gap:5px}.meta svg.i{width:17px;height:17px}
+.quest>.btn{margin-top:auto}
+.quest.done{opacity:.6;filter:saturate(.6)}
+.card.running{background:linear-gradient(160deg,var(--card),color-mix(in srgb,var(--gold) 14%,var(--card)));box-shadow:0 7px 0 var(--gold2),0 0 0 3px var(--gold),0 18px 40px rgba(255,194,26,.3)}
+.liverow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center}
+.ring{--p:1;width:104px;height:104px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--gold) calc(var(--p)*360deg),var(--card3) 0);filter:drop-shadow(0 4px 8px rgba(224,142,0,.3))}
+.ring span{width:82px;height:82px;border-radius:50%;background:var(--card);display:grid;place-items:center;font:800 23px "Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+.ring.warn{background:conic-gradient(var(--coral) calc(var(--p)*360deg),var(--card3) 0);animation:pulse2 1s infinite}
+@keyframes pulse2{50%{filter:drop-shadow(0 0 12px rgba(255,91,79,.6))}}
+
+/* knapper */
+.btn{--b:var(--blue);--bs:#1a28b8;white-space:nowrap;min-height:54px;border-radius:18px;padding:0 20px;font-weight:800;color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0) 52%),var(--b);box-shadow:0 5px 0 var(--bs),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--bs)}
+.btn.gold{--b:var(--gold);--bs:var(--gold2);color:#3b2600}
+.btn.ok{--b:var(--ok);--bs:#0b8a4c}
+.btn.bad{--b:var(--coral);--bs:#c8352b}
+.btn.ghost{--b:var(--card2);--bs:var(--card3);color:var(--ink);background:var(--card2);box-shadow:0 4px 0 var(--card3)}
+.btn[disabled]{opacity:.5;pointer-events:none;filter:saturate(.5)}
+.btn.sm{min-height:44px;padding:0 14px;border-radius:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>.btn{flex:1}
+
+/* konsoll */
+.console{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:22px;align-items:center;border-radius:32px;padding:clamp(18px,2.4vw,28px);margin-bottom:30px;color:#fff;
+  background:radial-gradient(circle at 15% 0%,rgba(120,180,255,.25),transparent 50%),linear-gradient(160deg,#141a5e,#080b2e);
+  box-shadow:0 10px 0 #04061c,0 26px 50px rgba(0,0,30,.45),inset 0 1px 0 rgba(255,255,255,.12)}
+.console.on{box-shadow:0 10px 0 #04061c,0 0 0 3px #3dff9a,0 26px 60px rgba(61,255,154,.3)}
+.screen{border-radius:22px;padding:18px 20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+.screen .lab{font-weight:800;opacity:.75}
+.console .t{font:800 clamp(56px,8.5vw,104px)/1 "Baloo 2",sans-serif;font-variant-numeric:tabular-nums;margin:6px 0 12px;color:#fff;text-shadow:0 0 30px rgba(120,180,255,.6)}
+.console.on .t{color:#7dffbd;text-shadow:0 0 30px rgba(61,255,154,.6)}
+.console .win{background:rgba(255,255,255,.08)}
+.ctrl p{text-align:center;opacity:.75;margin:12px 0 0}
+.bigbtn{min-height:100px;border-radius:28px;font:800 32px "Baloo 2",sans-serif;width:100%}
+.bigbtn svg.i{width:30px;height:30px}
+
+/* butikk */
+.shopc{align-items:flex-start}
+.shopc .min{font:800 46px/1 "Baloo 2",sans-serif}.shopc .min small{font-size:20px;margin-left:4px;color:var(--mute)}
+.price{font:800 26px "Baloo 2",sans-serif;display:flex;align-items:center;gap:6px;margin-top:auto}
+.save{width:100%;height:8px;border-radius:9px;background:var(--card3);overflow:hidden}
+.shopc>.btn{width:100%}
+
+.list{background:var(--card);color:var(--ink);border-radius:26px;padding:6px 18px;box-shadow:0 7px 0 var(--edge),0 16px 30px rgba(0,0,40,.2);margin-bottom:30px}
+.li{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.li .when{color:var(--mute);font-size:14px;white-space:nowrap}
+.plus{color:var(--ok);font-weight:800;white-space:nowrap}.minus{color:var(--coral);font-weight:800;white-space:nowrap}
+.empty{background:rgba(8,10,60,.28);border:1px dashed rgba(255,255,255,.3);border-radius:26px;padding:26px;text-align:center;margin-bottom:24px}
+.offline{background:var(--coral);color:#fff;text-align:center;padding:10px;font-weight:800;border-radius:16px;margin-bottom:14px}
+.mute{color:var(--mute)}
+
+/* ---------- foreldre ---------- */
+.panel{background:var(--card);color:var(--ink);border-radius:28px;padding:clamp(16px,2.2vw,24px);box-shadow:0 8px 0 var(--edge),0 18px 34px rgba(0,0,40,.2);margin-bottom:20px}
+.panel h3{font-size:23px;margin-bottom:12px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mute);font-weight:800}
+.fld input,.fld select,input.in,select.in{font:700 16px Nunito,sans-serif;color:var(--ink);background:var(--card2);border:2px solid transparent;border-radius:14px;min-height:48px;padding:0 12px;width:100%}
+.fld input:focus,.fld select:focus,input.in:focus{border-color:var(--blue);outline:0;background:var(--card)}
+.erow{display:grid;grid-template-columns:64px minmax(0,2.4fr) repeat(4,minmax(0,1fr)) 48px;gap:8px;align-items:end;padding:12px 0;border-bottom:1px solid var(--line)}
+.erow.shopr{grid-template-columns:64px minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 48px}
+.erow.dev{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) 48px}
+.ib{width:48px;height:48px;border-radius:14px;background:var(--card2);display:grid;place-items:center;color:var(--coral)}
+.sched{display:grid;grid-template-columns:120px 70px minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.sw{position:relative;width:60px;height:36px;border-radius:99px;background:var(--card3);transition:.2s}
+.sw.on{background:var(--ok)}.sw::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.sw.on::after{left:28px}
+.seg{display:inline-flex;color:var(--ink);background:var(--card2);border-radius:18px;padding:5px;gap:5px;flex-wrap:wrap}
+.seg button{min-height:46px;padding:0 16px;border-radius:14px;font-weight:800}
+.seg button.on{background:var(--blue);color:#fff;box-shadow:0 3px 0 #1a28b8}
+.appr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.appr:last-child{border-bottom:0}
+.appr .av{width:60px;height:60px;font-size:34px;box-shadow:none;background:var(--c)}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:800;background:var(--ok);color:#fff}
+.tag.late{background:var(--coral)}
+.icimg{width:1.1em;height:1.1em;object-fit:cover;border-radius:.25em;vertical-align:-.15em;display:inline-block}
+.av .icimg{width:100%;height:100%;border-radius:50%}
+.icbtn{min-height:48px;width:100%;border-radius:14px;background:var(--card2);font-size:26px;display:grid;place-items:center;border:2px dashed var(--line)}
+.icbtn .icimg{width:34px;height:34px}
+.icprev{width:88px;height:88px;border-radius:24px;background:var(--card2);display:grid;place-items:center;font-size:52px;overflow:hidden}
+.icprev .icimg{width:100%;height:100%;border-radius:0}
+.iccat{text-align:left;font-weight:800;color:var(--mute);font-size:14px;margin:12px 0 6px}
+.icgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px}
+.icgrid button{height:48px;border-radius:12px;background:var(--card2);font-size:26px}
+.icgrid button:active{background:var(--gold)}
+
+.drv{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:10px}
+.drv button{text-align:left;padding:14px;border-radius:18px;background:var(--card2);border:2px solid transparent;display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-height:92px}
+.drv button.on{border-color:var(--blue);background:var(--card);box-shadow:0 0 0 4px color-mix(in srgb,var(--blue) 18%,transparent)}
+.drv b{font:800 19px "Baloo 2",sans-serif}.drv small{color:var(--mute);font-weight:700;font-size:13px;line-height:1.3}
+.scan{margin-top:14px;border-radius:22px;padding:16px;background:var(--card2)}
+.scanhead{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.scanhead .qicon{color:#fff;background:var(--k);box-shadow:none}.scanhead .qicon svg.i{width:34px;height:34px}
+.sbrand{font:800 26px/1.1 "Baloo 2",sans-serif}.smodel{font:800 20px "Baloo 2",sans-serif;color:light-dark(#2f45ff,#a9b6ff)}
+.sw[disabled]{opacity:.4}
+.guide h4{font:800 20px "Baloo 2",sans-serif;margin:20px 0 8px}
+.gintro p{margin:0 0 10px}
+.gstep{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.gstep p{margin:2px 0 0;color:var(--mute)}.gstep p b{color:var(--ink)}
+.gnum{width:34px;height:34px;flex:none;border-radius:12px;display:grid;place-items:center;font:800 17px "Baloo 2",sans-serif;background:var(--blue);color:#fff}
+.cmd{display:flex;gap:8px;align-items:center;margin-top:8px;background:#0d1240;color:#d6ddff;border-radius:14px;padding:6px 6px 6px 14px}
+.cmd code{flex:1;font:600 14px ui-monospace,Menlo,monospace;overflow-x:auto;white-space:nowrap;user-select:all;-webkit-user-select:all}
+.cmd .btn.ghost{background:#262f8c;color:#fff;box-shadow:none}
+.guide code{font-family:ui-monospace,Menlo,monospace;font-size:.92em;background:var(--card2);padding:1px 6px;border-radius:6px}
+.cmd code{background:none;padding:0}
+.trouble{margin:8px 0 0;padding-left:20px}.trouble li{margin:6px 0}
+.gsum{cursor:pointer;font:800 23px "Baloo 2",sans-serif;list-style-position:inside}
+button.note{color:#fff;font-weight:700;cursor:pointer}
+.card.product{padding:0;gap:0;overflow:hidden}
+.pmbtn{display:block;width:100%;padding:0;text-align:left}
+.pmedia{position:relative;display:grid;place-items:center;aspect-ratio:4/3;width:100%;overflow:hidden;
+  background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.6),transparent 55%),linear-gradient(150deg,color-mix(in srgb,var(--k) 30%,#fff),color-mix(in srgb,var(--k) 62%,#fff))}
+.pmedia .qicon{width:112px;height:112px;font-size:66px;border-radius:32px;background:rgba(255,255,255,.6);box-shadow:0 10px 24px rgba(0,0,40,.12);transition:transform .25s}
+.pmedia img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.pmbtn:hover .pmedia img,.pmbtn:hover .qicon{transform:scale(1.05)}
+.pbadge{position:absolute;left:12px;top:12px;display:inline-flex;gap:5px;align-items:center;background:rgba(10,14,60,.72);color:#fff;font:800 15px "Baloo 2",sans-serif;padding:4px 12px;border-radius:999px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pbadge svg.i{width:15px;height:15px}.pbadge.gift{background:rgba(255,95,162,.9)}
+.pbody{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pdesc{margin:0;color:var(--mute);font-size:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pdesc.full{display:block;font-size:17px;margin:8px 0}
+.pfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto}
+.pfoot .price{margin:0}
+.card.product.locked .pmedia{filter:saturate(.65)}
+.pmodal .pmedia{border-radius:22px}.pmodal .pmedia .qicon{width:150px;height:150px;font-size:90px}
+.erowx{grid-column:1/-1;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-top:4px}
+.pthumb{width:84px;height:63px;border-radius:12px;overflow:hidden;display:grid;place-items:center;font-size:32px;background:var(--card2);flex:none}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.pill.round{width:58px;padding:0;justify-content:center}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;margin-top:8px}
+.ltab{width:100%;border-collapse:collapse;font-size:15px}.ltab th{text-align:left;color:var(--mute);font-size:13px;padding:6px 8px;border-bottom:2px solid var(--line)}
+.ltab td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}.ltab .num{text-align:right;white-space:nowrap}
+.gcap{margin-bottom:18px;gap:8px}
+.gcard{gap:10px}.gtile{width:78px;height:78px;border-radius:24px;display:grid;place-items:center;font:800 28px "Baloo 2",sans-serif;color:#fff;
+  background:linear-gradient(150deg,color-mix(in srgb,var(--k) 75%,#fff),var(--k));box-shadow:inset 0 -5px 0 color-mix(in srgb,var(--k) 70%,#000)}
+.gamebox{background:var(--card);color:var(--ink);border-radius:32px;padding:clamp(16px,2.6vw,28px);box-shadow:0 10px 0 var(--edge),0 24px 44px rgba(0,0,40,.25);margin-bottom:30px;border-top:8px solid var(--k)}
+.ghead{display:flex;align-items:center;gap:14px;margin-bottom:16px}.ghead .back{background:var(--card2);color:var(--ink)}
+.gdots{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.gdots i{width:22px;height:8px;border-radius:9px;background:var(--card3)}
+.gdots i.cur{background:var(--k)}.gdots i.ok{background:var(--ok)}.gdots i.no{background:var(--coral)}
+.gq{text-align:center;padding:10px 0 22px}.gpic{font-size:clamp(80px,14vw,130px);line-height:1.1}
+.gtext{font:800 clamp(24px,3.4vw,34px)/1.2 "Baloo 2",sans-serif}.gtext.big{font-size:clamp(46px,8vw,84px);letter-spacing:.06em}
+.gopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.gopt{min-height:84px;border-radius:22px;background:var(--card2);font:800 clamp(24px,3.4vw,34px) "Baloo 2",sans-serif;box-shadow:0 5px 0 var(--card3);transition:transform .08s,background .15s}
+.gopt:active{transform:translateY(3px);box-shadow:none}
+.gopt.right{background:var(--ok);color:#fff;box-shadow:0 5px 0 #0b8a4c;animation:pop .3s}
+.gopt.wrong{background:var(--coral);color:#fff;box-shadow:0 5px 0 #c8352b;animation:shake .35s}
+.gopt.dim{opacity:.45}
+.gamebox.result{text-align:center}.gamebox.result h2{font-size:clamp(32px,5vw,48px)}
+.stars{font-size:64px;letter-spacing:8px;line-height:1}.stars span{color:var(--card3)}.stars span.on{color:var(--gold);text-shadow:0 4px 0 var(--gold2)}
+.grid.wstats{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.wstat{align-items:flex-start}.wnum{font:800 30px "Baloo 2",sans-serif}
+.loanform{gap:10px}
+.lpick{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;border-radius:20px;background:var(--card2);border:3px solid transparent;min-width:110px}
+.lpick.on{border-color:var(--c);background:var(--card)}.lpick .av{width:56px;height:56px;font-size:32px;box-shadow:none;background:var(--card)}
+.lpick small{color:var(--mute);font-weight:800}
+.gpic.many{font-size:clamp(34px,5vw,48px);max-width:560px;margin:0 auto;line-height:1.25;letter-spacing:4px;word-break:break-all}
+.gpic.svgpic{display:grid;place-items:center}
+svg.clock{width:min(240px,60vw);height:auto}
+svg.clock .face{fill:var(--card2);stroke:var(--k);stroke-width:6}
+svg.clock .tk line{stroke:var(--ink)}svg.clock .nm{font:800 18px "Baloo 2",sans-serif;fill:var(--ink)}
+svg.clock .hh{stroke:var(--ink);stroke-width:8;stroke-linecap:round}svg.clock .mh{stroke:var(--k);stroke-width:5;stroke-linecap:round}svg.clock .ctr{fill:var(--ink)}
+.gtext.big2{font-size:clamp(30px,4.6vw,44px)}
+.gtile.xs{width:44px;height:44px;border-radius:14px;font-size:15px;flex:none}
+.gatab{width:100%;border-collapse:collapse}.gatab th{text-align:left;font-size:13px;color:var(--mute);padding:6px 8px;border-bottom:2px solid var(--line);white-space:nowrap}
+.gatab td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.lvl-chip{min-height:40px;padding:0 12px;border-radius:12px;font-weight:800;font-size:14px;background:var(--card2);color:var(--mute);text-decoration:line-through;white-space:nowrap}
+.lvl-chip.on{background:var(--k);color:#fff;text-decoration:none;box-shadow:0 3px 0 color-mix(in srgb,var(--k) 70%,#000)}
+.mini{min-height:32px;padding:0 10px;border-radius:10px;background:var(--card3);font-weight:800;font-size:13px}
+.devchip{display:flex;align-items:center;gap:12px;background:var(--card);color:var(--ink);border-radius:20px;padding:14px 16px;box-shadow:0 6px 0 var(--edge)}
+.devchip b{display:block}.devchip small{color:var(--mute);font-weight:700}
+.ddot{width:14px;height:14px;border-radius:50%;flex:none;background:var(--coral);box-shadow:0 0 0 5px color-mix(in srgb,var(--coral) 22%,transparent)}
+.devchip.open .ddot{background:var(--ok);box-shadow:0 0 0 5px color-mix(in srgb,var(--ok) 25%,transparent);animation:pulse 2s infinite}
+.olabel{font-size:12px;font-weight:800;padding:3px 9px;border-radius:99px;background:var(--card2);color:var(--mute);white-space:nowrap}.olabel.on{background:color-mix(in srgb,var(--ok) 18%,var(--card));color:var(--ok)}
+.minibars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:110px;align-items:end;margin-top:12px}
+.mb{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}.mb i{width:70%;max-width:34px;border-radius:4px 4px 0 0;display:block}.mb small{color:var(--mute);font-weight:800;font-size:12px}
+.stpill{display:inline-block;padding:3px 12px;border-radius:99px;font-weight:800;font-size:13px;background:var(--coral);color:#fff}.stpill.open{background:var(--ok)}
+.devtab select.in{min-height:42px;font-size:14px;padding:0 8px;min-width:130px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-weight:800;font-size:14px;margin-bottom:8px}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.stack7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;height:230px;align-items:end;border-bottom:1px solid var(--line);padding-top:24px}
+.scol{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;position:relative}
+.sbar{width:70%;max-width:56px;display:flex;flex-direction:column-reverse;gap:2px;min-height:0}.sbar i{display:block;min-height:2px;border-radius:2px}.sbar i:last-child{border-radius:4px 4px 2px 2px}
+.stot{font:800 13px Nunito,sans-serif;color:var(--ink);white-space:nowrap}
+.scol small{position:absolute;bottom:-22px;color:var(--mute);font-weight:800;font-size:13px}.scol small.today{color:var(--ink)}
+.stack7+p{margin-top:30px}
+.hrow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.5fr) auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.hl small{display:block}.htrack{height:12px;border-radius:6px;background:var(--card2);overflow:hidden}.htrack i{display:block;height:100%;border-radius:0 4px 4px 0}
+.hv{font-weight:800;white-space:nowrap;font-size:14px;text-align:right}
+.heat{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:3px;margin-top:6px}
+.hc{aspect-ratio:1/1.6;border-radius:4px;background:color-mix(in srgb,var(--blue) calc(var(--a)*100%),var(--card2));position:relative}
+.hc span{position:absolute;top:100%;left:0;font-size:11px;color:var(--mute);font-weight:800;margin-top:2px}
+.heat+p{margin-top:22px}
+@media(max-width:600px){.hrow{grid-template-columns:1fr auto}.htrack{grid-column:1/-1;grid-row:2}}
+.gakid{display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card2);color:var(--ink);border-radius:16px;padding:8px 12px;font-weight:800}
+.gcatrow td{font:800 18px "Baloo 2",sans-serif;padding-top:18px;color:var(--ink);border-bottom:2px solid var(--line)}
+.mini-in{width:76px !important;flex:none;min-height:32px !important;padding:0 8px !important;font-size:14px !important}
+.gtile{font-size:clamp(16px,2.4vw,24px);text-align:center;line-height:1.05;padding:4px}
+.card.qcard{padding:0;gap:0;overflow:hidden}
+.qmedia{position:relative;aspect-ratio:4/3;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.65),transparent 55%),linear-gradient(150deg,color-mix(in srgb,var(--k) 22%,#fff),color-mix(in srgb,var(--k) 55%,#fff))}
+.qmedia img{width:100%;height:100%;object-fit:cover}
+.qemoji{font-size:clamp(64px,9vw,92px);line-height:1;filter:drop-shadow(0 10px 14px rgba(0,0,40,.18))}
+.qemoji .icimg{width:1.2em;height:1.2em;border-radius:24px}
+.qcoin{position:absolute;right:10px;top:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 12px 5px 6px;border-radius:999px;font:800 20px/1 "Baloo 2",sans-serif;color:#5a3700;background:linear-gradient(180deg,#fff3bf,#ffcd3c);box-shadow:0 3px 0 var(--gold2)}
+.qcoin svg.coin{width:24px;height:24px}
+.qtime{position:absolute;left:10px;top:10px;display:inline-flex;gap:5px;align-items:center;background:rgba(10,14,60,.7);color:#fff;font:800 14px Nunito,sans-serif;padding:5px 10px;border-radius:999px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.qtime svg.i{width:15px;height:15px}
+.qdone{position:absolute;inset:auto 0 0 0;padding:10px;text-align:center;font-weight:800;color:#fff;background:linear-gradient(0deg,rgba(11,138,76,.92),rgba(11,138,76,.6));display:flex;gap:6px;justify-content:center;align-items:center}
+.qcard.done .qmedia>img,.qcard.done .qemoji{filter:grayscale(.6) opacity(.7)}
+.qbody{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.qbody h3{font-size:21px}.qbody .btn{margin-top:auto}
+.imgbtns>.btn{flex:none}
+.aipanel{background:linear-gradient(135deg,var(--card),color-mix(in srgb,#7c4dff 10%,var(--card)))}
+.appgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:26px 14px;margin:6px 0 30px}
+.appbtn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 2px;border-radius:22px;transition:transform .12s}
+.appbtn:active{transform:scale(.92)}
+.appicon{--s:92px;width:var(--s);height:var(--s);flex:none;border-radius:24%;position:relative;overflow:hidden;display:grid;place-items:center;
+  background:radial-gradient(circle at 28% 18%,rgba(255,255,255,.55),transparent 42%),linear-gradient(150deg,color-mix(in srgb,var(--k) 62%,#fff) 0%,var(--k) 52%,color-mix(in srgb,var(--k) 72%,#000) 100%);
+  box-shadow:0 10px 22px color-mix(in srgb,var(--k) 40%,rgba(0,0,40,.35)),inset 0 2px 0 rgba(255,255,255,.45),inset 0 -5px 0 rgba(0,0,0,.14)}
+.appicon::before{content:"";position:absolute;width:85%;height:85%;right:-38%;bottom:-38%;border-radius:50%;background:rgba(255,255,255,.16)}
+.appicon::after{content:"";position:absolute;width:40%;height:40%;left:-12%;bottom:-14%;border-radius:50%;background:rgba(0,0,0,.08)}
+.appicon .ae{position:relative;z-index:1;font-size:calc(var(--s) * .5);line-height:1;filter:drop-shadow(0 calc(var(--s) * .04) calc(var(--s) * .05) rgba(0,0,40,.3))}
+.appicon .ag{position:absolute;z-index:1;right:7%;bottom:6%;font:800 calc(var(--s) * .13) "Baloo 2",sans-serif;color:#fff;background:rgba(0,0,40,.28);padding:0 .45em;border-radius:99px;line-height:1.5;max-width:70%;overflow:hidden;white-space:nowrap}
+.appicon img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
+.aname{font:800 15px/1.15 Nunito,sans-serif;color:#fff;text-align:center;text-shadow:0 2px 4px rgba(0,0,40,.35);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:120px}
+.aage{font-size:12px;font-weight:800;color:rgba(255,255,255,.75);margin-top:-4px}
+.gsheet{text-align:center}.gsheet .appicon{margin:0 auto}
+.gsheetbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.appstrip{display:flex;gap:8px}
+@media(max-width:600px){.seg.gcats{flex-wrap:nowrap;overflow-x:auto;max-width:100%}.seg.gcats button{flex:none}.appgrid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}.appicon{--s:76px}.aname{font-size:13px}.appstrip{display:none}}
+.libgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:8px}
+.libitem{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:16px;background:var(--card2);border-left:5px solid var(--k)}
+.libitem.added{opacity:.6}.libemo{font-size:30px;width:40px;text-align:center;flex:none}
+/* ---------- modal / toast ---------- */
+.scrim{position:fixed;inset:0;background:rgba(5,8,40,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;z-index:20}
+.scrim.anim{animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.modal{background:var(--card);color:var(--ink);border-radius:32px;padding:26px;width:min(520px,100%);max-height:90vh;overflow:auto;box-shadow:0 12px 0 var(--edge),0 30px 60px rgba(0,0,30,.4);text-align:center}
+.scrim.anim .modal{animation:pop .22s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+.modal h2{font-size:32px;margin-bottom:8px}
+.dots{display:flex;gap:14px;justify-content:center;margin:18px 0}
+.dots{min-height:26px;align-items:center}
+.dots i{width:18px;height:18px;border-radius:50%;background:var(--card3);transition:background .15s,transform .15s}
+.dots i.f{background:var(--blue);transform:scale(1.15)}
+.dots i.new{animation:dotpop .25s cubic-bezier(.2,1.6,.4,1)}
+@keyframes dotpop{0%{transform:scale(.4)}60%{transform:scale(1.4)}100%{transform:scale(1.15)}}
+.dots.ok i{background:var(--ok)}
+.dots.err i{background:var(--coral)}
+.modal.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.pinmsg{min-height:22px;font-weight:800;color:var(--coral);font-size:15px}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.keys button{min-height:70px;border-radius:20px;background:var(--card2);font:800 30px "Baloo 2",sans-serif;box-shadow:0 4px 0 var(--card3)}
+.keys button:active{background:var(--gold);transform:translateY(3px);box-shadow:none}
+.pick{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;width:100%;padding:12px;border-radius:16px;background:var(--card2);margin-bottom:8px}
+.pick.taken{opacity:.6}
+.pdot{width:12px;height:12px;border-radius:50%;flex:none;background:var(--card3);box-shadow:inset 0 0 0 2px var(--mute)}
+.pdot.on{background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 25%,transparent)}
+#toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:30;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.tst{background:var(--card);color:var(--ink);padding:13px 22px;border-radius:999px;font-weight:800;box-shadow:0 8px 30px rgba(0,0,30,.35);animation:pop .25s cubic-bezier(.2,1.4,.4,1)}
+.tst.err{background:var(--coral);color:#fff}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:25;width:100%;height:100%}
+
+@media(max-width:700px){
+  .erow,.erow.shopr{grid-template-columns:64px minmax(0,1fr) minmax(0,1fr) 48px}
+  .erow .wide{grid-column:2/-1}
+  .console{grid-template-columns:1fr}
+  .sched{grid-template-columns:90px 64px minmax(0,1fr) minmax(0,1fr)}
+  .appr{grid-template-columns:auto minmax(0,1fr)}.appr .acts{grid-column:1/-1}
+  .segtabs button{font-size:14px;gap:5px}.segtabs svg.i{display:none}
+  .token.big{order:3}
+  .sub{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="cg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff3b0"/><stop offset=".45" stop-color="#ffc21a"/><stop offset="1" stop-color="#d98300"/></radialGradient>
+    <symbol id="coin" viewBox="0 0 64 64">
+      <circle cx="32" cy="34" r="28" fill="#b86a00"/>
+      <circle cx="32" cy="31" r="28" fill="url(#cg)"/>
+      <circle cx="32" cy="31" r="21" fill="none" stroke="#e08f00" stroke-width="3"/>
+      <path d="M40 24.5a10 10 0 1 0 1.5 9.5H33" fill="none" stroke="#9a5800" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M15 22a19 19 0 0 1 12-10" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 3c1 4 6 6 6 11a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 3 3 3s1-4 1-7z"/></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.5 11h10L20 7H6.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></symbol>
+    <symbol id="i-game" viewBox="0 0 24 24"><path d="M6 8h12a4 4 0 0 1 4 4v1a4 4 0 0 1-7 2.6L14 14h-4l-1 1.6A4 4 0 0 1 2 13v-1a4 4 0 0 1 4-4z"/><path d="M7 11v3M5.5 12.5h3M16 11.5h.01M18 13.5h.01"/></symbol>
+    <symbol id="i-coins" viewBox="0 0 24 24"><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.6-2.4-2.9-5.5-3"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  </defs>
+</svg>
+<div id="app"></div>
+<input type="file" id="prodfile" accept="image/*" hidden>
+<div id="toast"></div>
+<canvas id="fx"></canvas>
+<script src="logic.js"></script>
+<script>
+(() => {
+const L = window.GCLogic;
+const $app = document.getElementById('app');
+const A = { mode: 'demo', S: null, offset: 0, screen: 'home', kidId: null, tab: 'tasks', ptab: 'approve',
+  pin: null, pinEntry: '', modal: null, prevCoins: {}, lastTouch: Date.now(), pending: false, offline: false, clients: null };
+const now = () => Date.now() + A.offset;
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ic = (n) => `<svg class="i"><use href="#i-${n}"/></svg>`;
+const coin = '<svg class="coin"><use href="#coin"/></svg>';
+const hhmm = (t) => new Date(t).toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' });
+const fmtDur = (sec) => { sec = Math.max(0, Math.round(sec)); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  return h ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`; };
+const fmtMin = (sec) => { const m = Math.floor(sec / 60); return m >= 60 ? `${Math.floor(m / 60)} t ${m % 60} min` : `${m} min`; };
+const kidById = (id) => A.S.kids.find((k) => k.id === id);
+const pendCount = () => A.S.jobs.filter((j) => j.status === 'pending').length + (A.S.rewards || []).filter((r) => r.status === 'pending').length + (A.S.loans || []).filter((l) => l.status === 'parent').length;
+const isImg = (v) => /^data:image\//.test(String(v || ''));
+const icn = (v) => isImg(v) ? `<img class="icimg" src="${esc(v)}" alt="">` : esc(v);
+const icBtn = (up, id, k, v) => `<button class="icbtn" data-act="pickIcon" data-up2="${up}" data-id="${id}" data-k="${k}" aria-label="Velg ikon">${icn(v)}</button>`;
+const ICONS = {
+  'Oppgaver': '🪥 🛏️ 📚 📖 ✏️ 🧸 🍽️ 🗑️ 🧽 🧹 🧺 👕 🧦 🪴 🐕 🐈 🚿 🛁 🧼 🍳 👨‍🍳 🥗 🛒 🚗 🔨 🪛 🧰 🚲 ⚽ 🎹 🎸 🏃 🥾 🌲 ❄️ 🍂 📦 💤 🙏 🤝',
+  'Spill og tid': '🎮 🕹️ 👾 🚀 🏆 ⏱️ ⌛ 📱 💻 🖥️ 📺 🎧 🧩 ♟️ 🎲 ⚡ 🔥 💎 ⭐ 🌟',
+  'Belønninger': '🍔 🍟 🍕 🌭 🌮 🍦 🍩 🍫 🍿 🥤 🎬 🎡 🎢 🏊 🎳 ⛸️ 🏕️ 🛏️ 🏠 🎁 🛍️ 💸 🧁 🎂 🎉 🎟️ 🚌 ✈️',
+  'Avatarer': '🦖 🦄 🐼 🦁 🐯 🐻 🐨 🐸 🐵 🦊 🐶 🐱 🐰 🐧 🦈 🐙 🦋 🐲 👽 🤖 👻 🥷 🧙 🧚 🦸 🧜 🏎️ ⚡'
+};
+
+/* ---------- data ---------- */
+function loadDemo() {
+  try { const s = JSON.parse(localStorage.getItem('gc-demo')); if (s && s.kids) return L.migrate(s); } catch {}
+  return L.defaultState();
+}
+function saveDemo() { try { localStorage.setItem('gc-demo', JSON.stringify(A.S)); } catch {} }
+
+async function boot() {
+  try {
+    const r = await fetch('api/state', { cache: 'no-store' });
+    const j = await r.json();
+    if (!j || !j.state) throw 0;
+    A.mode = 'server'; setServer(j);
+    setInterval(poll, 2500);
+  } catch {
+    A.mode = 'demo'; A.S = loadDemo();
+    setInterval(() => { if (L.tick(A.S, Date.now())) { saveDemo(); schedule(); } }, 1000);
+    setInterval(() => { L.recordUsage(A.S, Date.now(), null); saveDemo(); schedule(); }, 60000);
+  }
+  for (const k of A.S.kids) A.prevCoins[k.id] = k.coins;
+  render();
+  setInterval(tickUI, 1000);
+}
+function setServer(j) { A.offset = j.now - Date.now(); A.S = j.state; A.offline = false; }
+async function poll() {
+  try {
+    const r = await fetch('api/state?rev=' + A.S.rev, { cache: 'no-store' }); const j = await r.json();
+    const was = A.offline, rev = A.S.rev;
+    if (j.same) { A.offset = j.now - Date.now(); A.offline = false; if (was) schedule(); return; }
+    setServer(j);
+    if (j.state.rev !== rev || was) schedule();
+  } catch { if (!A.offline) { A.offline = true; schedule(); } }
+}
+
+async function act(a, quiet) {
+  if (L.PARENT.has(a.type)) a.pin = A.pin;
+  try {
+    let res;
+    if (A.mode === 'demo') {
+      if (a.type === 'routerTest' || a.type === 'routerClients' || a.type === 'routerScan') { A.modal = guideModal; render(); throw new Error(''); }
+      if (/^ai(Image|ImagesAll|Cancel)$/.test(a.type)) throw new Error('AI-bilder lages av hjemmeserveren (gratis via Pollinations). Installer den først – i demoen kan du laste opp egne bilder.');
+      if (a.type === 'notifyTest') throw new Error('E-post sendes fra hjemmeserveren – installer den først (se Hjelp og oppsett)');
+      res = L.apply(A.S, a, Date.now()); saveDemo();
+    } else {
+      const r = await fetch('api/action', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a) });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Noe gikk galt');
+      setServer(j); res = j.result;
+    }
+    schedule(); return res;
+  } catch (e) { if (e.message && !quiet) toast(e.message, true); throw e; }
+}
+
+/* ---------- render ---------- */
+const editing = () => { const el = document.activeElement; return el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && $app.contains(el); };
+function schedule() { if (editing()) A.pending = true; else render(); }
+document.addEventListener('focusout', () => setTimeout(() => { if (A.pending && !editing()) { A.pending = false; render(); } }, 60));
+
+function render() {
+  A.pending = false;
+  if (A.screen === 'kid' && !kidById(A.kidId)) A.screen = 'home';
+  if (A.screen === 'parent' && !A.pin) A.screen = 'home';
+  const body = A.screen === 'kid' ? viewKid(kidById(A.kidId)) : A.screen === 'parent' ? viewParent() : viewHome();
+  const y = window.scrollY;
+  $app.innerHTML = `<div class="wrap">${A.offline ? '<div class="offline">Mistet kontakt med hjemmeserveren – prøver igjen…</div>' : ''}${body}</div>${A.modal ? `<div class="scrim${A.modalFresh ? ' anim' : ''}" data-act="closeModal"><div class="modal" data-stop>${A.modal()}</div></div>` : ''}`;
+  window.scrollTo(0, y);
+  A.modalFresh = false; A.paneFresh = false;
+  celebrate();
+  tickUI();
+}
+
+const CATSTYLE = { daglig: '#16c28f', skole: '#8b7bff', hjemme: '#2fa4ff', ute: '#ffb020', stort: '#ff7a45' };
+const TINTS = ['#ff7a45', '#2fa4ff', '#16c28f', '#ff5fa2', '#8b7bff', '#ffb020'];
+
+function viewHome() {
+  const w = L.windowInfo(A.S, now());
+  const pend = pendCount();
+  return `
+  <header class="top">
+    <div class="brand"><span class="logo">${coin}</span>
+      <div><div class="wm">Gaming <b>Coins</b></div><div class="sub">Gjør oppdrag · tjen coins · kjøp spilletid</div></div></div>
+    <div class="grow"></div>
+    <div class="status"><span class="win ${w.open ? 'open' : ''}">${esc(w.label)}</span><span class="clock" data-clock></span></div>
+  </header>
+  <main class="kids">${A.S.kids.map((k) => {
+    const act = A.S.jobs.filter((j) => j.kidId === k.id && j.status === 'active').length;
+    const pen = A.S.jobs.filter((j) => j.kidId === k.id && j.status === 'pending').length;
+    const rew = (A.S.rewards || []).some((r) => r.kidId === k.id && r.status === 'pending');
+    const lreq = (A.S.loans || []).filter((l) => l.lenderId === k.id && l.status === 'requested').length;
+    const lv = L.level(k.lifetime);
+    return `<button class="kid ${k.playing ? 'playing' : ''}" style="--c:${esc(k.color)}" data-act="openKid" data-id="${k.id}">
+      <div class="hero"><span class="lvl">Nivå ${lv.lvl}</span>${k.playing ? `<span class="live">${ic('play')} Spiller</span>` : ''}<div class="av">${icn(k.avatar)}</div></div>
+      <div class="kbody">
+        <h2>${esc(k.name)}</h2>
+        <div class="token">${coin}<span>${k.coins}</span></div>
+        <div class="stats">
+          <div class="stat"><small>${k.playing ? 'Igjen' : 'Spilletid'}</small><b data-bank="${k.id}"></b></div>
+          <div class="stat"><small>Nivå ${lv.lvl}</small><span class="xp"><i style="width:${Math.max(4, lv.pct)}%"></i></span></div>
+          <div class="stat"><small>På rad</small><b>${k.streak || 0} ${k.streak === 1 ? 'dag' : 'dager'}</b></div>
+        </div>
+        ${act || pen || rew || lreq ? `<div class="chips">
+          ${lreq ? `<span class="chip hot">Låneforespørsel</span>` : ''}
+          ${act ? `<span class="chip gold">${act} oppdrag i gang</span>` : ''}
+          ${pen ? `<span class="chip hot">${pen} venter på godkjenning</span>` : ''}
+          ${rew ? `<span class="chip">Belønning på vei</span>` : ''}</div>` : '<div class="chips"><span class="chip soft">Trykk for å se oppdrag</span></div>'}
+      </div></button>`;
+  }).join('') || '<div class="empty">Ingen barn lagt inn ennå – trykk på Foreldre for å komme i gang.</div>'}</main>
+  <div class="dock"><span>${A.mode === 'demo' ? `<button class="note" data-act="openGuide">Demo-modus · PIN 1234 · <u>Slik setter du opp</u></button>` : ''}</span>
+    <span class="row" style="gap:10px"><button class="pill round" data-act="toggleSound" aria-label="${SFX.on ? 'Slå av lyd' : 'Slå på lyd'}">${ic(SFX.on ? 'sound' : 'mute')}</button>
+    <button class="pill" data-act="openParent">${ic('lock')} Foreldre ${pend ? `<span class="badge">${pend}</span>` : ''}</button></span></div>`;
+}
+
+function viewKid(k) {
+  const lv = L.level(k.lifetime);
+  const t = A.tab;
+  const head = `<div class="khead" style="--c:${esc(k.color)}">
+    <button class="back" data-act="home" aria-label="Tilbake">${ic('back')}</button>
+    <div class="av">${icn(k.avatar)}</div>
+    <div class="kinfo"><h1>${esc(k.name)}</h1>
+      <div class="kmeta"><span>Nivå ${lv.lvl}</span>${k.streak ? `<span>${ic('fire')} ${k.streak} ${k.streak === 1 ? 'dag' : 'dager'} på rad</span>` : ''}</div>
+      <div class="xpbar"><i style="width:${Math.max(3, lv.pct)}%"></i><span>${lv.pct} / 100 XP til nivå ${lv.lvl + 1}</span></div></div>
+    <div class="token big">${coin}<span>${k.coins}</span></div></div>
+  <nav class="segtabs">
+    <button class="${t === 'tasks' ? 'on' : ''}" data-act="tab" data-v="tasks">${ic('list')} Oppdrag</button>
+    <button class="${t === 'shop' ? 'on' : ''}" data-act="tab" data-v="shop">${ic('cart')} Butikk</button>
+    <button class="${t === 'games' ? 'on' : ''}" data-act="tab" data-v="games">${ic('game')} Spill</button>
+    <button class="${t === 'hist' ? 'on' : ''}" data-act="tab" data-v="hist">${ic('coins')} Lommebok</button>
+  </nav>`;
+  return head + `<div class="pane${A.paneFresh ? ' anim' : ''}">${t === 'shop' ? kidShop(k) : t === 'hist' ? kidWallet(k) : t === 'games' ? kidGames(k) : kidTasks(k)}</div>`;
+}
+
+function kidTasks(k) {
+  const n = now();
+  const mine = A.S.jobs.filter((j) => j.kidId === k.id);
+  const active = mine.filter((j) => j.status === 'active');
+  const pending = mine.filter((j) => j.status === 'pending');
+  let h = '';
+  if (active.length) h += `<h2 class="sec"><span class="dot" style="--k:var(--gold)"></span>I gang – rekk fristen!</h2><div class="grid wide">${active.map((j) => `
+    <div class="card running">
+      <div class="liverow"><div class="ring" data-until="${j.deadline}" data-total="${j.deadline - j.takenAt}"><span></span></div>
+        <div><span class="qicon sm">${(() => { const tk = A.S.tasks.find((x) => x.id === j.taskId); return tk && tk.image ? `<img class="icimg" src="${esc(tk.image)}" alt="">` : icn(j.emoji); })()}</span><h3>${esc(j.title)}</h3>
+          <div class="meta"><span class="reward inline">${coin}+${j.coins}</span><span>Frist kl. ${hhmm(j.deadline)}</span></div></div></div>
+      <div class="row"><button class="btn ok" data-act="done" data-id="${j.id}">${ic('check')} Ferdig!</button>
+        <button class="btn ghost sm" data-act="cancel" data-id="${j.id}">Avbryt</button></div></div>`).join('')}</div>`;
+  if (pending.length) h += `<h2 class="sec"><span class="dot" style="--k:#ff5fa2"></span>Venter på mamma eller pappa</h2><div class="list">${pending.map((j) => `
+    <div class="li"><span class="qicon xs">${icn(j.emoji)}</span><div class="grow"><b>${esc(j.title)}</b><div class="when">Ferdig kl. ${hhmm(j.doneAt)}</div></div><span class="reward inline">${coin}+${j.coins}</span></div>`).join('')}</div>`;
+  for (const [cat, label] of Object.entries(L.CATS)) {
+    const tasks = A.S.tasks.filter((t) => t.category === cat && (!t.kidIds?.length || t.kidIds.includes(k.id)));
+    if (!tasks.length) continue;
+    tasks.sort((a, b) => L.taskAvailable(A.S, b, k, n) - L.taskAvailable(A.S, a, k, n));
+    const free = tasks.filter((t) => L.taskAvailable(A.S, t, k, n)).length;
+    h += `<h2 class="sec"><span class="dot" style="--k:${CATSTYLE[cat]}"></span>${label}<span class="count">${free} ledige</span></h2><div class="grid">${tasks.map((t) => {
+      const ok = L.taskAvailable(A.S, t, k, n);
+      const busy = mine.some((j) => j.taskId === t.id && (j.status === 'active' || j.status === 'pending'));
+      return `<div class="card qcard ${ok ? '' : 'done'}" style="--k:${CATSTYLE[cat]}">
+        <div class="qmedia">${t.image ? `<img src="${esc(t.image)}" alt="" loading="lazy">` : `<span class="qemoji">${icn(t.emoji)}</span>`}
+          <span class="qcoin">${coin}+${t.coins}</span><span class="qtime">${ic('clock')} ${t.deadlineMin} min</span>
+          ${ok ? '' : `<span class="qdone">${busy ? 'Er i gang' : ic('check') + (t.repeat === 'weekly' ? ' Gjort denne uka' : ' Gjort i dag')}</span>`}</div>
+        <div class="qbody"><h3>${esc(t.title)}</h3>
+          ${ok ? `<button class="btn" data-act="take" data-id="${t.id}">${ic('play')} Ta oppdraget</button>` : ''}</div></div>`;
+    }).join('')}</div>`;
+  }
+  return h;
+}
+
+function kidShop(k) {
+  const w = L.windowInfo(A.S, now());
+  const left = L.bankLeft(k, now());
+  const times = A.S.shop.filter((it) => it.kind !== 'reward'), rewards = A.S.shop.filter((it) => it.kind === 'reward');
+  return `<div class="console ${k.playing ? 'on' : ''}">
+    <div class="screen"><div class="lab">${k.playing ? 'Spilletid igjen' : 'Spilletid i banken'}</div>
+      <div class="t" data-bank="${k.id}" data-full>${fmtDur(left)}</div>
+      <span class="win ${w.open ? 'open' : ''}">${esc(w.label)}</span></div>
+    <div class="ctrl">${k.playing
+      ? `<button class="btn bad bigbtn" data-act="play" data-v="0">${ic('pause')} Pause</button><p>Pause sparer resten av tiden til senere.</p>`
+      : `<button class="btn ok bigbtn" data-act="play" data-v="1" ${left < 1 || !w.open ? 'disabled' : ''}>${ic('play')} Start spilling</button>
+         <p>${left < 1 ? 'Kjøp spilletid nedenfor først.' : !w.open ? 'Du kan spille når spilletiden åpner.' : 'Internett åpnes på dine enheter.'}</p>`}</div></div>
+  ${kidDevices(k)}
+  <h2 class="sec"><span class="dot" style="--k:var(--gold)"></span>Kjøp spilletid</h2>
+  <div class="grid shop">${times.map((it, i) => shopCard(k, it, i)).join('')}</div>
+  ${rewards.length ? `<h2 class="sec"><span class="dot" style="--k:#ff5fa2"></span>Belønninger</h2>
+  <div class="grid shop">${rewards.map((it, i) => shopCard(k, it, i + 3)).join('')}</div>` : ''}
+  ${myRewards(k)}`;
+}
+function productMedia(it, i) {
+  return `<div class="pmedia ${it.image ? 'photo' : ''}" style="--k:${TINTS[i % TINTS.length]}">${it.image ? `<img src="${esc(it.image)}" alt="" loading="lazy">` : `<span class="qicon">${icn(it.emoji)}</span>`}
+    ${it.kind !== 'reward' ? `<span class="pbadge">${ic('clock')} ${it.minutes} min</span>` : '<span class="pbadge gift">Belønning</span>'}</div>`;
+}
+function shopCard(k, it, i) {
+  const can = k.coins >= it.cost;
+  const pct = Math.min(100, Math.round(k.coins / it.cost * 100));
+  return `<div class="card product ${can ? '' : 'locked'}" style="--k:${TINTS[i % TINTS.length]}">
+    <button class="pmbtn" data-act="viewItem" data-id="${it.id}" data-i="${i}" aria-label="Vis ${esc(it.title)}">${productMedia(it, i)}</button>
+    <div class="pbody"><h3>${esc(it.title)}</h3>
+      ${it.desc ? `<p class="pdesc">${esc(it.desc)}</p>` : ''}
+      <div class="pfoot"><div class="price">${coin} ${it.cost}</div>
+        <button class="btn gold sm" data-act="buy" data-id="${it.id}" ${can ? '' : 'disabled'}>${can ? 'Kjøp' : `Mangler ${it.cost - k.coins}`}</button></div>
+      ${can ? '' : `<div class="save" title="Spart ${pct} %"><i style="width:${pct}%"></i></div>`}</div></div>`;
+}
+function itemModal(kidId, id, i) {
+  return () => {
+    const it = A.S.shop.find((x) => x.id === id), k = kidById(kidId);
+    if (!it || !k) return '<p>Varen finnes ikke lenger.</p><button class="btn" data-act="closeModal">Lukk</button>';
+    const can = k.coins >= it.cost;
+    return `<div class="pmodal">${productMedia(it, i)}
+      <h2 style="margin-top:16px">${esc(it.title)}</h2>
+      ${it.desc ? `<p class="pdesc full">${esc(it.desc)}</p>` : ''}
+      <div class="price" style="justify-content:center;font-size:34px">${coin} ${it.cost}</div>
+      <p class="mute">Du har ${k.coins} coins${can ? '' : ` – du mangler ${it.cost - k.coins}`}</p>
+      <div class="row"><button class="btn ghost" data-act="closeModal">Lukk</button>
+        <button class="btn gold" data-act="buy" data-id="${it.id}" ${can ? '' : 'disabled'}>${can ? 'Kjøp nå' : 'Spar litt til'}</button></div></div>`;
+  };
+}
+function myRewards(k) {
+  const rs = (A.S.rewards || []).filter((r) => r.kidId === k.id).sort((a, b) => b.at - a.at).slice(0, 8);
+  if (!rs.length) return '';
+  const st = { pending: ['gold', 'Venter på mamma eller pappa'], done: ['go', 'Innfridd'], refunded: ['', 'Avlyst – coins tilbake'] };
+  return `<h2 class="sec"><span class="dot" style="--k:#8b7bff"></span>Mine belønninger</h2><div class="list">${rs.map((r) => `<div class="li">
+    <span class="qicon xs">${icn(r.emoji)}</span><div class="grow"><b>${esc(r.title)}</b><div class="when">Kjøpt ${new Date(r.at).toLocaleDateString('no-NO', { weekday: 'short', day: 'numeric', month: 'short' })}</div></div>
+    <span class="chip ${st[r.status][0]}">${st[r.status][1]}</span></div>`).join('')}</div>`;
+}
+
+function kidHist(k) {
+  const items = A.S.log.filter((l) => l.kidId === k.id).slice(0, 40);
+  if (!items.length) return '<div class="empty">Ingenting her ennå. Ta en oppgave for å starte!</div>';
+  return `<div class="list">${items.map((l) => `<div class="li"><div class="grow">${esc(l.text)}</div>
+    ${l.coins ? `<span class="${l.coins > 0 ? 'plus' : 'minus'}">${l.coins > 0 ? '+' : ''}${l.coins} ${coin}</span>` : ''}
+    <span class="when">${new Date(l.t).toLocaleDateString('no-NO', { weekday: 'short' })} ${hhmm(l.t)}</span></div>`).join('')}</div>`;
+}
+
+/* ---------- læringsspill ---------- */
+const WORDS = [['🐶', 'HUND', 'dog'], ['🐱', 'KATT', 'cat'], ['🐟', 'FISK', 'fish'], ['🍎', 'EPLE', 'apple'], ['🍌', 'BANAN', 'banana'],
+  ['🚗', 'BIL', 'car'], ['🏠', 'HUS', 'house'], ['☀️', 'SOL', 'sun'], ['🌙', 'MÅNE', 'moon'], ['⭐', 'STJERNE', 'star'], ['🌳', 'TRE', 'tree'],
+  ['🌸', 'BLOMST', 'flower'], ['🐴', 'HEST', 'horse'], ['🐮', 'KU', 'cow'], ['🐷', 'GRIS', 'pig'], ['🐑', 'SAU', 'sheep'], ['🐦', 'FUGL', 'bird'],
+  ['🦆', 'AND', 'duck'], ['🐻', 'BJØRN', 'bear'], ['🦊', 'REV', 'fox'], ['🐭', 'MUS', 'mouse'], ['🍞', 'BRØD', 'bread'], ['🥛', 'MELK', 'milk'],
+  ['🧀', 'OST', 'cheese'], ['🍓', 'JORDBÆR', 'strawberry'], ['⚽', 'BALL', 'ball'], ['📚', 'BOK', 'book'], ['✏️', 'BLYANT', 'pencil'],
+  ['🚲', 'SYKKEL', 'bicycle'], ['⛵', 'BÅT', 'boat'], ['✈️', 'FLY', 'plane'], ['🚌', 'BUSS', 'bus'], ['🎈', 'BALLONG', 'balloon'], ['👟', 'SKO', 'shoe'],
+  ['🧦', 'SOKK', 'sock'], ['🎂', 'KAKE', 'cake'], ['🍦', 'IS', 'ice cream'], ['🔑', 'NØKKEL', 'key'], ['🪑', 'STOL', 'chair'], ['🛏️', 'SENG', 'bed'],
+  ['🕐', 'KLOKKE', 'clock'], ['🌧️', 'REGN', 'rain'], ['⛄', 'SNØMANN', 'snowman'], ['🐝', 'BIE', 'bee'], ['🐸', 'FROSK', 'frog'],
+  ['🦋', 'SOMMERFUGL', 'butterfly'], ['🍕', 'PIZZA', 'pizza'], ['🥕', 'GULROT', 'carrot'], ['🍇', 'DRUER', 'grapes'], ['🐘', 'ELEFANT', 'elephant'],
+  ['🦁', 'LØVE', 'lion'], ['🐒', 'APE', 'monkey'], ['🍊', 'APPELSIN', 'orange'], ['🌈', 'REGNBUE', 'rainbow'], ['🚂', 'TOG', 'train']];
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pickN = (arr, n, not) => shuffle(arr.filter((x) => !not.includes(x))).slice(0, n);
+function numOpts(ans) {
+  const set = new Set([ans]), d = [1, 2, 3, 4, 5, 10, -1, -2, -3, -4, -5, -10];
+  while (set.size < 4) { const v = ans + d[rnd(0, d.length - 1)]; if (v >= 0) set.add(v); }
+  return shuffle([...set]).map(String);
+}
+function mathQ(level) {
+  let a, b, op;
+  if (level === 'lett') { op = Math.random() < 0.5 ? '+' : '−'; a = rnd(0, 10); b = rnd(0, 10); if (op === '−' && b > a) [a, b] = [b, a]; }
+  else if (level === 'middels') {
+    const t = rnd(0, 2);
+    if (t === 2) { op = '×'; a = rnd(1, 5); b = rnd(1, 10); }
+    else if (t === 1) { op = '−'; a = rnd(10, 99); b = rnd(1, a); }
+    else { op = '+'; a = rnd(10, 89); b = rnd(1, 99 - a); }
+  } else {
+    const t = rnd(0, 3);
+    if (t === 0) { op = '×'; a = rnd(2, 10); b = rnd(2, 10); }
+    else if (t === 1) { op = '÷'; b = rnd(2, 10); a = b * rnd(1, 10); }
+    else if (t === 2) { op = '+'; a = rnd(100, 899); b = rnd(10, 999 - a); }
+    else { op = '−'; a = rnd(100, 999); b = rnd(10, a); }
+  }
+  const ans = op === '+' ? a + b : op === '−' ? a - b : op === '×' ? a * b : a / b;
+  return { q: `${a} ${op} ${b} = ?`, ans: String(ans), opts: numOpts(ans) };
+}
+const GAMES = {
+  count: { name: 'Telle', desc: 'Hvor mange ser du?', glyph: '123', age: '3–6 år', color: '#ffb020', levels: { lett: 'Opp til 10', vansk: 'Opp til 20' } },
+  abc: { name: 'Alfabetet', desc: 'Hvilken bokstav kommer før eller etter?', glyph: 'ABC', age: '5–7 år', color: '#8b7bff', levels: { lett: 'Etter', vansk: 'Før og etter' } },
+  words: { name: 'Les ordet', desc: 'Se på bildet og finn riktig ord', glyph: 'Aa', age: '5–8 år', color: '#16c28f' },
+  rhyme: { name: 'Hva rimer?', desc: 'Finn ordet som rimer', glyph: 'rim', age: '5–8 år', color: '#00b3a4' },
+  letter: { name: 'Hvilken bokstav mangler?', desc: 'Øv på å stave ord', glyph: 'B_L', age: '6–9 år', color: '#ff7a45' },
+  math: { name: 'Matte-sprint', desc: 'Pluss, minus, gange og dele', glyph: '1+2', age: '6–12 år', color: '#2fa4ff', levels: { lett: 'Lett', middels: 'Middels', vansk: 'Vanskelig' } },
+  clock: { name: 'Klokka', desc: 'Hva er klokka?', glyph: '3:15', age: '6–10 år', color: '#e0559a', levels: { lett: 'Hel og halv', middels: 'Kvarter', vansk: '5 minutter' } },
+  times: { name: 'Gangetabellen', desc: 'Øv på gangetabellen', glyph: '×', age: '7–11 år', color: '#3a6bff', levels: { lett: '1–5', vansk: '1–10' } },
+  english: { name: 'Engelsk', desc: 'Hva heter det på engelsk?', glyph: 'EN', age: '7–12 år', color: '#ff5fa2' },
+  capitals: { name: 'Hovedsteder', desc: 'Hva er hovedstaden i landet?', glyph: 'By', age: '9–14 år', color: '#0f9d58', levels: { lett: 'Europa', vansk: 'Hele verden' } },
+};
+const ALPHA = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ'];
+const RHYMES = [['HUS', 'MUS', 'KRUS', 'BRUS', 'LUS'], ['KATT', 'HATT', 'SATT'], ['BALL', 'FALL', 'KNALL', 'HALL'], ['HEST', 'FEST', 'VEST', 'REST'],
+  ['SKO', 'KO', 'BRO', 'RO'], ['BIL', 'PIL', 'SMIL'], ['SOL', 'STOL', 'FIOL'], ['MAT', 'FAT', 'PRAT', 'SALAT'], ['GRIS', 'IS', 'RIS', 'PRIS'],
+  ['KAKE', 'BAKE', 'SMAKE', 'RAKE'], ['MANN', 'VANN', 'SPANN'], ['SNØ', 'SJØ', 'FRØ'], ['BOK', 'KROK'], ['SENG', 'ENG', 'STENG']];
+const CAPITALS = [['🇳🇴', 'Norge', 'Oslo', 1], ['🇸🇪', 'Sverige', 'Stockholm', 1], ['🇩🇰', 'Danmark', 'København', 1], ['🇫🇮', 'Finland', 'Helsingfors', 1],
+  ['🇮🇸', 'Island', 'Reykjavík', 1], ['🇩🇪', 'Tyskland', 'Berlin', 1], ['🇫🇷', 'Frankrike', 'Paris', 1], ['🇪🇸', 'Spania', 'Madrid', 1], ['🇮🇹', 'Italia', 'Roma', 1],
+  ['🇬🇧', 'Storbritannia', 'London', 1], ['🇵🇱', 'Polen', 'Warszawa', 1], ['🇳🇱', 'Nederland', 'Amsterdam', 1], ['🇧🇪', 'Belgia', 'Brussel', 1],
+  ['🇵🇹', 'Portugal', 'Lisboa', 1], ['🇬🇷', 'Hellas', 'Athen', 1], ['🇦🇹', 'Østerrike', 'Wien', 1], ['🇨🇭', 'Sveits', 'Bern', 1], ['🇮🇪', 'Irland', 'Dublin', 1],
+  ['🇨🇿', 'Tsjekkia', 'Praha', 1], ['🇭🇺', 'Ungarn', 'Budapest', 1], ['🇪🇪', 'Estland', 'Tallinn', 1], ['🇱🇻', 'Latvia', 'Riga', 1], ['🇱🇹', 'Litauen', 'Vilnius', 1],
+  ['🇺🇸', 'USA', 'Washington D.C.', 0], ['🇨🇦', 'Canada', 'Ottawa', 0], ['🇯🇵', 'Japan', 'Tokyo', 0], ['🇨🇳', 'Kina', 'Beijing', 0], ['🇪🇬', 'Egypt', 'Kairo', 0],
+  ['🇦🇺', 'Australia', 'Canberra', 0], ['🇹🇷', 'Tyrkia', 'Ankara', 0], ['🇧🇷', 'Brasil', 'Brasília', 0], ['🇮🇳', 'India', 'New Delhi', 0], ['🇲🇽', 'Mexico', 'Mexico by', 0],
+  ['🇦🇷', 'Argentina', 'Buenos Aires', 0], ['🇰🇪', 'Kenya', 'Nairobi', 0], ['🇿🇦', 'Sør-Afrika', 'Pretoria', 0], ['🇰🇷', 'Sør-Korea', 'Seoul', 0], ['🇹🇭', 'Thailand', 'Bangkok', 0]];
+const COUNT_EMOJI = ['🍎', '⭐', '🐟', '🎈', '🐞', '🍓', '⚽', '🌸', '🐥', '🚗'];
+const HOURS = ['tolv', 'ett', 'to', 'tre', 'fire', 'fem', 'seks', 'sju', 'åtte', 'ni', 'ti', 'elleve', 'tolv'];
+function clockPhrase(h, m) {
+  const hh = (x) => HOURS[((x - 1) % 12) + 1], n = h % 12 || 12, nx = (n % 12) + 1;
+  return { 0: `klokka ${hh(n)}`, 5: `fem over ${hh(n)}`, 10: `ti over ${hh(n)}`, 15: `kvart over ${hh(n)}`, 20: `ti på halv ${hh(nx)}`, 25: `fem på halv ${hh(nx)}`,
+    30: `halv ${hh(nx)}`, 35: `fem over halv ${hh(nx)}`, 40: `ti over halv ${hh(nx)}`, 45: `kvart på ${hh(nx)}`, 50: `ti på ${hh(nx)}`, 55: `fem på ${hh(nx)}` }[m];
+}
+function clockSvg(h, m) {
+  const ha = ((h % 12) + m / 60) * 30, ma = m * 6;
+  const nums = Array.from({ length: 12 }, (_, i) => { const a = (i + 1) * 30 * Math.PI / 180; return `<text x="${100 + 70 * Math.sin(a)}" y="${100 - 70 * Math.cos(a) + 7}" text-anchor="middle">${i + 1}</text>`; }).join('');
+  const ticks = Array.from({ length: 60 }, (_, i) => `<line x1="100" y1="${i % 5 ? 14 : 12}" x2="100" y2="${i % 5 ? 18 : 24}" transform="rotate(${i * 6} 100 100)" stroke-width="${i % 5 ? 1.5 : 3}"/>`).join('');
+  return `<svg class="clock" viewBox="0 0 200 200" role="img" aria-label="Analog klokke"><circle cx="100" cy="100" r="94" class="face"/>
+    <g class="tk">${ticks}</g><g class="nm">${nums}</g>
+    <line x1="100" y1="100" x2="100" y2="52" class="hh" transform="rotate(${ha} 100 100)"/>
+    <line x1="100" y1="100" x2="100" y2="30" class="mh" transform="rotate(${ma} 100 100)"/><circle cx="100" cy="100" r="6" class="ctr"/></svg>`;
+}
+const uniqOpts = (ans, pool, n = 3) => shuffle([ans, ...pickN([...new Set(pool)], n, [ans])]);
+function makeRound(type, level) {
+  if (QA[type]) return EXTRA.qa(type);
+  if (EXTRA[type]) return EXTRA[type](level || 'lett');
+  const n = 10, L10 = Array.from({ length: n });
+  switch (type) {
+    case 'math': return L10.map(() => mathQ(level));
+    case 'times': return L10.map(() => { const a = rnd(1, level === 'lett' ? 5 : 10), b = rnd(1, 10); return { q: `${a} × ${b} = ?`, ans: String(a * b), opts: numOpts(a * b) }; });
+    case 'count': return L10.map(() => { const c = rnd(1, level === 'vansk' ? 20 : 10), e = COUNT_EMOJI[rnd(0, COUNT_EMOJI.length - 1)];
+      return { pic: e.repeat(c), many: true, q: 'Hvor mange ser du?', ans: String(c), opts: numOptsMin(c, 1) }; });
+    case 'clock': return L10.map(() => { const step = level === 'lett' ? 30 : level === 'middels' ? 15 : 5; const h = rnd(1, 12), m = rnd(0, 60 / step - 1) * step;
+      const ans = clockPhrase(h, m), up = (h % 12) + 1, dn = ((h + 10) % 12) + 1;
+      // typiske forvekslinger først: nabominutter, nabotimer og «halv»-feilen
+      const near = shuffle([clockPhrase(h, (m + step) % 60), clockPhrase(h, (m - step + 60) % 60), clockPhrase(up, m), clockPhrase(dn, m), clockPhrase(dn, (m + 30) % 60)]);
+      const picks = [...new Set(near)].filter((x) => x !== ans).slice(0, 3);
+      while (picks.length < 3) { const x = clockPhrase(rnd(1, 12), rnd(0, 60 / step - 1) * step); if (x !== ans && !picks.includes(x)) picks.push(x); }
+      return { pic: clockSvg(h, m), raw: true, q: 'Hva er klokka?', ans, opts: shuffle([ans, ...picks]) }; });
+    case 'abc': return L10.map(() => { const before = level === 'vansk' && Math.random() < 0.5; const i = before ? rnd(1, ALPHA.length - 1) : rnd(0, ALPHA.length - 2);
+      const ans = ALPHA[before ? i - 1 : i + 1]; return { q: `Hvilken bokstav kommer ${before ? 'før' : 'etter'} ${ALPHA[i]}?`, big2: true, ans, opts: uniqOpts(ans, ALPHA.slice(Math.max(0, i - 4), i + 5)) }; });
+    case 'rhyme': return shuffle(RHYMES.slice()).slice(0, n).map((g) => { const [w, r] = shuffle(g.slice()); const others = RHYMES.filter((x) => x !== g).flat();
+      return { q: `Hva rimer på ${w}?`, big2: true, ans: r, opts: uniqOpts(r, others) }; });
+    case 'capitals': { const list = CAPITALS.filter((c) => level === 'vansk' || c[3]); return shuffle(list.slice()).slice(0, n).map((c) =>
+      ({ pic: c[0], q: `Hva er hovedstaden i ${c[1]}?`, ans: c[2], opts: uniqOpts(c[2], list.map((x) => x[2])) })); }
+  }
+  const items = shuffle(WORDS.slice()).slice(0, n);
+  return items.map((w) => {
+    if (type === 'words') return { pic: w[0], q: 'Hvilket ord passer til bildet?', ans: w[1], opts: uniqOpts(w[1], WORDS.map((x) => x[1])) };
+    if (type === 'english') return { pic: w[0], q: 'Hva heter dette på engelsk?', ans: w[2], opts: uniqOpts(w[2], WORDS.map((x) => x[2])) };
+    const letters = [...w[1]], pos = rnd(0, letters.length - 1), ans = letters[pos];
+    return { pic: w[0], q: letters.map((c, i) => (i === pos ? '_' : c)).join(' '), big: true, ans, opts: uniqOpts(ans, [...'ABDEFGHIJKLMNOPRSTUVYÆØÅ']) };
+  });
+}
+/* ---------- 30 ekstra spill ---------- */
+const CATS_G = { matte: 'Matte', norsk: 'Norsk', engelsk: 'Engelsk', kunnskap: 'Kunnskap' };
+Object.assign(GAMES.count, { cat: 'matte' }); Object.assign(GAMES.abc, { cat: 'norsk' }); Object.assign(GAMES.words, { cat: 'norsk' });
+Object.assign(GAMES.rhyme, { cat: 'norsk' }); Object.assign(GAMES.letter, { cat: 'norsk' }); Object.assign(GAMES.math, { cat: 'matte' });
+Object.assign(GAMES.clock, { cat: 'matte' }); Object.assign(GAMES.times, { cat: 'matte' }); Object.assign(GAMES.english, { cat: 'engelsk' }); Object.assign(GAMES.capitals, { cat: 'kunnskap' });
+const LV2 = { lett: 'Lett', vansk: 'Vanskelig' };
+Object.assign(GAMES, {
+  monster: { cat: 'matte', name: 'Hva kommer nå?', desc: 'Finn mønsteret', glyph: '◆◇◆', age: '4–7 år', color: '#ffb020', levels: LV2 },
+  storst: { cat: 'matte', name: 'Størst eller minst', desc: 'Sammenlign tall', glyph: '>', age: '5–8 år', color: '#ff9f1c', levels: LV2 },
+  tiervenner: { cat: 'matte', name: 'Tiervenner', desc: 'Hva mangler til 10 eller 100?', glyph: '+?=10', age: '5–8 år', color: '#2fa4ff', levels: { lett: 'Til 10', vansk: 'Til 100' } },
+  parodde: { cat: 'matte', name: 'Partall eller oddetall', desc: 'Kan tallet deles på 2?', glyph: '2|3', age: '6–9 år', color: '#5b8cff', levels: LV2 },
+  dobbel: { cat: 'matte', name: 'Dobbel og halv', desc: 'Doble og halvere tall', glyph: '×2', age: '6–9 år', color: '#3a6bff', levels: LV2 },
+  tallrekke: { cat: 'matte', name: 'Tallrekker', desc: 'Hvilket tall mangler?', glyph: '2,4,_', age: '6–10 år', color: '#00a3d9', levels: LV2 },
+  penger: { cat: 'matte', name: 'Penger tilbake', desc: 'Hvor mye får du igjen?', glyph: 'kr', age: '7–10 år', color: '#16a37a', levels: LV2 },
+  tid: { cat: 'matte', name: 'Tid og kalender-tall', desc: 'Minutter, timer, dager og år', glyph: '60', age: '7–10 år', color: '#e0559a' },
+  former: { cat: 'matte', name: 'Former', desc: 'Hjørner, sider og figurer', glyph: '△□', age: '6–10 år', color: '#8b7bff' },
+  maal: { cat: 'matte', name: 'Måleenheter', desc: 'Meter, kilo, liter og mil', glyph: 'cm', age: '8–12 år', color: '#0f9d58' },
+  avrund: { cat: 'matte', name: 'Avrunding', desc: 'Rund av til nærmeste tier eller hundre', glyph: '≈', age: '8–11 år', color: '#2b7bb9', levels: { lett: 'Til 10', vansk: 'Til 100' } },
+  romer: { cat: 'matte', name: 'Romertall', desc: 'Hva betyr XIV?', glyph: 'XIV', age: '8–12 år', color: '#b0761c', levels: { lett: '1–20', vansk: '1–100' } },
+  brok: { cat: 'matte', name: 'Brøk av tall', desc: 'Hva er en halv, en tredjedel …?', glyph: '½', age: '8–12 år', color: '#d9480f', levels: LV2 },
+  likning: { cat: 'matte', name: 'Finn x', desc: 'Enkle likninger', glyph: 'x=?', age: '9–13 år', color: '#7048e8', levels: LV2 },
+  negativ: { cat: 'matte', name: 'Minus-tall', desc: 'Regn med negative tall', glyph: '−3', age: '9–13 år', color: '#1971c2', levels: LV2 },
+  prosent: { cat: 'matte', name: 'Prosent', desc: 'Hvor mye er 25 % av 80?', glyph: '%', age: '10–14 år', color: '#c2255c', levels: LV2 },
+  forste: { cat: 'norsk', name: 'Første bokstav', desc: 'Hvilken bokstav starter ordet med?', glyph: 'A…', age: '4–6 år', color: '#12b886' },
+  motsatt: { cat: 'norsk', name: 'Det motsatte', desc: 'Stor ↔ liten', glyph: '↔', age: '5–9 år', color: '#20c997' },
+  flertall: { cat: 'norsk', name: 'Én og mange', desc: 'Én bok – mange …?', glyph: '1→2', age: '6–9 år', color: '#0ca678' },
+  alfaord: { cat: 'norsk', name: 'Alfabetisk rekkefølge', desc: 'Hvilket ord kommer først?', glyph: 'A–Å', age: '7–10 år', color: '#099268' },
+  ordklasse: { cat: 'norsk', name: 'Ordklasser', desc: 'Substantiv, verb eller adjektiv?', glyph: 'S·V·A', age: '8–12 år', color: '#087f5b' },
+  kalender: { cat: 'norsk', name: 'Dager og måneder', desc: 'Hva kommer før og etter?', glyph: 'MAN', age: '6–9 år', color: '#f76707', levels: { lett: 'Ukedager', vansk: 'Måneder' } },
+  engno: { cat: 'engelsk', name: 'Engelsk → norsk', desc: 'Hva betyr ordet?', glyph: 'EN→NO', age: '7–12 år', color: '#f06595' },
+  engfarger: { cat: 'engelsk', name: 'Farger og tall på engelsk', desc: 'Red, blue, one, two …', glyph: '123 EN', age: '6–10 år', color: '#e64980' },
+  dyreunger: { cat: 'kunnskap', name: 'Dyreunger', desc: 'Hva heter ungen?', glyph: 'kalv', age: '5–9 år', color: '#82c91e' },
+  farger: { cat: 'kunnskap', name: 'Farger', desc: 'Bland farger og gjenkjenn dem', glyph: '🎨', age: '4–8 år', color: '#fa5252' },
+  trafikk: { cat: 'kunnskap', name: 'Trafikk', desc: 'Trygg i trafikken', glyph: 'STOP', age: '5–10 år', color: '#e03131' },
+  natur: { cat: 'kunnskap', name: 'Dyr og kropp', desc: 'Naturfag-quiz', glyph: '🧬', age: '7–12 år', color: '#2f9e44' },
+  rommet: { cat: 'kunnskap', name: 'Verdensrommet', desc: 'Planeter, sola og månen', glyph: '🪐', age: '7–12 år', color: '#364fc7' },
+  flagg: { cat: 'kunnskap', name: 'Flagg', desc: 'Hvilket land har flagget?', glyph: '🏳', age: '8–14 år', color: '#1098ad', levels: { lett: 'Europa', vansk: 'Hele verden' } },
+});
+/* spørsmål med faste svar: [spørsmål, riktig, [feil, feil, feil], bilde?] */
+const QA = {
+  tid: [['Hvor mange minutter er det i en time?', '60', ['100', '30', '24']], ['Hvor mange timer er det i et døgn?', '24', ['12', '60', '7']],
+    ['Hvor mange dager er det i en uke?', '7', ['5', '10', '12']], ['Hvor mange måneder er det i et år?', '12', ['10', '7', '52']],
+    ['Hvor mange sekunder er det i et minutt?', '60', ['100', '10', '30']], ['Omtrent hvor mange uker er det i et år?', '52', ['12', '365', '30']],
+    ['Hvor mange dager er det i et vanlig år?', '365', ['300', '400', '52']], ['Hvor mange dager har februar i et vanlig år?', '28', ['30', '31', '27']],
+    ['Hvor mange minutter er en halvtime?', '30', ['50', '15', '60']], ['Hvor mange minutter er et kvarter?', '15', ['25', '10', '45']]],
+  former: [['Hvor mange hjørner har en trekant?', '3', ['4', '5', '0'], '🔺'], ['Hvor mange sider har et kvadrat?', '4', ['3', '5', '6'], '🟥'],
+    ['Hvor mange hjørner har en sirkel?', '0', ['1', '2', '4'], '⚪'], ['Hvor mange sider har en sekskant?', '6', ['5', '8', '7']],
+    ['Hvor mange sider har en femkant?', '5', ['4', '6', '7']], ['Hvor mange sider har en åttekant?', '8', ['6', '7', '10'], '🛑'],
+    ['Hva heter en form med fire like lange sider og fire rette vinkler?', 'Kvadrat', ['Trekant', 'Sirkel', 'Sekskant']],
+    ['Hvor mange flater har en terning?', '6', ['4', '8', '12'], '🎲'], ['Hvilken form har en fotball?', 'Kule', ['Kube', 'Sylinder', 'Pyramide'], '⚽'],
+    ['Hvor mange grader er en rett vinkel?', '90', ['45', '180', '360']]],
+  maal: [['Hvor mange centimeter er 1 meter?', '100', ['10', '1000', '50']], ['Hvor mange meter er 1 kilometer?', '1000', ['100', '10', '10 000']],
+    ['Hvor mange gram er 1 kilo?', '1000', ['100', '10', '500']], ['Hvor mange desiliter er 1 liter?', '10', ['100', '5', '1000']],
+    ['Hvor mange millimeter er 1 centimeter?', '10', ['100', '5', '1000']], ['Hva måler vi temperatur i?', 'Grader', ['Meter', 'Kilo', 'Liter'], '🌡️'],
+    ['Hva bruker vi for å måle lengde?', 'Linjal', ['Vekt', 'Termometer', 'Klokke'], '📏'], ['Hvor mange milliliter er 1 liter?', '1000', ['100', '10', '500']],
+    ['Hvor mange kilometer er 1 norsk mil?', '10', ['1', '100', '5']], ['Hva bruker vi for å måle hvor tungt noe er?', 'Vekt', ['Linjal', 'Klokke', 'Termometer'], '⚖️']],
+  dyreunger: [['Hva heter ungen til en ku?', 'Kalv', ['Føll', 'Lam', 'Valp'], '🐮'], ['Hva heter ungen til en hest?', 'Føll', ['Kalv', 'Kje', 'Lam'], '🐴'],
+    ['Hva heter ungen til en sau?', 'Lam', ['Kje', 'Føll', 'Kylling'], '🐑'], ['Hva heter ungen til en hund?', 'Valp', ['Kattunge', 'Kalv', 'Lam'], '🐶'],
+    ['Hva heter ungen til en katt?', 'Kattunge', ['Valp', 'Kylling', 'Føll'], '🐱'], ['Hva heter ungen til en høne?', 'Kylling', ['Ælling', 'Kje', 'Lam'], '🐔'],
+    ['Hva heter ungen til en geit?', 'Kje', ['Lam', 'Kalv', 'Føll'], '🐐'], ['Hva heter ungen til en and?', 'Ælling', ['Kylling', 'Valp', 'Kje'], '🦆'],
+    ['Hva heter ungen til en frosk?', 'Rumpetroll', ['Larve', 'Ælling', 'Kje'], '🐸'], ['Hva heter ungen til en sommerfugl?', 'Larve', ['Rumpetroll', 'Kylling', 'Lam'], '🦋'],
+    ['Hva heter ungen til en gris?', 'Smågris', ['Kalv', 'Valp', 'Kje'], '🐷']],
+  farger: [['Blå + gul blir …', 'Grønn', ['Lilla', 'Oransje', 'Brun'], '🟦➕🟨'], ['Rød + gul blir …', 'Oransje', ['Grønn', 'Lilla', 'Rosa'], '🟥➕🟨'],
+    ['Rød + blå blir …', 'Lilla', ['Grønn', 'Oransje', 'Gul'], '🟥➕🟦'], ['Rød + hvit blir …', 'Rosa', ['Lilla', 'Grå', 'Oransje'], '🟥➕⬜'],
+    ['Svart + hvit blir …', 'Grå', ['Brun', 'Rosa', 'Blå'], '⬛➕⬜'], ['Hvilken farge har en banan?', 'Gul', ['Blå', 'Rød', 'Lilla'], '🍌'],
+    ['Hvilken farge har gresset?', 'Grønn', ['Rød', 'Blå', 'Oransje'], '🌱'], ['Hvilken farge har snø?', 'Hvit', ['Svart', 'Grønn', 'Rød'], '❄️'],
+    ['Hvilken farge har et jordbær?', 'Rød', ['Blå', 'Gul', 'Grå'], '🍓'], ['Hvilken farge har en appelsin?', 'Oransje', ['Lilla', 'Grønn', 'Blå'], '🍊'],
+    ['Hvilken farge har himmelen en klar dag?', 'Blå', ['Grønn', 'Brun', 'Rosa'], '☀️']],
+  trafikk: [['Hva betyr rødt lys?', 'Stopp', ['Kjør', 'Kjør fort', 'Snu'], '🔴'], ['Hva betyr grønn mann i lyskrysset?', 'Du kan gå', ['Stopp', 'Løp', 'Vent på rødt'], '🚦'],
+    ['Hvor er det tryggest å gå over veien?', 'I gangfeltet', ['Hvor som helst', 'I en sving', 'Mellom parkerte biler'], '🚸'],
+    ['Hva skal du ha på hodet når du sykler?', 'Hjelm', ['Lue', 'Caps', 'Ingenting'], '🚲'], ['Hva gjør du før du går over veien?', 'Ser til begge sider', ['Lukker øynene', 'Løper', 'Ser på mobilen']],
+    ['Hva bruker du i mørket så bilene ser deg?', 'Refleks', ['Solbriller', 'Mørke klær', 'Paraply'], '🌙'], ['Hvilken side av veien kjører bilene på i Norge?', 'Høyre', ['Venstre', 'Midten', 'Fortauet'], '🚗'],
+    ['Hvor sitter barn trygt i bilen?', 'I barnesete med belte', ['Foran uten belte', 'I bagasjerommet', 'På fanget']], ['Hva betyr gult lys?', 'Gjør deg klar til å stoppe', ['Kjør fortere', 'Parker bilen', 'Snu'], '🟡'],
+    ['Hva gjør du hvis ballen ruller ut i veien?', 'Stopper og ser etter biler', ['Løper rett etter den', 'Lukker øynene', 'Roper på ballen'], '⚽']],
+  natur: [['Hvor mange bein har en edderkopp?', '8', ['6', '4', '10'], '🕷️'], ['Hvor mange bein har et insekt?', '6', ['8', '4', '10'], '🐞'],
+    ['Hvilket organ pumper blodet rundt i kroppen?', 'Hjertet', ['Lungene', 'Magen', 'Hjernen'], '❤️'], ['Hva puster vi med?', 'Lungene', ['Hjertet', 'Nyrene', 'Magen'], '🫁'],
+    ['Hvor mange tenner har en voksen med visdomstenner?', '32', ['20', '28', '40'], '🦷'], ['Hvilket dyr er størst i verden?', 'Blåhval', ['Elefant', 'Giraff', 'Hai'], '🐋'],
+    ['Hvilket dyr er raskest på land?', 'Gepard', ['Løve', 'Hest', 'Hare'], '🐆'], ['Hva spiser en panda mest av?', 'Bambus', ['Fisk', 'Gress', 'Kjøtt'], '🐼'],
+    ['Hvor mange armer har en blekksprut?', '8', ['6', '10', '4'], '🐙'], ['Hva blir vann til når det fryser?', 'Is', ['Damp', 'Regn', 'Sand'], '🧊'],
+    ['Hva trenger planter for å lage næring?', 'Sollys', ['Mørke', 'Salt', 'Sukker'], '🌻']],
+  rommet: [['Hvilken planet er størst?', 'Jupiter', ['Saturn', 'Jorden', 'Mars'], '🪐'], ['Hvilken planet er nærmest sola?', 'Merkur', ['Venus', 'Mars', 'Jorden'], '☀️'],
+    ['Hvilken planet kalles «den røde planeten»?', 'Mars', ['Venus', 'Jupiter', 'Merkur'], '🔴'], ['Hvilken planet har de mest kjente ringene?', 'Saturn', ['Mars', 'Merkur', 'Jorden'], '🪐'],
+    ['Hvor mange planeter er det i solsystemet?', '8', ['7', '9', '10'], '🌌'], ['Hva heter planeten vi bor på?', 'Jorden', ['Mars', 'Venus', 'Saturn'], '🌍'],
+    ['Hva går i bane rundt Jorden?', 'Månen', ['Sola', 'Mars', 'Jupiter'], '🌙'], ['Hva er sola?', 'En stjerne', ['En planet', 'En måne', 'En komet'], '☀️'],
+    ['Hvilken planet er lengst unna sola?', 'Neptun', ['Uranus', 'Saturn', 'Jupiter'], '🔭'], ['Hvor lang tid bruker Jorden på én runde rundt sola?', 'Ett år', ['En dag', 'En måned', 'En uke'], '🌍'],
+    ['Hvem var den første personen som gikk på månen?', 'Neil Armstrong', ['Juri Gagarin', 'Galileo Galilei', 'Isaac Newton'], '👨‍🚀'], ['Hvor lang tid bruker Jorden på å snu seg rundt én gang?', 'Ett døgn', ['En time', 'Ett år', 'En uke'], '🌍']],
+};
+const ANTONYMS = [['STOR', 'LITEN'], ['VARM', 'KALD'], ['LYS', 'MØRK'], ['RASK', 'LANGSOM'], ['HØY', 'LAV'], ['LANG', 'KORT'], ['TUNG', 'LETT'], ['VÅT', 'TØRR'],
+  ['GAMMEL', 'NY'], ['ÅPEN', 'STENGT'], ['FULL', 'TOM'], ['OPP', 'NED'], ['INN', 'UT'], ['DAG', 'NATT'], ['SOMMER', 'VINTER'], ['FØR', 'ETTER'], ['MYK', 'HARD'],
+  ['RIK', 'FATTIG'], ['TYKK', 'TYNN'], ['STERK', 'SVAK'], ['FORAN', 'BAK'], ['MANGE', 'FÅ'], ['GLAD', 'TRIST']];
+const PLURALS = [['BIL', 'BILER'], ['HUND', 'HUNDER'], ['KATT', 'KATTER'], ['BOK', 'BØKER'], ['MANN', 'MENN'], ['BARN', 'BARN'], ['HUS', 'HUS'], ['FOT', 'FØTTER'],
+  ['TANN', 'TENNER'], ['GUTT', 'GUTTER'], ['JENTE', 'JENTER'], ['EPLE', 'EPLER'], ['SKO', 'SKO'], ['TÅ', 'TÆR'], ['KO', 'KYR'], ['BROR', 'BRØDRE'], ['MUS', 'MUS'],
+  ['ØYE', 'ØYNE'], ['BÅT', 'BÅTER'], ['STOL', 'STOLER'], ['HÅND', 'HENDER'], ['SØSTER', 'SØSTRE']];
+const WORDCLASS = { Substantiv: ['HUND', 'BIL', 'SKOLE', 'BALL', 'EPLE', 'LÆRER', 'BY', 'HUS', 'BLOMST', 'VENN'], Verb: ['LØPE', 'SPISE', 'HOPPE', 'LESE', 'SKRIVE', 'SOVE', 'SYNGE', 'SPILLE', 'DANSE', 'TEGNE'],
+  Adjektiv: ['STOR', 'RØD', 'GLAD', 'RASK', 'VARM', 'MORSOM', 'FIN', 'SNILL', 'HØY', 'KALD'] };
+const ENG2 = [['red', 'rød'], ['blue', 'blå'], ['green', 'grønn'], ['yellow', 'gul'], ['black', 'svart'], ['white', 'hvit'], ['pink', 'rosa'], ['orange', 'oransje'], ['purple', 'lilla'],
+  ['brown', 'brun'], ['grey', 'grå'], ['one', 'én'], ['two', 'to'], ['three', 'tre'], ['four', 'fire'], ['five', 'fem'], ['six', 'seks'], ['seven', 'sju'], ['eight', 'åtte'], ['nine', 'ni'], ['ten', 'ti']];
+const WEEKDAYS = ['mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag', 'søndag'];
+const MONTHS = ['januar', 'februar', 'mars', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'desember'];
+const SHOPITEMS = [['🍦', 'en is'], ['🍫', 'en sjokolade'], ['🥤', 'en brus'], ['📕', 'en bok'], ['🧸', 'en bamse'], ['🍎', 'et eple'], ['🎈', 'en ballong'], ['🍪', 'en kjeks']];
+const roman = (n) => [[100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']].reduce((s, [v, r]) => { while (n >= v) { s += r; n -= v; } return s; }, '');
+const numOptsAny = (ans, steps = [1, 2, 3, 5, 10]) => { const set = new Set([ans]); while (set.size < 4) set.add(ans + steps[rnd(0, steps.length - 1)] * (Math.random() < 0.5 ? -1 : 1)); return shuffle([...set]).map(String); };
+const numOptsMin = (ans, min = 1) => { const set = new Set([ans]), d = [1, 2, 3, 4, 5, 10, -1, -2, -3, -4, -5, -10]; while (set.size < 4) { const v = ans + d[rnd(0, d.length - 1)]; if (v >= min) set.add(v); } return shuffle([...set]).map(String); };
+const fmtMinus = (n) => (n < 0 ? '−' + Math.abs(n) : String(n));
+const cmpNo = (a, b) => { const ix = (c) => { const i = ALPHA.indexOf(c); return i < 0 ? 99 : i; }; for (let i = 0; i < Math.max(a.length, b.length); i++) { const d = ix(a[i] || '') - ix(b[i] || ''); if (a[i] === undefined) return -1; if (b[i] === undefined) return 1; if (d) return d; } return 0; };
+const tenQ = (fn) => Array.from({ length: 10 }, fn);
+const EXTRA = {
+  qa: (type) => shuffle(QA[type].slice()).slice(0, 10).map(([q, ans, wrong, pic]) => ({ q, ans, opts: shuffle([ans, ...wrong]), pic, big2: !pic && q.length < 40 })),
+  monster: (lv) => tenQ(() => { const sets = [['🔴', '🔵', '🟢', '🟡'], ['🐶', '🐱', '🐭', '🐸'], ['⭐', '🌙', '☀️', '☁️'], ['🍎', '🍌', '🍇', '🍓']];
+    const set = shuffle(sets[rnd(0, sets.length - 1)].slice()); const pats = lv === 'vansk' ? [[0, 1, 2], [0, 0, 1], [0, 1, 1], [0, 1, 2, 1]] : [[0, 1], [0, 0, 1], [0, 1, 1]];
+    const pat = pats[rnd(0, pats.length - 1)], len = pat.length * 2 + rnd(0, pat.length - 1), seq = Array.from({ length: len + 1 }, (_, i) => set[pat[i % pat.length]]);
+    const ans = seq.pop(); return { pic: seq.join(' ') + ' ❓', many: true, q: 'Hva kommer nå?', ans, opts: shuffle(set.slice()) }; }),
+  storst: (lv) => tenQ(() => { const big = Math.random() < 0.6, [lo, hi] = lv === 'vansk' ? [100, 999] : [1, 20]; const set = new Set(); while (set.size < 4) set.add(rnd(lo, hi));
+    const arr = [...set], ans = String(big ? Math.max(...arr) : Math.min(...arr)); return { q: `Hvilket tall er ${big ? 'størst' : 'minst'}?`, big2: true, ans, opts: arr.map(String) }; }),
+  tiervenner: (lv) => tenQ(() => { const t = lv === 'vansk' ? 100 : 10, a = rnd(lv === 'vansk' ? 5 : 0, t - (lv === 'vansk' ? 5 : 0)); return { q: `${a} + ? = ${t}`, ans: String(t - a), opts: numOpts(t - a) }; }),
+  parodde: (lv) => tenQ(() => { const n = lv === 'vansk' ? rnd(21, 999) : rnd(1, 20); return { q: `Er ${n} et partall eller et oddetall?`, big2: true, ans: n % 2 ? 'Oddetall' : 'Partall', opts: ['Partall', 'Oddetall'] }; }),
+  dobbel: (lv) => tenQ(() => { const hi = lv === 'vansk' ? 50 : 10; if (Math.random() < 0.5) { const n = rnd(1, hi); return { q: `Hva er det dobbelte av ${n}?`, big2: true, ans: String(n * 2), opts: numOpts(n * 2) }; }
+    const n = rnd(1, hi) * 2; return { q: `Hva er halvparten av ${n}?`, big2: true, ans: String(n / 2), opts: numOpts(n / 2) }; }),
+  tallrekke: (lv) => tenQ(() => { const steps = lv === 'vansk' ? [3, 4, 6, 25, -2, -5, -10] : [1, 2, 5, 10]; const st = steps[rnd(0, steps.length - 1)], start = st < 0 ? rnd(40, 100) : rnd(0, 20);
+    const seq = Array.from({ length: 5 }, (_, i) => start + st * i), hole = rnd(1, 3), ans = seq[hole]; return { q: seq.map((v, i) => (i === hole ? '_' : v)).join(', '), big: true, ans: String(ans), opts: numOptsAny(ans, [Math.abs(st), 1, 2]) }; }),
+  penger: (lv) => tenQ(() => { const [e, it] = SHOPITEMS[rnd(0, SHOPITEMS.length - 1)], have = lv === 'vansk' ? [100, 200, 500][rnd(0, 2)] : [10, 20, 50][rnd(0, 2)];
+    const price = rnd(1, have - 1), ans = have - price; return { pic: e, q: `Du har ${have} kr og kjøper ${it} til ${price} kr. Hvor mye får du igjen?`, ans: ans + ' kr', opts: numOpts(ans).map((x) => x + ' kr') }; }),
+  avrund: (lv) => tenQ(() => { const v = lv === 'vansk' ? rnd(101, 999) : rnd(11, 99), u = lv === 'vansk' ? 100 : 10, ans = Math.round(v / u) * u;
+    return { q: `Rund av ${v} til nærmeste ${lv === 'vansk' ? 'hundre' : 'tier'}`, big2: true, ans: String(ans), opts: shuffle([...new Set([ans, ans + u, ans - u, ans + 2 * u].filter((x) => x > 0))].map(String)) }; }),
+  romer: (lv) => tenQ(() => { const n = rnd(1, lv === 'vansk' ? 100 : 20); return { q: `Hvilket tall er ${roman(n)}?`, big2: true, ans: String(n), opts: numOptsMin(n, 1) }; }),
+  brok: (lv) => tenQ(() => { const ds = lv === 'vansk' ? [3, 4, 5, 6, 8, 10] : [2, 4], d = ds[rnd(0, ds.length - 1)], nn = lv === 'vansk' ? rnd(1, d - 1) : 1, total = d * rnd(1, lv === 'vansk' ? 12 : 10), ans = total / d * nn;
+    return { q: `Hva er ${nn}/${d} av ${total}?`, big2: true, ans: String(ans), opts: numOptsMin(ans, 1) }; }),
+  likning: (lv) => tenQ(() => { const x = rnd(1, lv === 'vansk' ? 12 : 10); if (lv !== 'vansk' || Math.random() < 0.4) { const a = rnd(1, 15); return { q: `x + ${a} = ${x + a}`, big: true, ans: String(x), opts: numOpts(x) }; }
+    const a = rnd(2, 9); return Math.random() < 0.5 ? { q: `${a} · x = ${a * x}`, big: true, ans: String(x), opts: numOpts(x) } : { q: `x − ${a} = ${x}`, big: true, ans: String(x + a), opts: numOpts(x + a) }; }),
+  negativ: (lv) => tenQ(() => { const r = lv === 'vansk' ? 20 : 6, a = rnd(-r, r), b = rnd(1, r), plus = Math.random() < 0.5, ans = plus ? a + b : a - b;
+    return { q: `${fmtMinus(a)} ${plus ? '+' : '−'} ${b} = ?`, big: true, ans: fmtMinus(ans), opts: numOptsAny(ans, [1, 2, 3, 2 * Math.abs(a) || 4]).map((x) => fmtMinus(Number(x))) }; }),
+  prosent: (lv) => tenQ(() => { const ps = lv === 'vansk' ? [5, 15, 20, 30, 40, 60, 75, 80, 90] : [10, 25, 50, 100], p = ps[rnd(0, ps.length - 1)]; let base; do { base = rnd(1, 40) * (lv === 'vansk' ? 20 : 4); } while ((base * p) % 100);
+    const ans = base * p / 100; return { q: `Hva er ${p} % av ${base}?`, big2: true, ans: String(ans), opts: numOpts(ans) }; }),
+  forste: () => shuffle(WORDS.slice()).slice(0, 10).map((w) => { const ans = [...w[1]][0]; return { pic: w[0], q: 'Hvilken bokstav starter ordet med?', ans, opts: uniqOpts(ans, ALPHA) }; }),
+  motsatt: () => shuffle(ANTONYMS.slice()).slice(0, 10).map((p) => { const [a, b] = Math.random() < 0.5 ? p : [p[1], p[0]]; return { q: `Hva er det motsatte av ${a}?`, big2: true, ans: b, opts: uniqOpts(b, ANTONYMS.flat().filter((x) => x !== a)) }; }),
+  flertall: () => shuffle(PLURALS.slice()).slice(0, 10).map(([s1, pl]) => { const wrong = [...new Set([s1 + 'ER', s1 + 'E', s1, s1 + 'S', s1 + 'ENE'].filter((x) => x !== pl))];
+    return { q: `Én ${s1} – mange …?`, big2: true, ans: pl, opts: shuffle([pl, ...shuffle(wrong).slice(0, 3)]) }; }),
+  alfaord: () => tenQ(() => { const ws = pickN(WORDS.map((w) => w[1]), 4, []); const ans = ws.slice().sort(cmpNo)[0]; return { q: 'Hvilket ord kommer først i alfabetet?', ans, opts: ws }; }),
+  ordklasse: () => shuffle(Object.entries(WORDCLASS).flatMap(([c, ws]) => ws.map((w) => [w, c]))).slice(0, 10).map(([w, c]) => ({ q: `Hvilken ordklasse er ${w}?`, big2: true, ans: c, opts: ['Substantiv', 'Verb', 'Adjektiv'] })),
+  kalender: (lv) => tenQ(() => { const L2 = lv === 'vansk' ? MONTHS : WEEKDAYS, after = Math.random() < 0.6, i = rnd(0, L2.length - 1), ans = L2[(i + (after ? 1 : -1) + L2.length) % L2.length];
+    return { q: `Hva kommer ${after ? 'etter' : 'før'} ${L2[i]}?`, big2: true, ans, opts: uniqOpts(ans, L2.filter((x) => x !== L2[i])) }; }),
+  engno: () => shuffle(WORDS.slice()).slice(0, 10).map((w) => ({ pic: '', q: `Hva betyr «${w[2]}» på norsk?`, big2: true, ans: w[1], opts: uniqOpts(w[1], WORDS.map((x) => x[1])) })),
+  engfarger: () => shuffle(ENG2.slice()).slice(0, 10).map(([en, no]) => ({ q: `Hva betyr «${en}»?`, big2: true, ans: no, opts: uniqOpts(no, ENG2.map((x) => x[1])) })),
+  flagg: (lv) => { const list = CAPITALS.filter((c) => lv === 'vansk' || c[3]); return shuffle(list.slice()).slice(0, 10).map((c) => ({ pic: c[0], q: 'Hvilket land har dette flagget?', ans: c[1], opts: uniqOpts(c[1], list.map((x) => x[1])) })); },
+};
+
+/* tilgang per barn: settings.games.off inneholder «barnId|spill» eller «barnId|spill:nivå» */
+function gameOff(kidId, game, level) { const off = (A.S.settings.games || {}).off || []; return off.includes(kidId + '|' + game) || (level ? off.includes(`${kidId}|${game}:${level}`) : false); }
+function allowedLevels(kidId, id) { const G = GAMES[id]; if (gameOff(kidId, id)) return []; return G.levels ? Object.keys(G.levels).filter((l) => !gameOff(kidId, id, l)) : ['']; }
+function gamesToday(k) { return k.gameDay === L.dayKey(now()) ? (k.gameCoins || 0) : 0; }
+
+function kidGames(k) {
+  const g = A.S.settings.games || {};
+  const G = A.game;
+  if (G && G.kidId === k.id) return G.done ? gameResult(k, G) : gamePlay(G);
+  if (!g.enabled) return '<div class="empty">Læringsspill er slått av. Spør mamma eller pappa!</div>';
+  const today = gamesToday(k), cap = g.dailyCap || 0, pct = cap ? Math.min(100, Math.round(today / cap * 100)) : 0;
+  return `<div class="card gcap"><div class="row" style="justify-content:space-between"><b>Coins fra spill i dag</b><span class="reward inline">${coin}${today} / ${cap}</span></div>
+      <div class="save"><i style="width:${pct}%"></i></div>
+      <small class="mute">${today >= cap ? 'Du har tjent maks for i dag – men du kan fortsatt øve!' : `${g.coinsPerCorrect} coin per riktig svar${g.perfectBonus ? ` · +${g.perfectBonus} bonus for alle riktige` : ''}`}</small></div>
+    ${(() => { const avail = Object.entries(GAMES).filter(([id]) => allowedLevels(k.id, id).length); const cats = Object.keys(CATS_G).filter((c) => avail.some(([, x]) => x.cat === c));
+      return cats.length > 1 ? `<div class="seg gcats" style="margin-bottom:14px"><button class="${!A.gcat ? 'on' : ''}" data-act="gcat" data-v="">Alle (${avail.length})</button>${cats.map((c) => `<button class="${A.gcat === c ? 'on' : ''}" data-act="gcat" data-v="${c}">${CATS_G[c]} (${avail.filter(([, x]) => x.cat === c).length})</button>`).join('')}</div>` : ''; })()}
+    <div class="appgrid">${Object.entries(GAMES).filter(([id, x]) => allowedLevels(k.id, id).length && (!A.gcat || x.cat === A.gcat)).sort((a, b) => parseInt(a[1].age) - parseInt(b[1].age)).map(([id, G2]) => `
+      <button class="appbtn" data-act="gameSheet" data-v="${id}">${appIcon(id)}<span class="aname">${G2.name}</span><span class="aage">${G2.age}</span></button>`).join('') || '<div class="empty">Ingen spill er åpnet for deg ennå. Spør mamma eller pappa!</div>'}</div>`;
+}
+const GAME_ART = { count: '🧮', abc: '🔤', words: '📖', rhyme: '🎵', letter: '✏️', math: '➗', clock: '⏰', times: '✖️', english: '🇬🇧', capitals: '🏛️',
+  monster: '🧩', storst: '⚖️', tiervenner: '🔟', parodde: '🎲', dobbel: '👯', tallrekke: '🪜', penger: '💰', tid: '⏳', former: '🔷', maal: '📏', avrund: '🎯',
+  romer: '🏺', brok: '🍕', likning: '🔍', negativ: '🌡️', prosent: '💯', forste: '🔠', motsatt: '🔄', flertall: '🐑', alfaord: '🗂️', ordklasse: '🏷️', kalender: '📅',
+  engno: '💬', engfarger: '🌈', dyreunger: '🐣', farger: '🎨', trafikk: '🚦', natur: '🌿', rommet: '🚀', flagg: '🏁' };
+function appIcon(id, size) {
+  const G2 = GAMES[id], img = (A.S.gameIcons || {})[id];
+  return `<span class="appicon" style="--k:${G2.color}${size ? ';--s:' + size + 'px' : ''}">${img ? `<img src="${esc(img)}" alt="">` : `<span class="ae">${GAME_ART[id] || G2.glyph}</span><span class="ag">${esc(G2.glyph)}</span>`}</span>`;
+}
+function gameSheet(kidId, id) {
+  return () => { const G2 = GAMES[id], lv = allowedLevels(kidId, id);
+    return `<div class="gsheet">${appIcon(id, 132)}<h2 style="margin-top:14px">${G2.name}</h2><p class="mute" style="margin:4px 0">${G2.desc}</p>
+      <div class="row" style="justify-content:center;gap:8px;margin:8px 0 16px"><span class="chip">${CATS_G[G2.cat]}</span><span class="chip">${G2.age}</span><span class="chip">10 spørsmål</span></div>
+      <div class="gsheetbtns">${G2.levels ? lv.map((l) => `<button class="btn" style="--b:${G2.color};--bs:color-mix(in srgb,${G2.color} 70%,#000)" data-act="game" data-v="${id}" data-l="${l}">${ic('play')} ${G2.levels[l]}</button>`).join('')
+        : `<button class="btn" style="--b:${G2.color};--bs:color-mix(in srgb,${G2.color} 70%,#000)" data-act="game" data-v="${id}">${ic('play')} Spill</button>`}</div>
+      <button class="btn ghost" data-act="closeModal" style="width:100%;margin-top:10px">Lukk</button></div>`; };
+}
+function gamePlay(G) {
+  const q = G.qs[G.i], meta = GAMES[G.type];
+  return `<div class="gamebox" style="--k:${meta.color}">
+    <div class="ghead"><button class="back" data-act="gameQuit" aria-label="Avslutt">${ic('x')}</button>
+      <div class="grow"><b>${meta.name}${G.level ? ' · ' + meta.levels[G.level] : ''}</b><div class="gdots">${G.qs.map((x, j) => `<i class="${j < G.i ? (x.ok ? 'ok' : 'no') : j === G.i ? 'cur' : ''}"></i>`).join('')}</div></div>
+      <span class="reward inline">${G.correct} riktige</span></div>
+    <div class="gq">${q.pic ? `<div class="gpic ${q.many ? 'many' : ''} ${q.raw ? 'svgpic' : ''}">${q.raw ? q.pic : esc(q.pic)}</div>` : ''}<div class="gtext ${q.big || G.type === 'math' || G.type === 'times' ? 'big' : q.big2 ? 'big2' : ''}">${esc(q.q)}</div></div>
+    <div class="gopts">${q.opts.map((o, j) => {
+      const st = G.picked == null ? '' : o === q.ans ? 'right' : j === G.picked ? 'wrong' : 'dim';
+      return `<button class="gopt ${st}" data-act="ans" data-v="${j}" ${G.picked != null ? 'aria-disabled="true"' : ''}>${esc(o)}</button>`; }).join('')}</div></div>`;
+}
+function gameResult(k, G) {
+  const meta = GAMES[G.type], n = G.qs.length, r = G.result;
+  const stars = G.correct === n ? 3 : G.correct >= n * 0.7 ? 2 : G.correct >= n * 0.4 ? 1 : 0;
+  return `<div class="gamebox result" style="--k:${meta.color}">
+    <div class="stars">${[1, 2, 3].map((i) => `<span class="${i <= stars ? 'on' : ''}">★</span>`).join('')}</div>
+    <h2>${G.correct} av ${n} riktige!</h2>
+    <p class="mute">${G.correct === n ? 'Helt perfekt – superbra!' : G.correct >= n * 0.7 ? 'Kjempebra jobba!' : 'Godt forsøk – øvelse gjør mester!'}</p>
+    ${r === null ? '<p>Lagrer …</p>' : r.error ? `<p class="tag late" style="font-size:15px">${esc(r.error)}</p>`
+      : `<div class="token big" style="margin:8px auto">${coin}<span>+${r.amount}</span></div>${r.capped ? '<p class="mute">Du har nådd dagens grense for coins fra spill.</p>' : ''}`}
+    <div class="row" style="margin-top:16px"><button class="btn ghost" data-act="gameQuit">Velg et annet spill</button>
+      <button class="btn" style="--b:${meta.color};--bs:color-mix(in srgb,${meta.color} 70%,#000)" data-act="game" data-v="${G.type}" data-l="${G.level || ''}">${ic('play')} Spill igjen</button></div></div>`;
+}
+async function answer(j) {
+  const G = A.game; if (!G || G.picked != null || G.done) return;
+  const q = G.qs[G.i]; G.picked = j; q.ok = q.opts[j] === q.ans;
+  if (q.ok) { G.correct++; sound('right'); } else sound('wrong');
+  render();
+  setTimeout(async () => {
+    if (A.game !== G) return;
+    G.picked = null; G.i++;
+    if (G.i < G.qs.length) { render(); return; }
+    G.done = true; G.result = null; render();
+    try {
+      G.result = await act({ type: 'gameReward', kidId: G.kidId, game: G.type, level: G.level || '', total: G.qs.length, correct: G.correct, startedAt: G.startedAt, name: GAMES[G.type].name }, true);
+      if (G.result.amount > 0) { sound('buy'); boom(60); } else sound('success');
+    } catch (e) { G.result = { error: e.message }; }
+    render();
+  }, q.ok ? 650 : 1300);
+}
+
+/* ---------- lommebok og lån ---------- */
+function kidWallet(k) {
+  const cfg = A.S.settings.loans || {};
+  const loans = A.S.loans || [];
+  const nm = (id) => { const x = kidById(id); return x ? `${icn(x.avatar)} ${esc(x.name)}` : '?'; };
+  const toMe = loans.filter((l) => l.lenderId === k.id && l.status === 'requested');
+  const iOwe = loans.filter((l) => l.borrowerId === k.id && l.status === 'active');
+  const owedMe = loans.filter((l) => l.lenderId === k.id && l.status === 'active');
+  const mine = loans.filter((l) => l.borrowerId === k.id && ['requested', 'parent'].includes(l.status));
+  const others = A.S.kids.filter((x) => x.id !== k.id);
+  const lf = A.loanForm || {};
+  const debt = iOwe.reduce((t, l) => t + l.amount - l.paid, 0), credit = owedMe.reduce((t, l) => t + l.amount - l.paid, 0);
+  let h = `<div class="grid wstats" style="margin-bottom:16px">
+    <div class="card wstat"><small class="mute">Jeg har</small><div class="token">${coin}<span>${k.coins}</span></div></div>
+    <div class="card wstat"><small class="mute">Jeg skylder</small><b class="wnum ${debt ? 'minus' : ''}">${debt} coins</b></div>
+    <div class="card wstat"><small class="mute">Andre skylder meg</small><b class="wnum ${credit ? 'plus' : ''}">${credit} coins</b></div></div>`;
+  if (toMe.length) h += `<h2 class="sec"><span class="dot" style="--k:var(--gold)"></span>Noen vil låne av deg</h2><div class="grid wide">${toMe.map((l) => `
+    <div class="card running"><div><b style="font-size:20px">${nm(l.borrowerId)}</b> vil låne <b>${l.amount} coins</b> av deg${l.note ? `<p class="mute" style="margin:4px 0 0">«${esc(l.note)}»</p>` : ''}</div>
+      <div class="row"><button class="btn ok" data-act="loanYes" data-id="${l.id}">${ic('check')} Ja, lån bort</button><button class="btn ghost" data-act="loanNo" data-id="${l.id}">Nei takk</button></div></div>`).join('')}</div>`;
+  if (cfg.enabled && others.length) h += `<h2 class="sec"><span class="dot" style="--k:#8b7bff"></span>Lån coins</h2>
+    <div class="card loanform"><div class="fld">Hvem vil du låne av?</div>
+      <div class="row">${others.map((o) => `<button class="lpick ${lf.lender === o.id ? 'on' : ''}" data-act="loanLender" data-id="${o.id}" style="--c:${esc(o.color)}"><span class="av">${icn(o.avatar)}</span><b>${esc(o.name)}</b><small>${o.coins} coins</small></button>`).join('')}</div>
+      <div class="fld" style="margin-top:8px">Hvor mye? (maks ${cfg.maxAmount})</div>
+      <div class="row">${[5, 10, 20, 50].filter((v) => v <= cfg.maxAmount).map((v) => `<button class="btn sm ${lf.amount === v ? '' : 'ghost'}" data-act="loanAmount" data-v="${v}">${v}</button>`).join('')}</div>
+      <input id="loan-note" class="in" placeholder="Hva skal du bruke det til? (valgfritt)" maxlength="80" value="${esc(lf.note || '')}">
+      <button class="btn gold" data-act="loanAsk" ${lf.lender && lf.amount ? '' : 'disabled'}>Spør om å låne${lf.amount ? ` ${lf.amount} coins` : ''}</button>
+      ${cfg.needParent ? '<small class="mute">Mamma eller pappa må også godkjenne lånet.</small>' : ''}</div>`;
+  if (mine.length) h += `<h2 class="sec"><span class="dot" style="--k:#ff5fa2"></span>Mine forespørsler</h2><div class="list">${mine.map((l) => `
+    <div class="li"><div class="grow">${l.amount} coins fra ${nm(l.lenderId)}<div class="when">${l.status === 'parent' ? 'Venter på mamma eller pappa' : 'Venter på svar'}</div></div></div>`).join('')}</div>`;
+  const loanRow = (l, owe) => {
+    const left = l.amount - l.paid, pct = Math.round(l.paid / l.amount * 100);
+    return `<div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:200px"><b>${owe ? 'Til' : 'Fra'} ${nm(owe ? l.lenderId : l.borrowerId)}</b>
+      <div class="when">Lånt ${new Date(l.startedAt || l.at).toLocaleDateString('no-NO', { day: 'numeric', month: 'short' })} · ${l.amount} coins · betalt ${l.paid}</div>
+      <div class="save" style="margin-top:6px"><i style="width:${pct}%"></i></div></div>
+      <b class="${owe ? 'minus' : 'plus'}">${left} igjen</b>
+      ${owe ? `<div class="row" style="width:100%">${left > 5 ? `<button class="btn ghost sm" data-act="loanPay" data-id="${l.id}" data-v="5" ${k.coins >= 5 ? '' : 'disabled'}>Betal 5</button>` : ''}
+        <button class="btn ok sm" data-act="loanPay" data-id="${l.id}" data-v="${left}" ${k.coins >= left ? '' : 'disabled'}>Betal alt (${left})</button></div>` : ''}</div>`;
+  };
+  if (iOwe.length || owedMe.length) h += `<h2 class="sec"><span class="dot" style="--k:var(--coral)"></span>Oversikt over lån</h2><div class="list">
+    ${iOwe.map((l) => loanRow(l, true)).join('')}${owedMe.map((l) => loanRow(l, false)).join('')}</div>`;
+  return h + `<h2 class="sec"><span class="dot" style="--k:#16c28f"></span>Historikk</h2>` + kidHist(k);
+}
+
+/* ---------- enheter, grupper og statistikk ---------- */
+const fmtM = (m) => { m = Math.round(m || 0); return m >= 60 ? `${Math.floor(m / 60)} t${m % 60 ? ' ' + (m % 60) + ' min' : ''}` : `${m} min`; };
+const lastDays = (n) => Array.from({ length: n }, (_, i) => L.dayKey(now() - (n - 1 - i) * 864e5));
+function usedFor(day, filter) { const D = (A.S.stats || { days: {} }).days[day]; if (!D) return 0; return Object.entries(D.dev || {}).filter(([mac, r]) => filter(mac, r)).reduce((t, [, r]) => t + (r.used || 0), 0); }
+function devStatusHtml(k, d, compact) {
+  const st = L.deviceStatus(A.S, now(), k, d.mac), on = (A.S.deviceOnline || {})[d.mac];
+  return `<div class="devchip ${st.open ? 'open' : 'blocked'}"><span class="ddot"></span>
+    <div class="grow"><b>${esc(d.name || 'Enhet')}</b><small>${st.open ? 'Internett på' : 'Internett stengt'}${compact ? '' : ' · ' + esc(st.reason)}</small></div>
+    ${on ? `<span class="olabel ${on.online ? 'on' : ''}">${on.online ? 'På nett' : 'Av'}</span>` : ''}</div>`;
+}
+function kidDevices(k) {
+  const devs = (k.devices || []).filter((d) => d.mac);
+  if (!devs.length) return '';
+  const days = lastDays(7), macs = new Set(devs.map((d) => d.mac));
+  const vals = days.map((d) => usedFor(d, (mac) => macs.has(mac))), max = Math.max(30, ...vals), week = vals.reduce((a, b) => a + b, 0);
+  return `<h2 class="sec"><span class="dot" style="--k:#3dff9a"></span>Dine enheter</h2>
+    <div class="grid wide" style="margin-bottom:16px">${devs.map((d) => devStatusHtml(k, d)).join('')}</div>
+    <div class="card" style="margin-bottom:30px"><div class="row" style="justify-content:space-between"><b>Din uke på nett</b><span class="reward inline">${fmtM(week)}</span></div>
+      <div class="minibars">${vals.map((v, i) => `<div class="mb" title="${new Date(now() - (6 - i) * 864e5).toLocaleDateString('no-NO', { weekday: 'long' })}: ${fmtM(v)}"><i style="height:${Math.max(3, v / max * 100)}%;background:${esc(k.color)}"></i><small>${new Date(now() - (6 - i) * 864e5).toLocaleDateString('no-NO', { weekday: 'short' }).slice(0, 2)}</small></div>`).join('')}</div></div>`;
+}
+
+function pNet() {
+  const devs = L.allDevices(A.S), groups = A.S.groups || [], rules = A.S.devRules || {};
+  const modeOpts = (cur, inherit) => `${inherit ? `<option value="inherit" ${!cur ? 'selected' : ''}>Som gruppen</option>` : ''}${Object.entries(L.MODES).map(([v, l]) => `<option value="${v}" ${cur === v ? 'selected' : ''}>${l}</option>`).join('')}`;
+  const openN = devs.filter(({ kid, mac }) => L.deviceStatus(A.S, now(), kid, mac).open).length;
+  const onlineN = devs.filter(({ mac }) => (A.S.deviceOnline || {})[mac]?.online).length;
+  const r = A.S.settings.router;
+  return `<div class="grid wstats" style="margin-bottom:18px">
+    <div class="card wstat"><small class="mute">Enheter</small><b class="wnum">${devs.length}</b></div>
+    <div class="card wstat"><small class="mute">Har internett nå</small><b class="wnum plus">${openN}</b></div>
+    <div class="card wstat"><small class="mute">Stengt nå</small><b class="wnum minus">${devs.length - openN}</b></div>
+    <div class="card wstat"><small class="mute">På nett nå</small><b class="wnum">${onlineN}</b></div></div>
+  ${!r.enabled ? `<div class="panel"><p class="tag late" style="font-size:15px;padding:6px 12px">Ruterstyring er av – statusen viser hva appen ønsker, men ruteren stenger ingenting før du slår den på under Ruter.</p></div>` : ''}
+  <div class="panel"><h3>Enheter nå</h3>
+    ${devs.length ? `<div class="scroll"><table class="ltab devtab"><thead><tr><th>Enhet</th><th>Status</th><th>Modus</th><th>Gruppe</th><th>Åpningstid</th><th></th></tr></thead><tbody>
+    ${devs.map(({ kid, mac, name }) => { const st = L.deviceStatus(A.S, now(), kid, mac), ru = rules[mac] || {}, on = (A.S.deviceOnline || {})[mac];
+      const g = groups.find((x) => x.id === ru.groupId);
+      const blocked = ru.mode === 'block';
+      return `<tr><td><div class="row" style="gap:10px;flex-wrap:nowrap"><span class="pdot ${on && on.online ? 'on' : ''}" title="${on ? (on.online ? 'På nett' : ago(on.lastSeen)) : 'Ukjent'}"></span>
+          <div><b>${esc(name)}</b><div class="when">${icn(kid.avatar)} ${esc(kid.name)} · ${esc(mac)}</div></div></div></td>
+        <td><span class="stpill ${st.open ? 'open' : ''}">${st.open ? 'Åpen' : 'Stengt'}</span><div class="when" style="white-space:normal;max-width:220px">${esc(st.reason)}</div></td>
+        <td><select class="in" data-up="devmode" data-id="${mac}">${modeOpts(ru.mode, true)}</select></td>
+        <td><select class="in" data-up="devgroup" data-id="${mac}"><option value="">Ingen</option>${groups.map((x) => `<option value="${x.id}" ${ru.groupId === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></td>
+        <td><button class="btn ghost sm" data-act="schedEdit" data-v="dev" data-id="${mac}">${ru.schedule ? 'Egen' : g && g.schedule ? 'Gruppens' : 'Felles'}</button></td>
+        <td><button class="btn sm ${blocked ? 'ok' : 'bad'}" data-act="devQuick" data-id="${mac}" data-v="${blocked ? 'inherit' : 'block'}">${blocked ? 'Åpne igjen' : 'Blokker'}</button></td></tr>`; }).join('')}</tbody></table></div>`
+      : '<p class="mute">Ingen enheter lagt inn ennå. Legg dem til under «Barn og enheter».</p>'}
+    <details style="margin-top:12px"><summary class="mute" style="cursor:pointer;font-weight:800">Slik bestemmes om en enhet får internett</summary>
+      <ol class="trouble"><li><b>Overstyring</b> under Spilletid («Alt åpent» / «Alt stengt») gjelder først.</li>
+      <li><b>Alltid stengt / Alltid åpen</b> på enheten (eller gruppen) gjelder deretter.</li>
+      <li><b>Fast åpningstid:</b> internett er på innenfor åpningstiden – uansett coins (fint for lekser).</li>
+      <li><b>Coins:</b> internett er på når barnet har startet spilletid, innenfor felles spilletid <i>og</i> innenfor enhetens/gruppens åpningstid hvis den er satt.</li></ol></details></div>
+  <div class="panel"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Grupper</h3><button class="btn gold sm" style="flex:none" data-act="grpAdd">${ic('plus')} Ny gruppe</button></div>
+    <p class="mute">Samle enheter – f.eks. «Spillkonsoller» eller «Skole-iPader» – og gi dem felles modus og åpningstid.</p>
+    ${groups.map((g) => `<div class="kidcard"><div class="formgrid" style="align-items:end">
+        <label class="fld">Navn<input value="${esc(g.name)}" data-up="grp" data-id="${g.id}" data-k="name"></label>
+        <label class="fld">Modus<select data-up="grp" data-id="${g.id}" data-k="mode">${modeOpts(g.mode, false)}</select></label>
+        <div class="row"><button class="btn ghost sm" data-act="schedEdit" data-v="grp" data-id="${g.id}">${ic('clock')} Åpningstid: ${g.schedule ? 'egen' : 'felles'}</button>
+          <button class="ib" data-act="grpDel" data-id="${g.id}" aria-label="Slett gruppe">${ic('trash')}</button></div></div>
+      <div class="fld" style="margin-top:10px">Enheter i gruppen</div>
+      <div class="row" style="gap:8px">${devs.map(({ kid, mac, name }) => { const inG = (rules[mac] || {}).groupId === g.id;
+        return `<button class="lvl-chip ${inG ? 'on' : ''}" style="--k:var(--blue);text-decoration:none" data-act="grpToggle" data-id="${g.id}" data-v="${mac}">${icn(kid.avatar)} ${esc(name)}</button>`; }).join('') || '<span class="mute">Ingen enheter</span>'}</div></div>`).join('') || '<p class="mute">Ingen grupper ennå.</p>'}</div>`;
+}
+function schedModal() {
+  const e = A.schedEdit; if (!e) return '';
+  const title = e.kind === 'dev' ? (L.allDevices(A.S).find((d) => d.mac === e.id) || {}).name : ((A.S.groups || []).find((g) => g.id === e.id) || {}).name;
+  return `<div style="text-align:left"><h2 style="text-align:center">Åpningstid – ${esc(title || '')}</h2>
+    <p class="mute" style="text-align:center">${e.kind === 'dev' ? 'Overordnet åpningstid for denne enheten. Uten egen tid brukes gruppens eller den felles tiden.' : 'Felles åpningstid for alle enhetene i gruppen.'}</p>
+    ${[1, 2, 3, 4, 5, 6, 0].map((d) => { const sc = e.sched[d]; return `<div class="sched"><b>${L.DAYS[d]}</b>
+      <button class="sw ${sc.on ? 'on' : ''}" data-act="seDay" data-v="${d}" aria-label="${L.DAYS[d]}"></button>
+      <label class="fld">Fra<input type="time" value="${sc.from}" data-se="${d}" data-k="from"></label>
+      <label class="fld">Til<input type="time" value="${sc.to}" data-se="${d}" data-k="to"></label></div>`; }).join('')}
+    <div class="row" style="margin-top:14px"><button class="btn ghost" data-act="seClear">Fjern egen tid</button><button class="btn" data-act="seSave">${ic('check')} Lagre</button></div>
+    <button class="btn ghost" data-act="closeModal" style="width:100%;margin-top:10px">Avbryt</button></div>`;
+}
+
+function pStats() {
+  const S = A.S.stats || { days: {} }, days = lastDays(7), devs = L.allDevices(A.S), kids = A.S.kids;
+  const today = days[6];
+  const perKid = days.map((d) => kids.map((k) => usedFor(d, (mac, r) => r.kid === k.id)));
+  const totals = perKid.map((a) => a.reduce((x, y) => x + y, 0));
+  const week = totals.reduce((a, b) => a + b, 0), max = Math.max(30, ...totals);
+  const devWeek = devs.map((d) => ({ ...d, week: days.reduce((t, day) => t + ((S.days[day] || {}).dev?.[d.mac]?.used || 0), 0), today: (S.days[today] || {}).dev?.[d.mac]?.used || 0 }))
+    .sort((a, b) => b.week - a.week);
+  const hours = Array(24).fill(0); for (const day of days) for (const r of Object.values((S.days[day] || {}).dev || {})) (r.hours || []).forEach((v, h) => { hours[h] += v; });
+  const hmax = Math.max(1, ...hours), peak = hours.indexOf(Math.max(...hours));
+  const play = kids.map((k) => ({ k, today: (S.days[today] || {}).play?.[k.id] || 0, week: days.reduce((t, d) => t + ((S.days[d] || {}).play?.[k.id] || 0), 0) }));
+  const empty = !week && !play.some((p) => p.week);
+  const dmax = Math.max(1, ...devWeek.map((d) => d.week));
+  const wd = (d) => new Date(d + 'T12:00').toLocaleDateString('no-NO', { weekday: 'short' }).replace('.', '');
+  return `${empty ? `<div class="panel"><h3>Ingen data ennå</h3><p class="mute">Statistikken fylles minutt for minutt når barnas enheter er lagt inn og appen kjører på hjemmeserveren.</p>
+      ${A.mode === 'demo' ? '<button class="btn gold" data-act="demoStats">Vis med eksempeldata</button>' : ''}</div>` : ''}
+  <div class="grid wstats" style="margin-bottom:18px">
+    <div class="card wstat"><small class="mute">På nett i dag</small><b class="wnum">${fmtM(totals[6])}</b></div>
+    <div class="card wstat"><small class="mute">Siste 7 dager</small><b class="wnum">${fmtM(week)}</b></div>
+    <div class="card wstat"><small class="mute">Snitt per dag</small><b class="wnum">${fmtM(week / 7)}</b></div>
+    <div class="card wstat"><small class="mute">Travleste time</small><b class="wnum">${week ? `kl. ${String(peak).padStart(2, '0')}–${String((peak + 1) % 24).padStart(2, '0')}` : '–'}</b></div></div>
+  <div class="panel"><h3>Tid på internett per dag</h3>
+    <div class="legend">${kids.map((k) => `<span><i style="background:${esc(k.color)}"></i>${esc(k.name)}</span>`).join('')}</div>
+    <div class="stack7">${days.map((d, i) => `<div class="scol" title="${wd(d)}: ${kids.map((k, j) => `${k.name} ${fmtM(perKid[i][j])}`).join(', ')}">
+      <b class="stot">${totals[i] ? fmtM(totals[i]) : ''}</b>
+      <div class="sbar" style="height:${Math.max(0, totals[i] / max * 100)}%">${kids.map((k, j) => perKid[i][j] ? `<i style="flex:${perKid[i][j]};background:${esc(k.color)}"></i>` : '').join('')}</div>
+      <small class="${i === 6 ? 'today' : ''}">${i === 6 ? 'I dag' : wd(d)}</small></div>`).join('')}</div>
+    <p class="mute" style="font-size:14px">Tid på internett = minutter enheten hadde åpent internett og var på nett.</p></div>
+  <div class="grid wide">
+    <div class="panel"><h3>Mest brukte enheter (7 dager)</h3>${devWeek.length ? devWeek.map((d) => `<div class="hrow"><div class="hl"><b>${esc(d.name)}</b><small class="mute">${icn(d.kid.avatar)} ${esc(d.kid.name)}</small></div>
+      <div class="htrack"><i style="width:${d.week / dmax * 100}%;background:${esc(d.kid.color)}"></i></div><span class="hv">${fmtM(d.week)}<small class="mute"> · i dag ${fmtM(d.today)}</small></span></div>`).join('') : '<p class="mute">Ingen enheter.</p>'}</div>
+    <div class="panel"><h3>Når på døgnet? (7 dager)</h3><div class="heat">${hours.map((v, h) => `<div class="hc" title="kl. ${String(h).padStart(2, '0')}: ${fmtM(v)}" style="--a:${v ? 0.15 + 0.85 * v / hmax : 0}"><span>${h % 6 === 0 ? String(h).padStart(2, '0') : ''}</span></div>`).join('')}</div>
+      <p class="mute" style="font-size:14px">Mørkere = mer tid på nett den timen.</p>
+      <h3 style="margin-top:16px">Spilletid brukt (fra coins)</h3>${play.map((p) => `<div class="li"><span>${icn(p.k.avatar)}</span><b class="grow">${esc(p.k.name)}</b><span class="when">i dag ${fmtM(p.today)} · uke ${fmtM(p.week)}</span></div>`).join('')}</div></div>`;
+}
+function seedDemoStats() {
+  const s = A.S;
+  const sample = [['PlayStation 5', 'AA:BB:CC:00:00:01'], ['iPad', 'AA:BB:CC:00:00:02'], ['Nintendo Switch', 'AA:BB:CC:00:00:03']];
+  s.kids.forEach((k, i) => { if (!(k.devices || []).length) k.devices = [{ name: sample[i % 3][0], mac: sample[i % 3][1].replace(/01$|02$|03$/, (x) => String(i + 1).padStart(2, '0')) }]; });
+  for (let i = 6; i >= 0; i--) {
+    const day = L.dayKey(Date.now() - i * 864e5), D = (s.stats.days[day] = { dev: {}, play: {} });
+    for (const { kid, mac } of L.allDevices(s)) {
+      const hours = Array(24).fill(0); let used = 0;
+      for (const h of [15, 16, 17, 18, 19, 20]) { const v = Math.max(0, Math.round((Math.random() * 40 - 8) * (h === 18 || h === 19 ? 1.5 : 1))); hours[h] = Math.min(60, v); used += hours[h]; }
+      D.dev[mac] = { open: used + 10, online: used + 30, used, hours, kid: kid.id };
+      D.play[kid.id] = Math.round(used * 0.9);
+    }
+  }
+  s.rev++; saveDemo();
+}
+
+/* ---------- foreldre ---------- */
+function viewParent() {
+  const pend = pendCount();
+  const tabs = [['approve', 'Godkjenn'], ['time', 'Spilletid'], ['kids', 'Barn og enheter'], ['tasks', 'Oppgaver'], ['shop', 'Butikk'], ['games', 'Læringsspill'], ['net', 'Internett'], ['stats', 'Statistikk'], ['router', 'Ruter'], ['more', 'Mer']];
+  const p = A.ptab;
+  const v = { approve: pApprove, time: pTime, kids: pKids, tasks: pTasks, shop: pShop, games: pGames, net: pNet, stats: pStats, router: pRouter, more: pMore }[p]();
+  return `<header class="top"><button class="back" data-act="home" aria-label="Lukk" style="background:rgba(0,0,0,.25)">${ic('back')}</button>
+    <h1 style="font-size:clamp(30px,4vw,44px)">Foreldre</h1><div class="grow"></div>
+    <button class="pill" data-act="lock">${ic('lock')} Lås</button></header>
+  <nav class="tabs">${tabs.map(([id, l]) => `<button class="tab ${p === id ? 'on' : ''}" data-act="ptab" data-v="${id}">${l}${id === 'approve' && pend ? ` <span class="badge">${pend}</span>` : ''}</button>`).join('')}</nav>${v}`;
+}
+
+function pApprove() {
+  const pend = A.S.jobs.filter((j) => j.status === 'pending').sort((a, b) => a.doneAt - b.doneAt);
+  const act = A.S.jobs.filter((j) => j.status === 'active');
+  const late = A.S.settings.latePct;
+  let h = `<div class="panel"><h3>Venter på godkjenning</h3>${pend.length ? pend.map((j) => {
+    const k = kidById(j.kidId) || { avatar: '?', name: '?', color: '#999' };
+    const onTime = j.doneAt <= j.deadline;
+    const part = Math.round(j.coins * late / 100);
+    return `<div class="appr"><div class="av" style="--c:${esc(k.color)}">${icn(k.avatar)}</div>
+      <div><b style="font-size:19px">${icn(j.emoji)} ${esc(j.title)}</b>
+        <div class="mute">${esc(k.name)} · tatt ${hhmm(j.takenAt)} · ferdig ${hhmm(j.doneAt)} · frist ${hhmm(j.deadline)}</div>
+        <span class="tag ${onTime ? '' : 'late'}">${onTime ? 'Innenfor fristen' : 'For sent'}</span></div>
+      <div class="row acts">
+        <button class="btn ok sm" data-act="approve" data-id="${j.id}" data-v="100">${ic('check')} +${j.coins}</button>
+        ${part !== j.coins ? `<button class="btn gold sm" data-act="approve" data-id="${j.id}" data-v="${late}">Delvis +${part}</button>` : ''}
+        <button class="btn bad sm" data-act="reject" data-id="${j.id}">${ic('x')}</button></div></div>`;
+  }).join('') : '<p class="mute">Ingenting å godkjenne akkurat nå.</p>'}</div>`;
+  const rw = (A.S.rewards || []).filter((r) => r.status === 'pending').sort((a, b) => a.at - b.at);
+  if (rw.length) h += `<div class="panel"><h3>Belønninger som skal innfris</h3>${rw.map((r) => { const k = kidById(r.kidId) || { avatar: '?', name: '?', color: '#999' };
+    return `<div class="appr"><div class="av" style="--c:${esc(k.color)}">${icn(k.avatar)}</div>
+      <div><b style="font-size:19px">${icn(r.emoji)} ${esc(r.title)}</b><div class="mute">${esc(k.name)} · kjøpt ${new Date(r.at).toLocaleDateString('no-NO', { weekday: 'short', day: 'numeric', month: 'short' })} kl. ${hhmm(r.at)} · ${r.cost} coins</div></div>
+      <div class="row acts"><button class="btn ok sm" data-act="fulfill" data-id="${r.id}">${ic('check')} Innfridd</button>
+        <button class="btn ghost sm" data-act="refund" data-id="${r.id}">Avlys</button></div></div>`; }).join('')}</div>`;
+  const loans = A.S.loans || [];
+  const nmk = (id) => { const x = kidById(id); return x ? `${icn(x.avatar)} ${esc(x.name)}` : '?'; };
+  const lp = loans.filter((l) => l.status === 'parent');
+  if (lp.length) h += `<div class="panel"><h3>Lån som venter på dere</h3>${lp.map((l) => `<div class="appr" style="grid-template-columns:minmax(0,1fr) auto">
+    <div><b style="font-size:19px">${nmk(l.borrowerId)} vil låne ${l.amount} coins av ${nmk(l.lenderId)}</b>
+      <div class="mute">${esc(kidById(l.lenderId)?.name || '')} har sagt ja${l.note ? ` · «${esc(l.note)}»` : ''}</div></div>
+    <div class="row acts"><button class="btn ok sm" data-act="loanParent" data-id="${l.id}" data-v="1">${ic('check')} Godkjenn</button>
+      <button class="btn bad sm" data-act="loanParent" data-id="${l.id}" data-v="0">${ic('x')}</button></div></div>`).join('')}</div>`;
+  const lo = loans.filter((l) => ['requested', 'active'].includes(l.status) || (['repaid', 'forgiven'].includes(l.status) && l.doneAt > Date.now() - 14 * 864e5));
+  if (lo.length) {
+    const st = { requested: 'Venter på svar', active: 'Aktivt', repaid: 'Betalt tilbake', forgiven: 'Slettet av foreldre' };
+    h += `<div class="panel"><h3>Lån mellom barna – oversikt</h3><div class="scroll"><table class="ltab"><thead><tr><th>Låntaker</th><th>Långiver</th><th class="num">Lånt</th><th class="num">Betalt</th><th class="num">Igjen</th><th>Status</th><th></th></tr></thead><tbody>
+      ${lo.map((l) => `<tr><td>${nmk(l.borrowerId)}</td><td>${nmk(l.lenderId)}</td><td class="num">${l.amount}</td><td class="num">${l.paid}</td><td class="num"><b>${l.amount - l.paid}</b></td>
+        <td><span class="tag ${l.status === 'active' ? 'late' : ''}">${st[l.status] || l.status}</span><div class="when">${new Date(l.startedAt || l.at).toLocaleDateString('no-NO', { day: 'numeric', month: 'short' })}</div></td>
+        <td>${['requested', 'active'].includes(l.status) ? `<button class="btn ghost sm" data-act="loanCancel" data-id="${l.id}">${l.status === 'active' ? 'Slett resten' : 'Avbryt'}</button>` : ''}</td></tr>`).join('')}</tbody></table></div></div>`;
+  }
+  if (act.length) h += `<div class="panel"><h3>Oppgaver som er i gang</h3>${act.map((j) => { const k = kidById(j.kidId) || {};
+    return `<div class="li">${icn(k.avatar)} <b>${esc(k.name)}</b> <span class="grow">${icn(j.emoji)} ${esc(j.title)}</span><span class="when">frist ${hhmm(j.deadline)}</span></div>`; }).join('')}</div>`;
+  h += `<div class="panel"><h3>Bonus og justering</h3>${A.S.kids.map((k) => `
+    <div class="li" style="flex-wrap:wrap"><span style="font-size:30px">${icn(k.avatar)}</span><b class="grow">${esc(k.name)} · ${k.coins} coins · ${fmtMin(L.bankLeft(k, now()))}</b>
+    <div class="row">${[5, 10, 25].map((c) => `<button class="btn ok sm" data-act="adjust" data-id="${k.id}" data-c="${c}">+${c}</button>`).join('')}
+      <button class="btn bad sm" data-act="adjust" data-id="${k.id}" data-c="-10">−10</button>
+      <button class="btn sm" data-act="adjust" data-id="${k.id}" data-m="15">+15 min</button>
+      <button class="btn ghost sm" data-act="adjust" data-id="${k.id}" data-m="-15">−15 min</button></div></div>`).join('')}</div>`;
+  return h;
+}
+
+function pTime() {
+  const s = A.S.settings, o = s.override;
+  const playing = A.S.kids.filter((k) => k.playing);
+  return `<div class="panel"><h3>Internett for barnas enheter</h3>
+    <div class="seg">${[['auto', 'Automatisk (coins + tidsplan)'], ['allOpen', 'Alt åpent'], ['allLocked', 'Alt stengt']].map(([v, l]) =>
+      `<button class="${o === v ? 'on' : ''}" data-act="override" data-v="${v}">${l}</button>`).join('')}</div>
+    <p class="mute">Automatisk: en enhet får internett bare når barnet har startet spilling med kjøpt tid, og innenfor tidene under.</p></div>
+  ${playing.length ? `<div class="panel"><h3>Spiller nå</h3>${playing.map((k) => `<div class="li"><span style="font-size:28px">${icn(k.avatar)}</span><b class="grow">${esc(k.name)} – <span data-bank="${k.id}"></span> igjen</b>
+    <button class="btn bad sm" data-act="stopPlay" data-id="${k.id}">${ic('pause')} Stopp</button></div>`).join('')}</div>` : ''}
+  <div class="panel"><h3>Når kan barna spille?</h3>
+    ${[1, 2, 3, 4, 5, 6, 0].map((d) => { const sc = s.schedule[d]; return `<div class="sched"><b>${L.DAYS[d]}</b>
+      <button class="sw ${sc.on ? 'on' : ''}" data-act="dayOn" data-id="${d}" aria-label="Spilletid ${L.DAYS[d]}"></button>
+      <label class="fld">Fra<input type="time" value="${sc.from}" data-up="sched" data-id="${d}" data-k="from" ${sc.on ? '' : 'disabled'}></label>
+      <label class="fld">Til<input type="time" value="${sc.to}" data-up="sched" data-id="${d}" data-k="to" ${sc.on ? '' : 'disabled'}></label></div>`; }).join('')}</div>`;
+}
+
+function pKids() {
+  return A.S.kids.map((k) => `<div class="panel" style="--c:${esc(k.color)}">
+    <div class="kg" style="display:grid;grid-template-columns:minmax(0,2fr) 90px 90px auto;gap:10px;align-items:end">
+      <label class="fld">Navn<input value="${esc(k.name)}" data-up="kid" data-id="${k.id}" data-k="name"></label>
+      <div class="fld">Avatar${icBtn('kid', k.id, 'avatar', k.avatar)}</div>
+      <label class="fld">Farge<input type="color" value="${esc(k.color)}" data-up="kid" data-id="${k.id}" data-k="color" style="padding:4px"></label>
+      <button class="ib" data-act="delKid" data-id="${k.id}" aria-label="Slett">${ic('trash')}</button></div>
+    <h3 style="margin-top:16px">Enheter som styres (PlayStation, iPad, PC …)</h3>
+    ${(k.devices || []).map((d, i) => `<div class="erow dev">
+      <label class="fld">Navn<input value="${esc(d.name)}" data-up="dev" data-id="${k.id}" data-i="${i}" data-k="name" placeholder="PlayStation"></label>
+      <label class="fld">MAC-adresse<input value="${esc(d.mac)}" data-up="dev" data-id="${k.id}" data-i="${i}" data-k="mac" placeholder="AA:BB:CC:DD:EE:FF" autocapitalize="characters"></label>
+      <button class="ib" data-act="delDev" data-id="${k.id}" data-i="${i}" aria-label="Fjern">${ic('trash')}</button></div>`).join('') || '<p class="mute">Ingen enheter ennå.</p>'}
+    <div class="row" style="margin-top:12px"><button class="btn ghost sm" data-act="addDev" data-id="${k.id}">${ic('plus')} Legg til manuelt</button>
+      <button class="btn sm" data-act="pickDev" data-id="${k.id}">Hent fra ruteren</button></div></div>`).join('')
+    + `<button class="btn gold" data-act="addKid">${ic('plus')} Legg til barn</button>
+    <p style="opacity:.85">Tips: Slå av «Privat Wi-Fi-adresse» for husets nettverk på iPad/iPhone, ellers kan MAC-adressen endre seg.</p>`;
+}
+
+function imgRow(kind, x, extra = '') {
+  const queued = A.S.aiStatus && A.S.aiStatus.pending;
+  return `<div class="erowx"><div class="pthumb">${x.image ? `<img src="${esc(x.image)}" alt="">` : icn(x.emoji)}</div>
+    <div class="row imgbtns" style="gap:8px"><button class="btn ghost sm" data-act="pickImage" data-v="${kind}" data-id="${x.id}">${ic('image')} ${x.image ? 'Bytt bilde' : 'Last opp'}</button>
+      <button class="btn sm" style="--b:#7c4dff;--bs:#5a2fd6" data-act="aiImage" data-v="${kind}" data-id="${x.id}">${ic('spark')} Lag med AI</button>
+      ${x.image ? `<button class="btn ghost sm" data-act="delImage" data-v="${kind}" data-id="${x.id}">Fjern</button>` : ''}</div>${extra}</div>`;
+}
+function aiPanel(kind) {
+  const ai = A.S.settings.ai || {}, st = A.S.aiStatus, list = kind === 'shop' ? A.S.shop : A.S.tasks, missing = list.filter((x) => !x.image).length;
+  return `<div class="panel aipanel"><div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div style="flex:1;min-width:240px"><h3 style="margin-bottom:4px">${ic('spark')} Bilder med AI – gratis</h3>
+        <p class="mute" style="margin:0">Lag fine bilder av ${kind === 'shop' ? 'varene' : 'oppgavene'} automatisk fra navnet. Bruker den gratis tjenesten Pollinations – ingen konto trengs. Hvert bilde tar ca. 15 sekunder.</p></div>
+      <label class="fld" style="min-width:180px">Stil<select data-up="set2" data-g="ai" data-k="style">${[['flat', 'Tegnet (flat)'], ['3d', '3D-tegnefilm'], ['akvarell', 'Akvarell'], ['leire', 'Leire / klossete']].map(([v, l]) => `<option value="${v}" ${ai.style === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
+    <div class="row" style="margin-top:12px"><button class="btn" style="--b:#7c4dff;--bs:#5a2fd6;flex:none" data-act="aiImagesAll" data-v="${kind}" ${missing ? '' : 'disabled'}>${ic('spark')} Lag bilder for alle uten bilde (${missing})</button>
+      ${st && st.pending ? `<span class="chip gold">Lager bilder … ${st.pending} igjen</span><button class="btn ghost sm" style="flex:none" data-act="aiCancel">Stopp</button>` : ''}
+      ${st && st.error ? `<span class="tag late">${esc(st.error)}</span>` : ''}</div>
+    <details style="margin-top:8px"><summary class="mute" style="cursor:pointer;font-weight:800">Valgfritt: egen Pollinations-nøkkel (raskere, uten vannmerke)</summary>
+      <label class="fld" style="margin-top:8px">API-nøkkel fra enter.pollinations.ai<input type="password" data-up="set2" data-g="ai" data-k="key" placeholder="${ai.hasKey ? '•••••• (lagret)' : 'Ikke nødvendig'}" autocomplete="off"></label></details></div>`;
+}
+/* ---------- oppdragsbibliotek: [ikon, tittel, coins, frist (min), kategori, hvor ofte, fra alder, til alder] ---------- */
+const TASK_LIB = [
+  ['🧸', 'Rydd lekene i kassa', 5, 15, 'hjemme', 'daily', 3, 6], ['👕', 'Legg skittentøy i kurven', 3, 10, 'daglig', 'daily', 3, 8],
+  ['🪥', 'Puss tennene (med hjelp)', 5, 10, 'daglig', 'daily', 3, 6], ['🥄', 'Legg skje og gaffel på bordet', 3, 10, 'hjemme', 'daily', 3, 6],
+  ['👟', 'Sett skoene på plass', 3, 5, 'daglig', 'daily', 3, 7], ['🧥', 'Kle på deg selv', 5, 15, 'daglig', 'daily', 3, 6],
+  ['🌱', 'Vann blomstene', 5, 10, 'hjemme', 'weekly', 3, 8], ['📚', 'Se i en bok i 10 minutter', 5, 15, 'skole', 'daily', 3, 6],
+  ['🍽️', 'Bær tallerkenen til benken', 3, 5, 'daglig', 'daily', 3, 8], ['🙏', 'Si takk for maten', 2, 5, 'daglig', 'daily', 3, 8],
+  ['🧦', 'Finn sokkepar fra vasken', 5, 15, 'hjemme', 'weekly', 4, 8], ['🐟', 'Gi kjæledyret mat', 5, 5, 'hjemme', 'daily', 4, 10],
+  ['⚽', 'Vær ute og lek i en time', 10, 90, 'ute', 'daily', 4, 12], ['🎨', 'Lag en tegning til besteforeldre', 15, 60, 'stort', 'unlimited', 4, 10],
+  ['🍎', 'Spis frukt eller grønnsak til mellommåltid', 3, 30, 'daglig', 'daily', 3, 10], ['💛', 'Gjør noe snilt uten å bli spurt', 10, 720, 'stort', 'unlimited', 4, 14],
+  ['🎒', 'Pakk skolesekken kvelden før', 5, 15, 'skole', 'daily', 6, 12], ['📖', 'Les høyt i 15 minutter', 15, 30, 'skole', 'daily', 6, 10],
+  ['✖️', 'Øv på gangetabellen i 10 minutter', 10, 20, 'skole', 'daily', 7, 11], ['🎹', 'Øv på instrument i 20 minutter', 15, 40, 'skole', 'daily', 6, 14],
+  ['🧺', 'Brett og legg bort egne klær', 10, 30, 'hjemme', 'weekly', 6, 14], ['🍳', 'Hjelp til med frokosten', 10, 30, 'hjemme', 'daily', 6, 12],
+  ['🧽', 'Tørk av kjøkkenbordet', 5, 10, 'hjemme', 'daily', 6, 14], ['♻️', 'Sorter søppel: plast, papir og mat', 10, 15, 'hjemme', 'weekly', 6, 14],
+  ['🛁', 'Rydd badet etter deg', 5, 10, 'daglig', 'daily', 6, 14], ['🚲', 'Sykkeltur med familien', 20, 90, 'ute', 'unlimited', 6, 14],
+  ['📵', 'Skjermfri time med familien', 15, 90, 'stort', 'daily', 6, 14], ['🧹', 'Støvsug rommet ditt', 15, 30, 'hjemme', 'weekly', 7, 14],
+  ['🌿', 'Luk ugress i hagen i 15 minutter', 15, 30, 'ute', 'weekly', 7, 14], ['🍂', 'Rake løv', 25, 60, 'ute', 'unlimited', 8, 14],
+  ['🐕', 'Gå tur med hunden', 15, 45, 'ute', 'daily', 8, 14], ['🍽️', 'Ta ut av oppvaskmaskinen', 10, 20, 'hjemme', 'daily', 8, 14],
+  ['🇬🇧', 'Lær 10 nye engelske ord', 15, 30, 'skole', 'daily', 8, 14], ['📦', 'Rydd en skuff eller et skap', 15, 45, 'hjemme', 'unlimited', 8, 14],
+  ['🚗', 'Hjelp til med å vaske bilen', 30, 90, 'stort', 'unlimited', 8, 14], ['📝', 'Ekstra skolearbeid i 30 minutter', 20, 45, 'skole', 'daily', 9, 14],
+  ['📘', 'Les et kapittel og fortell om det', 20, 60, 'skole', 'daily', 9, 14], ['🏃', 'Tren eller løp i 30 minutter', 15, 45, 'ute', 'daily', 9, 14],
+  ['🐾', 'Gjør rent hos kjæledyret', 15, 30, 'hjemme', 'weekly', 9, 14], ['👵', 'Ring eller besøk besteforeldre', 15, 60, 'stort', 'weekly', 5, 14],
+  ['🥪', 'Lag din egen matpakke', 10, 20, 'daglig', 'daily', 9, 14], ['🍳', 'Lag din egen frokost', 10, 30, 'daglig', 'daily', 10, 14],
+  ['🍝', 'Lag middag sammen med en voksen', 30, 90, 'stort', 'weekly', 10, 14], ['👚', 'Vask og heng opp en klesvask', 20, 120, 'hjemme', 'weekly', 10, 14],
+  ['🚿', 'Vask vasken og speilet på badet', 25, 60, 'hjemme', 'weekly', 10, 14], ['🪟', 'Vask vinduene på rommet', 20, 60, 'hjemme', 'unlimited', 10, 14],
+  ['❄️', 'Måk snø', 30, 60, 'ute', 'unlimited', 10, 14], ['🛒', 'Lag handleliste for uka', 10, 30, 'hjemme', 'weekly', 10, 14],
+  ['🧒', 'Hjelp et søsken med leksene', 20, 30, 'stort', 'daily', 10, 14], ['💰', 'Lag budsjett for lommepengene', 20, 45, 'stort', 'unlimited', 11, 14],
+];
+function pTaskLib() {
+  const f = A.libAge || '', have = new Set(A.S.tasks.map((t) => t.title.toLowerCase()));
+  const ranges = { '': 'Alle', '3-5': '3–5 år', '6-9': '6–9 år', '10-14': '10–14 år' };
+  const inRange = (x) => { if (!f) return true; const [lo, hi] = f.split('-').map(Number); return x[6] <= hi && x[7] >= lo; };
+  const list = TASK_LIB.filter(inRange), missing = list.filter((x) => !have.has(x[1].toLowerCase()));
+  return `<div class="panel"><div class="row" style="justify-content:space-between;align-items:flex-start"><div style="flex:1;min-width:240px">
+      <h3 style="margin-bottom:4px">Oppdragsbibliotek – ${TASK_LIB.length} forslag for 3–14 år</h3>
+      <p class="mute" style="margin:0">Velg alder, og legg til oppdragene du vil ha. De kan endres etterpå.</p></div>
+      <label class="fld" style="min-width:170px">Legg til for<select id="lib-kid" class="in">${`<option value="">Alle barn</option>${A.S.kids.map((k) => `<option value="${k.id}" ${A.libKid === k.id ? 'selected' : ''}>${esc(k.name)}</option>`).join('')}`}</select></label></div>
+    <div class="seg" style="margin:12px 0">${Object.entries(ranges).map(([v, l]) => `<button class="${f === v ? 'on' : ''}" data-act="libAge" data-v="${v}">${l}</button>`).join('')}</div>
+    <div class="libgrid">${list.map((x) => { const added = have.has(x[1].toLowerCase()), i = TASK_LIB.indexOf(x);
+      return `<div class="libitem ${added ? 'added' : ''}" style="--k:${CATSTYLE[x[4]]}"><span class="libemo">${x[0]}</span>
+        <div class="grow"><b>${esc(x[1])}</b><div class="when">${L.CATS[x[4]]} · ${x[2]} coins · ${fmtM(x[3])} · ${x[6]}–${x[7]} år</div></div>
+        ${added ? `<span class="tag">${ic('check')} Lagt til</span>` : `<button class="btn sm" style="flex:none" data-act="libAdd" data-v="${i}">${ic('plus')} Legg til</button>`}</div>`; }).join('')}</div>
+    ${missing.length ? `<button class="btn gold" style="margin-top:14px" data-act="libAddAll">${ic('plus')} Legg til alle ${missing.length} ${f ? 'for ' + ranges[f] : ''}</button>` : ''}</div>`;
+}
+function libTask(x) { const kid = val('lib-kid'); A.libKid = kid; return { emoji: x[0], title: x[1], coins: x[2], deadlineMin: x[3], category: x[4], repeat: x[5], age: `${x[6]}–${x[7]}`, kidIds: kid ? [kid] : [] }; }
+function pTasks() {
+  const kidOpts = (t) => `<option value="">Alle barn</option>${A.S.kids.map((k) => `<option value="${k.id}" ${t.kidIds?.[0] === k.id ? 'selected' : ''}>${esc(k.name)}</option>`).join('')}`;
+  return `${aiPanel('task')}<div class="panel"><h3>Oppgaver</h3>${A.S.tasks.map((t) => `<div class="erow">
+    <div class="fld">Ikon${icBtn('task', t.id, 'emoji', t.emoji)}</div>
+    <label class="fld wide">Oppgave<input value="${esc(t.title)}" data-up="task" data-id="${t.id}" data-k="title"></label>
+    <label class="fld">Coins<input type="number" min="1" inputmode="numeric" value="${t.coins}" data-up="task" data-id="${t.id}" data-k="coins"></label>
+    <label class="fld">Frist (min)<input type="number" min="1" inputmode="numeric" value="${t.deadlineMin}" data-up="task" data-id="${t.id}" data-k="deadlineMin"></label>
+    <label class="fld">Type<select data-up="task" data-id="${t.id}" data-k="category">${Object.entries(L.CATS).map(([v, l]) => `<option value="${v}" ${t.category === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    <label class="fld">Hvor ofte<select data-up="task" data-id="${t.id}" data-k="repeat">${Object.entries(L.REPEATS).map(([v, l]) => `<option value="${v}" ${t.repeat === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    <button class="ib" data-act="delTask" data-id="${t.id}" aria-label="Slett">${ic('trash')}</button>
+    <label class="fld" style="grid-column:2/4">For<select data-up="task" data-id="${t.id}" data-k="kidIds">${kidOpts(t)}</select></label>
+    ${imgRow('task', t)}
+  </div>`).join('')}
+  <button class="btn gold" style="margin-top:14px" data-act="addTask">${ic('plus')} Ny oppgave</button></div>${pTaskLib()}`;
+}
+
+function pShop() {
+  return `${aiPanel('shop')}<div class="panel"><h3>Butikk – spilletid og belønninger</h3>
+  <p class="mute">Legg gjerne til et bilde og en kort beskrivelse – da ser butikken ut som en vanlig nettbutikk for barna. Belønninger (f.eks. McDonald's eller overnatting) trekker coins med en gang og havner under Godkjenn. Der krysser dere av når de er innfridd, eller avlyser og gir coins tilbake.</p>${A.S.shop.map((it) => `<div class="erow shopr">
+    <div class="fld">Ikon${icBtn('shop', it.id, 'emoji', it.emoji)}</div>
+    <label class="fld wide">Navn<input value="${esc(it.title)}" data-up="shop" data-id="${it.id}" data-k="title"></label>
+    <label class="fld">Type<select data-up="shop" data-id="${it.id}" data-k="kind"><option value="time" ${it.kind !== 'reward' ? 'selected' : ''}>Spilletid</option><option value="reward" ${it.kind === 'reward' ? 'selected' : ''}>Belønning</option></select></label>
+    ${it.kind === 'reward' ? '<div class="fld"><span>Minutter</span><span style="min-height:46px;display:flex;align-items:center">–</span></div>' : `<label class="fld">Minutter<input type="number" min="1" value="${it.minutes}" data-up="shop" data-id="${it.id}" data-k="minutes"></label>`}
+    <label class="fld">Pris (coins)<input type="number" min="1" value="${it.cost}" data-up="shop" data-id="${it.id}" data-k="cost"></label>
+    <button class="ib" data-act="delShop" data-id="${it.id}" aria-label="Slett">${ic('trash')}</button>
+    ${imgRow('shop', it, `<label class="fld" style="flex:1;min-width:220px">Beskrivelse (vises i butikken)<input value="${esc(it.desc || '')}" data-up="shop" data-id="${it.id}" data-k="desc" placeholder="${it.kind === 'reward' ? 'F.eks. Middag på McDonald\'s sammen med en voksen' : 'F.eks. Gjelder PlayStation og iPad'}" maxlength="300"></label>`)}</div>`).join('')}
+  <div class="row" style="margin-top:14px"><button class="btn gold" data-act="addShop" data-v="time">${ic('plus')} Ny spilletid-pakke</button>
+    <button class="btn" data-act="addShop" data-v="reward">${ic('plus')} Ny belønning</button></div></div>`;
+}
+
+const DRIVERS = {
+  asus: { name: 'ASUS', desc: 'Asuswrt og Merlin – RT, GT, TUF og ZenWiFi', url: 'http://192.168.50.1', user: 'admin', pass: 'Admin-passordet til ruteren',
+    help: 'Bruker Foreldrekontroll i ruteren og slår «Blokker internett» av og på for barnas enheter.' },
+  openwrt: { name: 'OpenWrt', desc: 'OpenWrt/LuCI, GL.iNet, Turris og lignende', url: 'http://192.168.1.1', user: 'root', pass: 'root-passordet',
+    help: 'Lager én brannmurregel per enhet (lan → wan) og slår den av og på. Krever LuCI (ubus på /ubus).' },
+  mikrotik: { name: 'MikroTik', desc: 'RouterOS 7 med REST-API', url: 'https://192.168.88.1', user: 'admin', pass: 'Passord',
+    help: 'Slå på www-ssl (eller www) under IP → Services. Lager en drop-regel per enhet øverst i forward-kjeden.' },
+  unifi: { name: 'UniFi', desc: 'Dream Machine, Cloud Gateway, UniFi-kontroller', url: 'https://192.168.1.1', user: '', pass: 'Passord',
+    help: 'Bruk en lokal admin-konto (ikke Ubiquiti-skykontoen). Enheten blokkeres i UniFi-klientlisten.' },
+  fritzbox: { name: 'FRITZ!Box', desc: 'AVM FRITZ!Box via TR-064', url: 'http://192.168.178.1', user: '', pass: 'FRITZ!Box-passord',
+    help: 'Slå på «Tilgang for applikasjoner» under Hjemmenett → Nettverk → Nettverksinnstillinger. Brukeren må ha rett til FRITZ!Box-innstillinger.' },
+  adguard: { name: 'AdGuard Home', desc: 'Virker med alle rutere – stenger via DNS', url: 'http://127.0.0.1:3000', user: 'admin', pass: 'AdGuard-passord', universal: true,
+    help: 'Installer AdGuard Home (f.eks. i Docker på aaPanel-serveren) og sett serverens IP som DNS-server i ruterens DHCP-innstillinger. Blokkerte enheter får ikke slått opp nettadresser.' },
+  webhook: { name: 'Webhook / Home Assistant', desc: 'Send beskjed til din egen automasjon', url: 'http://homeassistant.local:8123/api/webhook/gaming-coins', user: null, pass: 'Hemmelig nøkkel (valgfritt)', universal: true,
+    help: 'Sender POST med JSON {devices:[{mac,name,block}]} ved hver endring. Med {mac} og {action} i adressen sendes ett GET-kall per enhet. Passordet sendes som X-GamingCoins-Secret.' },
+};
+
+/* ---------- oppsettsguide ---------- */
+const GUIDE_TABS = {
+  aapanel: { name: 'aaPanel', steps: [
+    ['Last opp', 'I aaPanel: <b>Files</b> → gå til <code>/www/wwwroot</code> → <b>Upload</b> → velg <b>gaming-coins.zip</b>. Høyreklikk på filen → <b>Unzip</b>.'],
+    ['Installer', 'Åpne <b>Terminal</b> i aaPanel og lim inn kommandoen under. Den finner Node.js, lager en tjeneste som starter automatisk og viser adressen til appen.', 'cd /www/wwwroot/gaming-coins && bash install.sh'],
+    ['Åpne port', 'Svarer ikke siden? aaPanel → <b>Security</b> → legg til port <b>8080</b> (TCP).'],
+  ] },
+  linux: { name: 'Raspberry Pi / Linux', steps: [
+    ['Kopier pakken', 'Legg <b>gaming-coins.zip</b> på maskinen (f.eks. med en minnepinne eller <code>scp</code>).'],
+    ['Installer', 'Åpne terminalen i mappen der filen ligger og kjør:', 'unzip gaming-coins.zip && cd gaming-coins && sudo bash install.sh'],
+    ['Ferdig', 'Skriptet laster ned Node.js hvis den mangler, starter appen automatisk ved oppstart og viser adressen.'],
+  ] },
+  pc: { name: 'Windows / Mac', steps: [
+    ['Installer Node.js', 'Last ned og installer <b>Node.js LTS</b> fra nodejs.org (versjon 18 eller nyere).'],
+    ['Start appen', 'Pakk ut <b>gaming-coins.zip</b>, åpne Terminal (Mac) eller PowerShell (Windows) i mappen og kjør:', 'node server.js'],
+    ['La den stå på', 'Maskinen må være på og våken når barna skal spille. Windows spør om brannmur første gang – velg <b>Tillat</b> på private nettverk.'],
+  ] },
+};
+function guideHtml() {
+  const t = A.gtab || 'aapanel', g = GUIDE_TABS[t];
+  const step = (n, title, html, cmd) => `<div class="gstep"><span class="gnum">${n}</span><div class="grow"><b>${title}</b><p>${html}</p>
+    ${cmd ? `<div class="cmd"><code>${esc(cmd)}</code><button class="btn sm ghost" data-act="copy" data-v="${esc(cmd)}">Kopier</button></div>` : ''}</div></div>`;
+  return `<div class="guide">
+    <div class="gintro">${A.mode === 'demo' ? `<p><b>Du bruker demo-versjonen.</b> Den lagrer alt bare på denne enheten og kan ikke snakke med ruteren – nettleseren får ikke lov til det.
+      For å styre internett på PlayStation og iPad må appen kjøre på en liten <b>hjemmeserver</b> i huset. Det tar ca. 10 minutter.</p>` :
+      '<p>Appen kjører på hjemmeserveren din. Her er oppsettet hvis du må installere den på nytt eller flytte den.</p>'}
+      <p class="mute">Du trenger: en maskin som alltid står på <b>hjemme, på samme nettverk som ruteren</b> (aaPanel-server, Raspberry Pi eller en gammel PC/Mac), og filen <b>gaming-coins.zip</b> fra Claude-chatten. En skyserver/VPS kan ikke nå ruteren din.</p></div>
+    <h4>1. Installer appen på serveren</h4>
+    <div class="seg" style="margin-bottom:12px">${Object.entries(GUIDE_TABS).map(([k, v]) => `<button class="${t === k ? 'on' : ''}" data-act="gtab" data-v="${k}">${v.name}</button>`).join('')}</div>
+    ${g.steps.map((s, i) => step(i + 1, s[0], s[1], s[2])).join('')}
+    <h4>2. Åpne appen fra serveren</h4>
+    ${step('A', 'Åpne adressen', 'Installasjonen skriver ut en adresse, f.eks. <code>http://192.168.1.50:8080</code>. Åpne den i Safari på iPaden eller veggskjermen.')}
+    ${step('B', 'Legg den på Hjem-skjermen', 'Trykk Del → <b>Legg til på Hjem-skjerm</b>. Da åpnes den i fullskjerm. Slå gjerne på <b>Veiledet tilgang</b> så barna ikke går ut av appen.')}
+    <h4>3. Koble til ruteren</h4>
+    ${step('C', 'Skann', 'Foreldre → <b>Ruter</b> → <b>Skann nettverket</b>. Appen finner ruteren og viser merke og modell.')}
+    ${step('D', 'Logg inn', 'Trykk <b>Bruk …</b>, skriv ruterens admin-passord, trykk <b>Lagre</b> og så <b>Test tilkobling</b>. Slå deretter på <b>Ruterstyring</b>.')}
+    ${step('E', 'Legg inn enhetene', 'Barn og enheter → <b>Hent fra ruteren</b> → velg PlayStation, iPad osv. for hvert barn. På iPad/iPhone: slå av <b>Privat Wi-Fi-adresse</b> for hjemmenettet (Innstillinger → Wi-Fi → ⓘ).')}
+    <h4>Hvis noe ikke virker</h4>
+    <ul class="trouble">
+      <li><b>Siden åpner ikke:</b> sjekk at serveren er på, og at port 8080 er åpen i brannmuren (aaPanel → Security).</li>
+      <li><b>Skanningen finner ikke ruteren:</b> skriv inn ruterens IP selv i skannefeltet. Du finner den på iPaden under Innstillinger → Wi-Fi → ⓘ → <b>Ruter</b>, eller på etiketten under ruteren.</li>
+      <li><b>Ruteren kan ikke styres direkte</b> (f.eks. Telenor, Telia, TP-Link Deco): velg <b>AdGuard Home</b> under Rutertype – det virker med alle rutere.</li>
+      <li><b>Feil passord:</b> bruk ruterens admin-passord (det du logger inn på ruterens nettside med), ikke Wi-Fi-passordet.</li>
+    </ul></div>`;
+}
+const guideModal = () => `<div style="text-align:left"><h2 style="text-align:center">Slik setter du opp Gaming Coins</h2>${guideHtml()}</div>
+  <button class="btn" data-act="closeModal" style="width:100%;margin-top:14px">Lukk</button>`;
+
+function pRouter() {
+  const r = A.S.settings.router, st = A.S.routerStatus, sc = A.S.routerScan;
+  const demo = A.mode === 'demo';
+  const d = A.rdriver ?? r.driver ?? '';
+  const D = DRIVERS[d];
+  const same = d === r.driver;
+  const f = A.rform || {};
+  const urlVal = f['r-url'] ?? (same ? r.url : (sc && sc.driver === d ? sc.url : ''));
+  const userVal = f['r-user'] ?? (same && r.user ? r.user : (D ? D.user || '' : ''));
+  const conf = { 'høy': 'Sikker gjenkjenning', middels: 'Sannsynlig', lav: 'Usikker' };
+  return `
+  ${demo ? `<div class="panel"><h3>Koble Gaming Coins til ruteren</h3>${guideHtml()}</div>` : ''}
+  <div class="panel"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Finn ruteren min</h3>
+      <button class="btn" data-act="routerScan" ${A.scanning ? 'disabled' : ''}>${A.scanning ? 'Skanner nettverket …' : 'Skann nettverket'}</button></div>
+    <p class="mute">Leter etter ruteren og leser merke og modell via UPnP, TR-064 og ruterens nettside. Tar ca. 5 sekunder.</p>
+    <div class="row"><input id="scan-ip" class="in" style="flex:1;min-width:180px" placeholder="Ruterens IP (valgfritt), f.eks. 192.168.1.1" value="${esc(A.scanIp || '')}" autocapitalize="off" inputmode="url">
+      <button class="btn ghost sm" data-act="routerScan" data-v="ip" ${A.scanning ? 'disabled' : ''}>Skann denne adressen</button></div>
+    ${A.scanError ? `<div class="scan" style="margin-top:14px"><b>Skanningen fikk ikke kontakt: ${esc(A.scanError)}</b>
+      <ul class="trouble"><li>Står serveren <b>hjemme</b>, på samme nettverk som ruteren? En skyserver kan ikke nå den.</li>
+      <li>Skriv inn ruterens IP i feltet over (iPad: Innstillinger → Wi-Fi → ⓘ → Ruter) og trykk «Skann denne adressen».</li>
+      <li>Kjører appen i Docker, må containeren bruke <code>network_mode: host</code>.</li>
+      <li>Du kan også velge rutertype nedenfor og fylle inn adressen selv.</li></ul>
+      <button class="btn ghost sm" data-act="openGuide">Vis hele oppsettsguiden</button></div>` : ''}
+    ${sc && !sc.brand && !A.scanError ? '<p class="mute">Fant ingen ruter som svarte. Prøv å skrive inn IP-adressen over, eller velg rutertype nedenfor.</p>' : ''}
+    ${sc ? `<div class="scan">
+      <div class="scanhead"><div class="qicon" style="--k:${sc.driver ? '#16c28f' : '#ffb020'}">${ic('wifi')}</div>
+        <div class="grow"><div class="mute" style="font-size:13px;font-weight:800">Fant ruter på ${esc(sc.gateway || '?')}</div>
+          <div class="sbrand">${esc(sc.brand || 'Ukjent ruter')}</div><div class="smodel">${esc(sc.model || 'Modell ikke oppgitt av ruteren')}</div></div>
+        <div style="text-align:right"><span class="tag ${sc.confidence === 'lav' ? 'late' : ''}">${conf[sc.confidence] || ''}</span>
+          <div class="mute" style="font-size:12px;margin-top:4px">${esc((sc.sources || []).join(' · '))}</div></div></div>
+      ${sc.driver ? `<p><b>Støttes direkte.</b> ${esc(DRIVERS[sc.driver].help)}</p>
+          ${r.driver === sc.driver ? '<p class="mute">Denne er allerede valgt nedenfor.</p>' : `<button class="btn ok" data-act="useScan">${ic('check')} Bruk ${esc(DRIVERS[sc.driver].name)}</button>`}`
+        : `<p><b>Kan ikke styres direkte.</b> ${esc(sc.why || '')}. Men du kan fortsatt bruke Gaming Coins med denne ruteren:</p>
+          <div class="row"><button class="btn ok" data-act="pickDriver" data-v="adguard">Bruk AdGuard Home</button><button class="btn ghost" data-act="pickDriver" data-v="webhook">Bruk Home Assistant / webhook</button></div>`}
+      ${sc.others && sc.others.length ? `<details style="margin-top:12px"><summary class="mute" style="cursor:pointer;font-weight:800">Andre enheter funnet (${sc.others.length})</summary>
+        ${sc.others.map((o) => `<div class="li"><span class="grow">${esc(o.name || o.model)}</span><span class="when">${esc([o.manufacturer, o.model].filter(Boolean).join(' '))} · ${esc(o.ip)}</span></div>`).join('')}</details>` : ''}
+    </div>` : ''}</div>
+
+  <div class="panel"><h3>Rutertype</h3>
+    <div class="drv">${Object.entries(DRIVERS).map(([k, v]) => `<button class="${d === k ? 'on' : ''}" data-act="pickDriver" data-v="${k}">
+      <b>${v.name}</b><small>${v.desc}</small>${v.universal ? '<span class="tag">Alle rutere</span>' : ''}</button>`).join('')}</div>
+    ${D ? `<p class="mute" style="margin-top:14px">${esc(D.help)}</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+      <label class="fld">${d === 'webhook' ? 'Webhook-adresse' : d === 'adguard' ? 'AdGuard Home-adresse' : 'Ruteradresse'}<input id="r-url" value="${esc(urlVal)}" placeholder="${esc(D.url)}" autocapitalize="off"></label>
+      ${D.user !== null ? `<label class="fld">Brukernavn<input id="r-user" value="${esc(userVal)}" autocomplete="off" autocapitalize="off"></label>` : ''}
+      <label class="fld">${d === 'webhook' ? 'Hemmelig nøkkel' : 'Passord'}<input id="r-pass" type="password" value="${esc(f['r-pass'] || '')}" placeholder="${same && r.hasPass ? '•••••• (lagret)' : esc(D.pass)}" autocomplete="new-password"></label></div>
+    <div class="row" style="margin-top:14px"><button class="btn" data-act="routerSave">Lagre</button><button class="btn ghost" data-act="routerTest" ${same ? '' : 'disabled'}>Test tilkobling</button></div>` : '<p class="mute">Velg en type over, eller trykk «Skann nettverket».</p>'}
+  </div>
+
+  <div class="panel"><h3>Status</h3>
+    <div class="row"><button class="sw ${r.enabled ? 'on' : ''}" data-act="routerOn" aria-label="Ruterstyring" ${r.driver ? '' : 'disabled'}></button>
+      <b>${r.enabled ? 'Ruterstyring er PÅ' : 'Ruterstyring er av'}</b>${r.driver ? `<span class="mute">· ${esc(DRIVERS[r.driver]?.name || r.driver)}${r.model ? ' · ' + esc(r.model) : ''}</span>` : ''}</div>
+    ${st ? `<p><span class="tag ${st.ok ? '' : 'late'}">${st.ok ? 'OK' : 'Feil'}</span> ${esc(st.msg)} <span class="mute">(${hhmm(st.at)})</span></p>` : ''}
+  </div>`;
+}
+
+function swRow(g, k, label, on, help) {
+  return `<div class="row" style="margin:6px 0"><button class="sw ${on ? 'on' : ''}" data-act="setFlag" data-g="${g}" data-k="${k}" aria-label="${esc(label)}"></button><b>${label}</b>${help ? `<span class="mute" style="font-size:14px">${help}</span>` : ''}</div>`;
+}
+function settingsPanels() {
+  const s = A.S.settings, g = s.games || {}, lo = s.loans || {}, n = s.notify || {}, ns = A.S.notifyStatus;
+  const f2 = (grp, k, label, val, type = 'number', extra = '') => `<label class="fld">${label}<input type="${type}" value="${esc(val ?? '')}" data-up="set2" data-g="${grp}" data-k="${k}" ${extra}></label>`;
+  return `<div class="panel"><h3>E-postvarsel til foreldre</h3>
+    <p class="mute">Få e-post når et barn er ferdig med en oppgave, kjøper en belønning eller vil låne coins. Flere hendelser samles i én e-post.</p>
+    ${A.mode === 'demo' ? '<p class="tag late" style="font-size:15px;padding:6px 12px">E-post sendes fra hjemmeserveren – virker ikke i demo-versjonen.</p>' : ''}
+    ${swRow('notify', 'enabled', n.enabled ? 'Varsler er PÅ' : 'Varsler er av', n.enabled)}
+    <div class="formgrid">
+      ${f2('notify', 'to', 'Send til (flere adresser med komma)', n.to, 'email', 'placeholder="mamma@eksempel.no, pappa@eksempel.no" multiple autocapitalize="off"')}
+      ${f2('notify', 'host', 'E-postserver (SMTP)', n.host, 'text', 'placeholder="smtp.gmail.com" autocapitalize="off"')}
+      ${f2('notify', 'port', 'Port', n.port, 'number', 'placeholder="587"')}
+      ${f2('notify', 'user', 'Brukernavn (e-postadresse)', n.user, 'text', 'placeholder="deg@gmail.com" autocapitalize="off" autocomplete="off"')}
+      <label class="fld">Passord / app-passord<input type="password" data-up="set2" data-g="notify" data-k="pass" placeholder="${n.hasPass ? '•••••• (lagret)' : 'App-passord'}" autocomplete="new-password"></label>
+      ${f2('notify', 'from', 'Avsender (valgfritt)', n.from, 'text', 'placeholder="Gaming Coins &lt;deg@gmail.com&gt;"')}
+      ${f2('notify', 'appUrl', 'Lenke til appen i e-posten (valgfritt)', n.appUrl, 'url', 'placeholder="http://192.168.1.50:8080" autocapitalize="off"')}
+    </div>
+    <div class="row" style="margin-top:12px"><button class="btn ghost" data-act="notifyTest">Send testvarsel</button></div>
+    ${ns ? `<p><span class="tag ${ns.ok ? '' : 'late'}">${ns.ok ? 'OK' : 'Feil'}</span> ${esc(ns.msg)} <span class="mute">(${hhmm(ns.at)})</span></p>` : ''}
+    <details><summary class="mute" style="cursor:pointer;font-weight:800">Hvordan bruker jeg Gmail?</summary>
+      <ol class="trouble"><li>Slå på totrinnsbekreftelse på Google-kontoen.</li><li>Gå til Google-konto → Sikkerhet → <b>App-passord</b> og lag et nytt (f.eks. «Gaming Coins»).</li>
+      <li>Fyll inn: server <code>smtp.gmail.com</code>, port <code>587</code>, brukernavn = Gmail-adressen, passord = app-passordet (16 tegn).</li>
+      <li>Andre e-postleverandører: bruk SMTP-innstillingene de oppgir (port 587 eller 465).</li></ol></details></div>
+  <div class="panel"><h3>Lån mellom barna</h3>
+    ${swRow('loans', 'enabled', 'Barna kan låne coins av hverandre', lo.enabled)}
+    ${swRow('loans', 'needParent', 'Foreldre må godkjenne hvert lån', lo.needParent)}
+    <div class="formgrid">${f2('loans', 'maxAmount', 'Maks per lån (coins)', lo.maxAmount)}</div>
+    <p class="mute">Alle lån vises under Godkjenn → «Lån mellom barna – oversikt». Der kan dere også slette restgjeld.</p></div>
+  <div class="panel"><h3>Lyd</h3><div class="row"><button class="sw ${SFX.on ? 'on' : ''}" data-act="toggleSound" aria-label="Lyd"></button><b>${SFX.on ? 'Lydeffekter er på' : 'Lydeffekter er av'}</b><span class="mute" style="font-size:14px">gjelder denne skjermen</span></div></div>`;
+}
+function pGames() {
+  const s = A.S.settings, g = s.games || {};
+  const f2 = (grp, k, label, val) => `<label class="fld">${label}<input type="number" value="${esc(val ?? '')}" data-up="set2" data-g="${grp}" data-k="${k}"></label>`;
+  const kids = A.S.kids;
+  return `<div class="panel"><h3>Coins fra læringsspill</h3>
+    ${swRow('games', 'enabled', 'Læringsspill gir coins', g.enabled)}
+    <div class="formgrid">${f2('games', 'coinsPerCorrect', 'Coins per riktig svar', g.coinsPerCorrect)}${f2('games', 'perfectBonus', 'Bonus for alle riktige', g.perfectBonus)}${f2('games', 'dailyCap', 'Maks coins fra spill per dag', g.dailyCap)}</div>
+    <p class="mute">Barna kan alltid øve, men får ikke flere coins enn grensen per dag. En runde på 10 spørsmål må ta minst 8 sekunder (stopper juks).</p>
+    ${kids.length ? `<div class="row" style="gap:16px;margin-top:6px">${kids.map((k) => `<span class="chip">${icn(k.avatar)} ${esc(k.name)}: ${gamesToday(k)} / ${g.dailyCap} i dag</span>`).join('')}</div>` : ''}</div>
+  <div class="panel aipanel"><div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div style="flex:1;min-width:240px"><h3 style="margin-bottom:4px">${ic('spark')} Spill-ikoner</h3>
+        <p class="mute" style="margin:0">Alle spill har ferdige app-ikoner. Vil du ha egne bilder, kan hjemmeserveren lage AI-ikoner gratis (Pollinations, ca. 15 sek per ikon). Stilen velges under Oppgaver.</p></div>
+      <div class="appstrip">${Object.keys(GAMES).slice(0, 6).map((id) => appIcon(id, 46)).join('')}</div></div>
+    <div class="row" style="margin-top:12px"><button class="btn" style="--b:#7c4dff;--bs:#5a2fd6;flex:none" data-act="aiIconsAll">${ic('spark')} Lag AI-ikoner for alle spill</button>
+      ${Object.keys(A.S.gameIcons || {}).length ? `<button class="btn ghost sm" style="flex:none" data-act="iconsReset">Tilbake til standard-ikoner</button>` : ''}
+      ${A.S.aiStatus && A.S.aiStatus.pending ? `<span class="chip gold">Lager bilder … ${A.S.aiStatus.pending} igjen</span><button class="btn ghost sm" style="flex:none" data-act="aiCancel">Stopp</button>` : ''}
+      ${A.S.aiStatus && A.S.aiStatus.error ? `<span class="tag late">${esc(A.S.aiStatus.error)}</span>` : ''}</div></div>
+  <div class="panel"><h3>Hvem får spille hva?</h3>
+    <p class="mute">Slå av spill og nivåer som er for lette eller for vanskelige. Barnet ser bare det som er slått på.</p>
+    <div class="row" style="margin-bottom:10px">${kids.map((k) => `<span class="gakid">${icn(k.avatar)} <b>${esc(k.name)}</b>
+      <button class="mini" data-act="gaAll" data-id="${k.id}" data-v="1">Alle på</button><button class="mini" data-act="gaAll" data-id="${k.id}" data-v="0">Alle av</button>
+      <input id="age-${k.id}" class="in mini-in" type="number" min="3" max="18" placeholder="Alder" inputmode="numeric"><button class="mini" data-act="gaAge" data-id="${k.id}">Tilpass</button></span>`).join('')}</div>
+    <p class="mute" style="font-size:14px">«Tilpass» slår på spillene som passer for alderen (og ett år under), og slår av resten. Du kan justere etterpå.</p>
+    <div class="scroll"><table class="gatab"><thead><tr><th>Spill</th>${kids.map((k) => `<th>${icn(k.avatar)} ${esc(k.name)}</th>`).join('')}</tr></thead><tbody>
+    ${Object.keys(CATS_G).map((c) => `<tr class="gcatrow"><td colspan="${kids.length + 1}">${CATS_G[c]}</td></tr>` + Object.entries(GAMES).filter(([, x]) => x.cat === c).sort((a, b) => parseInt(a[1].age) - parseInt(b[1].age)).map(([id, G2]) => `<tr><td><div class="row" style="gap:10px;flex-wrap:nowrap">${appIcon(id, 46)}<div><b>${G2.name}</b><div class="when">${G2.age}</div></div></div></td>
+      ${kids.map((k) => { const offAll = gameOff(k.id, id);
+        return `<td><div class="row" style="gap:6px">${G2.levels ? Object.entries(G2.levels).map(([l, ln]) => { const on = !offAll && !gameOff(k.id, id, l);
+          return `<button class="lvl-chip ${on ? 'on' : ''}" style="--k:${G2.color}" data-act="gaToggle" data-id="${k.id}" data-v="${id}" data-l="${l}" aria-pressed="${on}">${ln}</button>`; }).join('')
+          : `<button class="lvl-chip ${offAll ? '' : 'on'}" style="--k:${G2.color}" data-act="gaToggle" data-id="${k.id}" data-v="${id}" aria-pressed="${!offAll}">${offAll ? 'Av' : 'På'}</button>`}</div></td>`; }).join('')}</tr>`).join('')).join('')}
+    </tbody></table></div></div>`;
+}
+function pMore() {
+  const s = A.S.settings;
+  return `<div class="panel"><details ${A.mode === 'demo' ? 'open' : ''}><summary class="gsum">Hjelp og oppsett av hjemmeserver</summary>${guideHtml()}</details></div>
+  ${settingsPanels()}
+  <div class="panel"><h3>Innstillinger</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+      <label class="fld">Ny foreldre-PIN (4–8 siffer)<input id="newpin" inputmode="numeric" type="password" placeholder="••••"></label>
+      <label class="fld">«Delvis» ved for sent levert (% av coins)<input type="number" min="0" max="100" value="${s.latePct}" data-up="set" data-k="latePct"></label></div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-act="savePin">Bytt PIN</button></div></div>
+  <div class="panel"><h3>Siste hendelser</h3><div>${A.S.log.slice(0, 30).map((l) => { const k = kidById(l.kidId) || {};
+    return `<div class="li"><span>${icn(k.avatar || '')}</span><div class="grow"><b>${esc(k.name || '')}</b> ${esc(l.text)}</div>${l.coins ? `<span class="${l.coins > 0 ? 'plus' : 'minus'}">${l.coins > 0 ? '+' : ''}${l.coins}</span>` : ''}<span class="when">${hhmm(l.t)}</span></div>`; }).join('') || '<p class="mute">Tomt.</p>'}</div></div>
+  <div class="panel"><h3>Nullstill</h3><p class="mute">Setter tilbake barn, oppgaver, butikk og coins til start. PIN beholdes.</p>
+    <button class="btn bad" data-act="resetAsk">Nullstill alt</button></div>`;
+}
+
+/* ---------- modaler ---------- */
+function dotsHtml(added, cls = '') {
+  const n = Math.max(4, A.pinEntry.length);
+  return `<div class="dots ${cls}" id="pindots">${Array.from({ length: n }, (_, i) => `<i class="${A.pinEntry.length > i ? 'f' : ''}${added && i === A.pinEntry.length - 1 ? ' new' : ''}"></i>`).join('')}</div>`;
+}
+function setDots(added, cls) { const el = document.getElementById('pindots'); if (el) el.outerHTML = dotsHtml(added, cls); }
+function pinModal() {
+  return `<h2>Foreldre</h2><div class="mute">Skriv inn PIN-koden</div>
+    ${dotsHtml()}<div class="pinmsg" id="pinmsg"></div>
+    <div class="keys">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button data-act="key" data-v="${n}">${n}</button>`).join('')}
+      <button data-act="key" data-v="del" aria-label="Slett">⌫</button><button data-act="key" data-v="0">0</button>
+      <button data-act="key" data-v="ok" style="background:var(--ok);color:#fff">OK</button></div>`;
+}
+function confirmModal(title, text, yesAct, yesLabel, cls = 'gold', extra = '') {
+  return () => `<h2>${title}</h2><p>${text}</p><div class="row"><button class="btn ghost" data-act="closeModal">Avbryt</button>
+    <button class="btn ${cls}" data-act="${yesAct}" ${extra}>${yesLabel}</button></div>`;
+}
+function iconModal() {
+  const t = A.iconTarget, cur = currentIcon(t);
+  return `<h2>Velg ikon</h2>
+    <div class="row" style="justify-content:center;margin-bottom:10px"><span class="icprev">${icn(cur)}</span></div>
+    <div class="row" style="margin-bottom:12px">
+      <label class="btn gold" style="flex:1;cursor:pointer">📷 Last opp bilde<input id="iconfile" type="file" accept="image/*" hidden></label></div>
+    <div class="row" style="margin-bottom:14px"><input id="iconown" class="in" placeholder="Eller skriv/lim inn en emoji" style="flex:1" maxlength="16">
+      <button class="btn sm" data-act="iconOwn">Bruk</button></div>
+    ${Object.entries(ICONS).map(([cat, list]) => `<div class="iccat">${cat}</div><div class="icgrid">${list.split(' ').map((e) =>
+      `<button data-act="iconSet" data-v="${e}">${e}</button>`).join('')}</div>`).join('')}
+    <button class="btn ghost" data-act="closeModal" style="width:100%;margin-top:12px">Lukk</button>`;
+}
+function currentIcon(t) {
+  if (!t) return '';
+  const src = t.up === 'kid' ? kidById(t.id) : t.up === 'task' ? A.S.tasks.find((x) => x.id === t.id) : A.S.shop.find((x) => x.id === t.id);
+  return src ? src[t.k] : '';
+}
+async function setIcon(v) {
+  const t = A.iconTarget; if (!t || !v) return;
+  A.modal = null;
+  if (t.up === 'kid') await act({ type: 'upsertKid', kid: { id: t.id, avatar: v } });
+  else if (t.up === 'task') await act({ type: 'upsertTask', task: { id: t.id, emoji: v } });
+  else await act({ type: 'upsertShop', item: { id: t.id, emoji: v } });
+}
+function imageToIcon(file) {
+  return new Promise((ok, bad) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const N = 160, c = document.createElement('canvas'); c.width = c.height = N;
+      const s = Math.min(img.naturalWidth, img.naturalHeight);
+      c.getContext('2d').drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, N, N);
+      URL.revokeObjectURL(url);
+      let d = c.toDataURL('image/webp', 0.85);
+      if (!d.startsWith('data:image/webp')) d = c.toDataURL('image/png');
+      ok(d);
+    };
+    img.onerror = () => bad(new Error('Kunne ikke lese bildet'));
+    img.src = url;
+  });
+}
+function ago(t) {
+  if (!t) return 'kjent fra ruteren';
+  const m = Math.round((Date.now() - t) / 60000);
+  if (m < 60) return `sett for ${Math.max(1, m)} min siden`;
+  const h = Math.round(m / 60); if (h < 24) return `sett for ${h} t siden`;
+  const d = Math.round(h / 24); return d === 1 ? 'sett i går' : `sett for ${d} dager siden`;
+}
+function clientsModal(kidId) {
+  return () => {
+    if (A.clients === null) return `<h2>Velg enhet</h2><p>Henter enheter fra ruteren …<br><small class="mute">Leter også etter enheter som er av</small></p>
+      <button class="btn ghost" data-act="closeModal" style="width:100%">Avbryt</button>`;
+    const owner = {}; for (const k of A.S.kids) for (const d of k.devices || []) if (d.mac) owner[d.mac.toUpperCase()] = k.name;
+    const row = (c, i) => `<button class="pick ${owner[c.mac] ? 'taken' : ''}" data-act="pickClient" data-id="${kidId}" data-i="${i}" data-q="${esc((c.name + ' ' + c.mac + ' ' + c.ip).toLowerCase())}">
+      <span class="pdot ${c.online ? 'on' : ''}"></span>
+      <span class="grow"><b>${esc(c.name)}</b><br><small class="mute">${esc(c.mac)}${c.ip ? ' · ' + esc(c.ip) : ''}${c.online ? '' : ' · ' + ago(c.lastSeen)}</small></span>
+      ${owner[c.mac] ? `<span class="tag" style="background:var(--card3);color:var(--ink)">${esc(owner[c.mac])}</span>` : ''}</button>`;
+    const on = A.clients.map((c, i) => [c, i]).filter(([c]) => c.online), off = A.clients.map((c, i) => [c, i]).filter(([c]) => !c.online);
+    return `<h2>Velg enhet</h2>
+      <input id="cl-filter" class="in" placeholder="Søk etter navn, MAC eller IP" style="margin-bottom:12px" autocomplete="off">
+      <div style="text-align:left;max-height:55vh;overflow:auto">
+      ${on.length ? `<div class="iccat">På nett nå (${on.length})</div>${on.map(([c, i]) => row(c, i)).join('')}` : ''}
+      ${off.length ? `<div class="iccat">Av eller borte nå (${off.length}) – kjent fra ruteren eller sett tidligere</div>${off.map(([c, i]) => row(c, i)).join('')}` : ''}
+      ${!A.clients.length ? '<p>Fant ingen enheter. Slå på enheten (PlayStation, iPad …) og prøv igjen, eller legg den til manuelt.</p>' : ''}
+      </div>
+      <p class="mute" style="font-size:14px">Finner du ikke enheten? Slå den på et øyeblikk og trykk «Søk igjen». Enheter som har vært på nett, huskes etterpå.</p>
+      <div class="row"><button class="btn ghost" data-act="pickDev" data-id="${kidId}">Søk igjen</button>
+        <button class="btn ghost" data-act="addDev" data-id="${kidId}">Legg til manuelt</button></div>
+      <button class="btn" data-act="closeModal" style="width:100%;margin-top:10px">Lukk</button>`;
+  };
+}
+
+/* ---------- hendelser ---------- */
+function openModal(fn) { A.modal = fn; A.modalFresh = true; render(); }
+function closeModal() { A.modal = null; render(); }
+
+$app.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  if (b.dataset.act === 'closeModal' && e.target.closest('[data-stop]') && b.classList.contains('scrim')) return;
+  const d = b.dataset, id = d.id, k = A.kidId && kidById(A.kidId);
+  { const sn = d.act in ACT_SOUND ? ACT_SOUND[d.act] : 'click'; if (sn) sound(sn); if (d.act === 'key' && d.v !== 'ok') sound('key'); }
+  try {
+    switch (d.act) {
+      case 'home': A.screen = 'home'; A.modal = null; render(); scrollTo(0, 0); break;
+      case 'openKid': A.screen = 'kid'; A.kidId = id; A.tab = 'tasks'; A.game = null; A.loanForm = {}; render(); scrollTo(0, 0); break;
+      case 'tab': A.tab = d.v; A.paneFresh = true; render(); break;
+      case 'take': await act({ type: 'take', kidId: k.id, taskId: id }); toast('Oppgaven er din – lykke til! 💪'); break;
+      case 'done': await act({ type: 'done', jobId: id }); sound('success'); toast('Supert! Nå må en voksen godkjenne ⭐'); boom(18); break;
+      case 'cancel': await act({ type: 'cancel', jobId: id }); break;
+      case 'devQuick': await act({ type: 'setDeviceRule', mac: id, patch: { mode: d.v } }); sound(d.v === 'block' ? 'down' : 'power'); break;
+      case 'grpAdd': await act({ type: 'upsertGroup', group: { name: 'Ny gruppe' } }); break;
+      case 'grpDel': await act({ type: 'deleteGroup', groupId: id }); break;
+      case 'grpToggle': { const cur = (A.S.devRules[d.v] || {}).groupId; await act({ type: 'setDeviceRule', mac: d.v, patch: { groupId: cur === id ? '' : id } }); break; }
+      case 'schedEdit': { const base = d.v === 'dev' ? (A.S.devRules[id] || {}).schedule : ((A.S.groups || []).find((g) => g.id === id) || {}).schedule;
+        A.schedEdit = { kind: d.v, id, sched: JSON.parse(JSON.stringify(base || A.S.settings.schedule)) }; openModal(schedModal); break; }
+      case 'seDay': A.schedEdit.sched[d.v].on = !A.schedEdit.sched[d.v].on; render(); break;
+      case 'seClear': case 'seSave': { const e = A.schedEdit, sched = d.act === 'seSave' ? e.sched : null; A.modal = null;
+        if (e.kind === 'dev') await act({ type: 'setDeviceRule', mac: e.id, patch: { schedule: sched } }); else await act({ type: 'upsertGroup', group: { id: e.id, schedule: sched } });
+        toast(sched ? 'Åpningstid lagret' : 'Egen åpningstid fjernet'); break; }
+      case 'demoStats': seedDemoStats(); render(); toast('Eksempeldata lagt inn (bare i demo)'); break;
+      case 'gaToggle': { const off = gameOff(id, d.v, d.l) || (d.l && gameOff(id, d.v));
+        await act({ type: 'gameAccess', kidId: id, game: d.v, level: d.l || '', on: off }); break; }
+      case 'gcat': A.gcat = d.v || ''; render(); break;
+      case 'gaAge': { const age = Number(val('age-' + id)); if (!age) { toast('Skriv inn alder først', true); break; }
+        const offGames = Object.entries(GAMES).filter(([, x]) => { const [lo, hi] = x.age.match(/\d+/g).map(Number); return age < lo - 1 || age > hi; }).map(([gid]) => gid);
+        await act({ type: 'gameAccessSet', kidId: id, offGames }); toast(`Spill tilpasset ${age} år – ${Object.keys(GAMES).length - offGames.length} spill på`); break; }
+      case 'gaAll': await act({ type: 'gameAccessAll', kidId: id, on: d.v === '1' }); break;
+      case 'gameSheet': openModal(gameSheet(A.kidId, d.v)); break;
+      case 'game': { A.modal = null; const lv = d.l || null; A.game = { kidId: A.kidId, type: d.v, level: lv, qs: makeRound(d.v, lv || 'lett'), i: 0, correct: 0, picked: null, done: false, result: null, startedAt: now() }; A.paneFresh = true; sound('open'); render(); scrollTo(0, 0); break; }
+      case 'gameQuit': A.game = null; sound('back'); render(); break;
+      case 'ans': answer(Number(d.v)); break;
+      case 'loanLender': A.loanForm = { ...(A.loanForm || {}), lender: id, note: val('loan-note') }; render(); break;
+      case 'loanAmount': A.loanForm = { ...(A.loanForm || {}), amount: Number(d.v), note: val('loan-note') }; render(); break;
+      case 'loanAsk': { const f = A.loanForm || {}; await act({ type: 'loanRequest', kidId: k.id, lenderId: f.lender, amount: f.amount, note: val('loan-note') }); A.loanForm = {}; sound('success'); toast('Spørsmålet er sendt!'); break; }
+      case 'loanYes': await act({ type: 'loanAnswer', loanId: id, yes: true }); sound('coin'); toast(A.S.settings.loans.needParent ? 'Takk! Nå må en voksen godkjenne.' : 'Coins er lånt bort'); break;
+      case 'loanNo': await act({ type: 'loanAnswer', loanId: id, yes: false }); break;
+      case 'loanPay': await act({ type: 'loanRepay', loanId: id, amount: Number(d.v) }); sound('coin'); toast('Betalt tilbake ' + d.v + ' coins'); break;
+      case 'loanParent': await act({ type: 'loanParentApprove', loanId: id, yes: d.v === '1' }); if (d.v === '1') sound('coin'); break;
+      case 'loanCancel': await act({ type: 'loanCancel', loanId: id }); break;
+      case 'setFlag': { const cur = A.S.settings[d.g][d.k]; await act({ type: 'setSettings', patch: { [d.g]: { [d.k]: !cur } } }); break; }
+      case 'notifyTest': { b.disabled = true; b.textContent = 'Sender …'; const m = await act({ type: 'notifyTest' }); toast(m); sound('success'); break; }
+      case 'viewItem': openModal(itemModal(A.kidId, id, Number(d.i) || 0)); break;
+      case 'pickImage': A.imgTarget = { kind: d.v || 'shop', id }; document.getElementById('prodfile').click(); break;
+      case 'delImage': await act(d.v === 'task' ? { type: 'upsertTask', task: { id, image: '' } } : { type: 'upsertShop', item: { id, image: '' } }); toast('Bildet er fjernet'); break;
+      case 'aiImage': await act({ type: 'aiImage', kind: d.v, id }); toast('Lager bilde med AI … det dukker opp om litt'); break;
+      case 'aiImagesAll': { const n = await act({ type: 'aiImagesAll', kind: d.v }); toast(n ? `Lager ${n} bilder – ca. ${Math.ceil(n * 16 / 60)} min. Du kan gjøre andre ting imens.` : 'Alle har allerede bilde'); break; }
+      case 'aiIconsAll': { const games = Object.entries(GAMES).map(([gid, x]) => ({ id: gid, name: x.name, desc: x.desc }));
+        const n = await act({ type: 'aiImagesAll', kind: 'game', games }); toast(`Lager ${n} spill-ikoner – ca. ${Math.ceil(n * 16 / 60)} min.`); break; }
+      case 'iconsReset': await act({ type: 'gameIconsClear' }); toast('Standard-ikoner er tilbake'); break;
+      case 'libAge': A.libAge = d.v; A.libKid = val('lib-kid'); render(); break;
+      case 'libAdd': await act({ type: 'addTasks', tasks: [libTask(TASK_LIB[Number(d.v)])] }); sound('success'); toast('Oppdraget er lagt til'); break;
+      case 'libAddAll': { const have = new Set(A.S.tasks.map((t) => t.title.toLowerCase())), f = A.libAge || '';
+        const list = TASK_LIB.filter((x) => { if (!f) return true; const [lo, hi] = f.split('-').map(Number); return x[6] <= hi && x[7] >= lo; }).filter((x) => !have.has(x[1].toLowerCase()));
+        const n = await act({ type: 'addTasks', tasks: list.map(libTask) }); sound('success'); toast(`${n} oppdrag lagt til`); break; }
+      case 'aiCancel': await act({ type: 'aiCancel' }); break;
+      case 'toggleSound': setSound(!SFX.on); render(); if (SFX.on) sound('success'); break;
+      case 'buy': { const it = A.S.shop.find((x) => x.id === id);
+        const rw = it.kind === 'reward';
+        openModal(confirmModal(rw ? 'Kjøpe belønning?' : 'Kjøpe spilletid?', rw ? `${icn(it.emoji)} ${esc(it.title)} for <b>${it.cost} coins</b>` : `${it.minutes} minutter for <b>${it.cost} coins</b>`, 'buyYes', 'Ja, kjøp!', 'gold', `data-id="${id}"`)); break; }
+      case 'buyYes': { A.modal = null; const rw = A.S.shop.find((x) => x.id === id)?.kind === 'reward';
+        await act({ type: 'buy', kidId: k.id, itemId: id }); sound('buy'); toast(rw ? 'Kjøpt! Mamma eller pappa får beskjed 🎁' : 'Spilletid lagt i banken! 🎮'); if (rw) boom(50); break; }
+      case 'fulfill': await act({ type: 'fulfillReward', rewardId: id }); toast('Belønning innfridd ✓'); break;
+      case 'refund': await act({ type: 'refundReward', rewardId: id }); toast('Avlyst – coins er gitt tilbake'); break;
+      case 'play': await act({ type: 'play', kidId: k.id, on: d.v === '1' }); sound(d.v === '1' ? 'power' : 'down'); if (d.v === '1') { toast('God fornøyelse! Internett åpnes nå 🚀'); boom(30); } break;
+      case 'openParent': A.pinEntry = ''; openModal(pinModal); break;
+      case 'key': {
+        if (A.pinBusy) break;
+        const msg = document.getElementById('pinmsg'); if (msg) msg.textContent = '';
+        if (d.v === 'del') { A.pinEntry = A.pinEntry.slice(0, -1); setDots(); break; }
+        if (d.v !== 'ok') { if (A.pinEntry.length < 8) { A.pinEntry += d.v; setDots(true); } break; }
+        if (A.pinEntry.length < 4) { if (msg) msg.textContent = 'Skriv minst 4 siffer'; break; }
+        const pin = A.pinEntry; A.pinBusy = true; A.pin = pin;
+        try {
+          if (A.mode === 'demo') { if (String(pin) !== String(A.S.settings.pin)) throw new Error('bad'); }
+          else await act({ type: 'verifyPin' }, true);
+          setDots(false, 'ok'); sound('success');
+          setTimeout(() => { A.pinBusy = false; A.pinEntry = ''; A.modal = null; A.screen = 'parent'; A.ptab = 'approve'; render(); scrollTo(0, 0); }, 220);
+        } catch {
+          A.pin = null; setDots(false, 'err'); sound('error');
+          const m = document.querySelector('.modal'); if (m) { m.classList.remove('shake'); void m.offsetWidth; m.classList.add('shake'); }
+          if (msg) msg.textContent = 'Feil PIN-kode – prøv igjen';
+          setTimeout(() => { A.pinBusy = false; A.pinEntry = ''; setDots(); }, 450);
+        }
+        break;
+      }
+      case 'lock': A.pin = null; A.screen = 'home'; render(); break;
+      case 'ptab': A.ptab = d.v; render(); break;
+      case 'approve': await act({ type: 'approve', jobId: id, pct: Number(d.v) }); sound('coin'); toast('Godkjent ✓'); break;
+      case 'reject': await act({ type: 'reject', jobId: id }); break;
+      case 'adjust': await act({ type: 'adjust', kidId: id, coins: Number(d.c || 0), minutes: Number(d.m || 0) }); break;
+      case 'stopPlay': await act({ type: 'stopPlay', kidId: id }); break;
+      case 'override': await act({ type: 'setSettings', patch: { override: d.v } }); break;
+      case 'dayOn': { const sc = A.S.schedule?.[id] || A.S.settings.schedule[id]; await act({ type: 'setSchedule', day: Number(id), patch: { on: !sc.on } }); break; }
+      case 'addKid': await act({ type: 'upsertKid', kid: { name: 'Nytt barn', avatar: '🐼', color: '#ffb020' } }); break;
+      case 'delKid': openModal(confirmModal('Slette barnet?', 'Coins og historikk forsvinner.', 'delKidYes', 'Slett', 'bad', `data-id="${id}"`)); break;
+      case 'delKidYes': A.modal = null; await act({ type: 'deleteKid', kidId: id }); break;
+      case 'addDev': { A.modal = null; const kk = kidById(id); await act({ type: 'upsertKid', kid: { id, devices: [...kk.devices, { name: '', mac: '' }] } }); break; }
+      case 'delDev': { const kk = kidById(id); await act({ type: 'upsertKid', kid: { id, devices: kk.devices.filter((_, i) => i !== Number(d.i)) } }); break; }
+      case 'pickDev': A.clients = null; openModal(clientsModal(id));
+        try { A.clients = await act({ type: 'routerClients' }); } catch { A.clients = []; } if (A.modal) render(); break;
+      case 'pickClient': { const c = A.clients[Number(d.i)], kk = kidById(id);
+        A.modal = null; await act({ type: 'upsertKid', kid: { id, devices: [...kk.devices.filter((x) => x.mac), { name: c.name, mac: c.mac }] } }); toast('Enhet lagt til'); break; }
+      case 'addTask': await act({ type: 'upsertTask', task: {} }); scrollTo(0, document.body.scrollHeight); break;
+      case 'delTask': await act({ type: 'deleteTask', taskId: id }); break;
+      case 'addShop': await act({ type: 'upsertShop', item: { kind: d.v } }); break;
+      case 'delShop': await act({ type: 'deleteShop', itemId: id }); break;
+      case 'routerOn': await act({ type: 'setSettings', patch: { router: { enabled: !A.S.settings.router.enabled } } }); break;
+      case 'routerSave': {
+        const drv = A.rdriver ?? A.S.settings.router.driver;
+        if (!drv) { toast('Velg rutertype først', true); break; }
+        await act({ type: 'setSettings', patch: { router: { driver: drv, url: val('r-url') || DRIVERS[drv].url, user: val('r-user'), pass: val('r-pass') } } });
+        A.rdriver = undefined; A.rform = {}; render(); toast('Lagret – trykk «Test tilkobling»'); break; }
+      case 'pickDriver': A.rdriver = d.v; A.rform = {}; render(); break;
+      case 'useScan': { const sc = A.S.routerScan; A.rdriver = sc.driver; A.rform = { 'r-url': sc.url }; render(); toast('Fyll inn passordet og trykk Lagre'); break; }
+      case 'routerScan': {
+        if (A.mode === 'demo') { openModal(guideModal); break; }
+        A.scanIp = d.v === 'ip' ? val('scan-ip').trim() : A.scanIp;
+        if (d.v === 'ip' && !A.scanIp) { toast('Skriv inn ruterens IP først', true); break; }
+        A.scanning = true; A.scanError = ''; render();
+        try { await act({ type: 'routerScan', url: d.v === 'ip' ? A.scanIp : undefined }); }
+        catch (err) { A.scanError = err.message; }
+        finally { A.scanning = false; render(); } break; }
+      case 'openGuide': openModal(guideModal); break;
+      case 'gtab': A.gtab = d.v; render(); break;
+      case 'copy': try { await navigator.clipboard.writeText(d.v); toast('Kopiert'); } catch { toast('Merk teksten og kopier den manuelt', true); } break;
+      case 'routerTest': { b.disabled = true; b.textContent = 'Tester …'; const m = await act({ type: 'routerTest' }); toast(m); break; }
+      case 'savePin': { const np = val('newpin'); await act({ type: 'setSettings', patch: { pin: np } }); A.pin = np; toast('Ny PIN lagret'); render(); break; }
+      case 'resetAsk': openModal(confirmModal('Nullstille alt?', 'Dette kan ikke angres.', 'resetYes', 'Nullstill', 'bad')); break;
+      case 'resetYes': A.modal = null; await act({ type: 'resetAll' }); A.prevCoins = {}; break;
+      case 'pickIcon': A.iconTarget = { up: d.up2, id, k: d.k }; openModal(iconModal); break;
+      case 'iconSet': await setIcon(d.v); break;
+      case 'iconOwn': { const v = val('iconown').trim(); if (v) await setIcon(v); break; }
+      case 'closeModal': if (e.target === b || !b.classList.contains('scrim')) closeModal(); break;
+    }
+  } catch (err) { if (err && err.message) console.warn('Gaming Coins:', err); }
+});
+const val = (id) => (document.getElementById(id) || {}).value || '';
+document.getElementById('prodfile').addEventListener('change', async (e) => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f || !A.imgTarget) return;
+  try { toast('Laster opp bilde …'); const img = await imageToProduct(f); const tg = A.imgTarget; await act(tg.kind === 'task' ? { type: 'upsertTask', task: { id: tg.id, image: img } } : { type: 'upsertShop', item: { id: tg.id, image: img } }); sound('success'); toast('Bildet er lagt til'); }
+  catch (err) { if (err.message) toast(err.message, true); }
+});
+/* Produktbilde: beskjæres til 4:3 og krympes, så butikken blir rask */
+function imageToProduct(file) {
+  return new Promise((ok, bad) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const W = 800, H = 600, c = document.createElement('canvas'); c.width = W; c.height = H;
+      const r = Math.max(W / img.naturalWidth, H / img.naturalHeight), w = img.naturalWidth * r, h = img.naturalHeight * r;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+      URL.revokeObjectURL(url);
+      let d = c.toDataURL('image/webp', 0.82); if (!d.startsWith('data:image/webp')) d = c.toDataURL('image/jpeg', 0.82);
+      ok(d);
+    };
+    img.onerror = () => bad(new Error('Kunne ikke lese bildet'));
+    img.src = url;
+  });
+}
+
+$app.addEventListener('input', (e) => { const el = e.target;
+  if (el.dataset && el.dataset.se !== undefined && A.schedEdit) { A.schedEdit.sched[el.dataset.se][el.dataset.k] = el.value; return; }
+  if (el.id === 'cl-filter') { const q = el.value.trim().toLowerCase(); for (const b of document.querySelectorAll('.pick[data-q]')) b.style.display = !q || b.dataset.q.includes(q) ? '' : 'none'; return; } if (/^r-(url|user|pass)$/.test(el.id)) { A.rform = A.rform || {}; A.rform[el.id] = el.value; } });
+$app.addEventListener('change', async (e) => {
+  const el = e.target, d = el.dataset;
+  if (el.id === 'iconfile' && el.files && el.files[0]) {
+    try { await setIcon(await imageToIcon(el.files[0])); toast('Bilde lagt inn'); } catch (err) { toast(err.message, true); }
+    return;
+  }
+  if (!d.up) return;
+  const v = el.value;
+  try {
+    if (d.up === 'task') await act({ type: 'upsertTask', task: { id: d.id, [d.k]: d.k === 'kidIds' ? (v ? [v] : []) : v } });
+    else if (d.up === 'shop') await act({ type: 'upsertShop', item: { id: d.id, [d.k]: v } });
+    else if (d.up === 'kid') await act({ type: 'upsertKid', kid: { id: d.id, [d.k]: v } });
+    else if (d.up === 'dev') { const kk = kidById(d.id); const devs = kk.devices.map((x) => ({ ...x })); devs[Number(d.i)][d.k] = v; await act({ type: 'upsertKid', kid: { id: d.id, devices: devs } }); }
+    else if (d.up === 'sched') await act({ type: 'setSchedule', day: Number(d.id), patch: { [d.k]: v } });
+    else if (d.up === 'set') await act({ type: 'setSettings', patch: { [d.k]: v } });
+    else if (d.up === 'devmode') await act({ type: 'setDeviceRule', mac: d.id, patch: { mode: v } });
+    else if (d.up === 'devgroup') await act({ type: 'setDeviceRule', mac: d.id, patch: { groupId: v } });
+    else if (d.up === 'grp') await act({ type: 'upsertGroup', group: { id: d.id, [d.k]: v } });
+    else if (d.up === 'set2') { if (d.k === 'pass' && !v) return; await act({ type: 'setSettings', patch: { [d.g]: { [d.k]: v } } }); if (d.k === 'pass') toast('Passord lagret'); }
+  } catch {}
+});
+
+/* ---------- levende tid ---------- */
+function tickUI() {
+  const n = now();
+  for (const el of document.querySelectorAll('[data-clock]')) el.textContent = hhmm(n);
+  for (const el of document.querySelectorAll('[data-until]')) {
+    const left = Number(el.dataset.until) - n, tot = Number(el.dataset.total);
+    el.style.setProperty('--p', Math.max(0, left / tot));
+    el.classList.toggle('warn', left < 5 * 60000);
+    el.firstElementChild.textContent = left > 0 ? fmtDur(left / 1000) : '0:00';
+  }
+  for (const el of document.querySelectorAll('[data-bank]')) {
+    const k = kidById(el.dataset.bank); if (!k) continue;
+    const left = L.bankLeft(k, n);
+    el.textContent = 'full' in el.dataset || k.playing ? fmtDur(left) : fmtMin(left);
+  }
+  if (A.screen !== 'home' && Date.now() - A.lastTouch > 90000) { A.screen = 'home'; A.pin = null; A.modal = null; render(); }
+}
+for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { A.lastTouch = Date.now(); }, { passive: true });
+
+/* ---------- feiring ---------- */
+function celebrate() {
+  for (const k of A.S.kids) {
+    const prev = A.prevCoins[k.id];
+    if (prev !== undefined && k.coins > prev && (A.screen === 'home' || A.kidId === k.id)) { boom(70); pling(); toast(`${isImg(k.avatar) ? '' : k.avatar + ' '}${k.name} fikk +${k.coins - prev} coins!`); }
+    A.prevCoins[k.id] = k.coins;
+  }
+}
+function toast(msg, err) {
+  if (err) sound('error');
+  const t = document.createElement('div'); t.className = 'tst' + (err ? ' err' : ''); t.textContent = msg;
+  document.getElementById('toast').appendChild(t); setTimeout(() => t.remove(), 2800);
+}
+/* ---------- lydeffekter (lages i nettleseren, ingen lydfiler) ---------- */
+const SFX = { on: true, ctx: null };
+try { SFX.on = localStorage.getItem('gc-sound') !== 'off'; } catch {}
+function setSound(on) { SFX.on = on; try { localStorage.setItem('gc-sound', on ? 'on' : 'off'); } catch {} }
+function tone(f, dur, o = {}) {
+  const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+  const c = SFX.ctx || (SFX.ctx = new C()); if (c.state === 'suspended') c.resume();
+  const t = c.currentTime + (o.at || 0), osc = c.createOscillator(), g = c.createGain();
+  osc.type = o.type || 'triangle'; osc.frequency.setValueAtTime(f, t);
+  if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(o.vol || 0.08, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(g).connect(c.destination); osc.start(t); osc.stop(t + dur + 0.03);
+}
+const SOUNDS = {
+  click: () => tone(740, 0.05, { vol: 0.06 }),
+  key: () => tone(1046, 0.045, { type: 'square', vol: 0.03 }),
+  tab: () => { tone(587, 0.05, { vol: 0.06 }); tone(880, 0.07, { vol: 0.05, at: 0.045 }); },
+  open: () => { tone(523, 0.06, { vol: 0.07 }); tone(784, 0.1, { vol: 0.06, at: 0.05 }); },
+  back: () => { tone(659, 0.05, { vol: 0.06 }); tone(440, 0.08, { vol: 0.05, at: 0.045 }); },
+  take: () => tone(330, 0.2, { type: 'sawtooth', vol: 0.04, to: 990 }),
+  success: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.15, { vol: 0.07, at: i * 0.07 })),
+  coin: () => { tone(988, 0.08, { type: 'square', vol: 0.04 }); tone(1319, 0.34, { type: 'square', vol: 0.04, at: 0.08 }); },
+  buy: () => [0, 0.1, 0.2].forEach((at, i) => { tone(988 + i * 110, 0.07, { type: 'square', vol: 0.035, at }); tone(1319 + i * 150, 0.2, { type: 'square', vol: 0.035, at: at + 0.06 }); }),
+  power: () => tone(220, 0.38, { type: 'square', vol: 0.035, to: 1250 }),
+  down: () => tone(880, 0.3, { type: 'triangle', vol: 0.06, to: 200 }),
+  right: () => { tone(784, 0.08, { vol: 0.07 }); tone(1175, 0.16, { vol: 0.07, at: 0.07 }); },
+  wrong: () => tone(200, 0.22, { type: 'sawtooth', vol: 0.045, to: 140 }),
+  error: () => { tone(196, 0.14, { type: 'sawtooth', vol: 0.05 }); tone(147, 0.2, { type: 'sawtooth', vol: 0.05, at: 0.12 }); },
+};
+function sound(n) { if (!SFX.on) return; try { SOUNDS[n] && SOUNDS[n](); } catch {} }
+function pling() { sound('coin'); }
+/* lyd per knappetype – null betyr at lyden spilles etter at handlingen lyktes */
+const ACT_SOUND = { openKid: 'open', home: 'back', tab: 'tab', ptab: 'tab', gtab: 'tab', take: 'take', done: null, cancel: 'back',
+  buy: 'open', buyYes: null, play: null, openParent: 'open', key: null, lock: 'back', closeModal: 'back', viewItem: 'open',
+  approve: null, toggleSound: null, game: null, gameSheet: 'open', ans: null, gameQuit: null, loanAsk: null, loanYes: null, loanPay: null, loanParent: null, notifyTest: null };
+const fx = document.getElementById('fx'), ctx = fx.getContext('2d'); let parts = [], raf = 0;
+function boom(n) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  fx.width = innerWidth * devicePixelRatio; fx.height = innerHeight * devicePixelRatio;
+  const cols = ['#ffc21a', '#ff5b4f', '#ffffff', '#3dff9a', '#19c3e6'];
+  for (let i = 0; i < n; i++) parts.push({ x: innerWidth / 2 + (Math.random() - .5) * 200, y: innerHeight * .55, vx: (Math.random() - .5) * 16, vy: -Math.random() * 18 - 6,
+    r: Math.random() * 6 + 5, c: cols[i % cols.length], coin: i % 3 === 0, a: Math.random() * 6, life: 0 });
+  if (!raf) raf = requestAnimationFrame(step);
+}
+function step() {
+  const dpr = devicePixelRatio; ctx.clearRect(0, 0, fx.width, fx.height);
+  parts = parts.filter((p) => p.life < 110 && p.y < innerHeight + 40);
+  for (const p of parts) {
+    p.life++; p.vy += .55; p.x += p.vx; p.y += p.vy; p.a += .2;
+    ctx.save(); ctx.translate(p.x * dpr, p.y * dpr); ctx.rotate(p.a); ctx.fillStyle = p.c;
+    if (p.coin) { ctx.scale(Math.abs(Math.cos(p.a)) + .15, 1); ctx.beginPath(); ctx.arc(0, 0, p.r * 1.6 * dpr, 0, 7); ctx.fillStyle = '#ffc21a'; ctx.fill(); ctx.strokeStyle = '#d98300'; ctx.lineWidth = 2 * dpr; ctx.stroke(); }
+    else ctx.fillRect(-p.r * dpr, -p.r * .5 * dpr, p.r * 2 * dpr, p.r * dpr);
+    ctx.restore();
+  }
+  raf = parts.length ? requestAnimationFrame(step) : 0;
+  if (!raf) ctx.clearRect(0, 0, fx.width, fx.height);
+}
+
+boot();
+})();
+</script>
+</body>
+</html>
