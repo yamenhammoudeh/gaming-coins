@@ -245,6 +245,11 @@ function readBody(req) {
 http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   try {
+    if (url.pathname === '/api/hello') {
+      // brukes av Android-appen for å finne serveren på nettverket
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      return send(res, 200, { app: 'gaming-coins', kids: state.kids.length, version: require('./package.json').version });
+    }
     if (url.pathname === '/api/state') {
       // klienten sender sin versjon – er ingenting endret, sendes bare et lite svar
       if (url.searchParams.get('rev') && Number(url.searchParams.get('rev')) === state.rev) return send(res, 200, { now: Date.now(), mode: 'server', same: true });

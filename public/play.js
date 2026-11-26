@@ -51,7 +51,10 @@
   };
   // stemme som sier ting på norsk (for barn som ikke kan lese)
   function say(text) {
-    if (!soundOn() || !root.speechSynthesis) return;
+    if (!soundOn()) return;
+    // Android-appen har egen norsk stemme (WebView mangler speechSynthesis)
+    if (root.GCNative && root.GCNative.speak) { try { root.GCNative.speak(text); } catch {} return; }
+    if (!root.speechSynthesis) return;
     try {
       root.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text); u.lang = 'nb-NO'; u.rate = 0.95; u.pitch = 1.25;

@@ -1,0 +1,44 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Versjonsnummer settes av GitHub Actions (kjøringsnummeret), slik at nye APK-er kan installeres over de gamle.
+def runNo = (System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger()
+
+android {
+    namespace 'no.gamingcoins.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'no.gamingcoins.app'
+        minSdk 26
+        targetSdk 34
+        versionCode runNo
+        versionName "1.0.${runNo}"
+    }
+
+    signingConfigs {
+        // Familienøkkel: samme nøkkel hver gang, så oppdateringer installeres over forrige versjon.
+        family {
+            storeFile file('../gaming-coins.keystore')
+            storePassword 'gamingcoins'
+            keyAlias 'gamingcoins'
+            keyPassword 'gamingcoins'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.family
+        }
+        debug {
+            signingConfig signingConfigs.family
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

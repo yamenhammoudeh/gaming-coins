@@ -1,0 +1,52 @@
+# Bygger Android-appen (APK) automatisk og legger den under «Releases» på GitHub.
+name: Android-app
+
+on:
+  push:
+    branches: [main]
+    paths: ['android/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Bygg APK
+        working-directory: android
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: Gi APK-en et fint navn
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/app-release.apk out/GamingCoins.apk
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GamingCoins-apk
+          path: out/GamingCoins.apk
+
+      - name: Publiser som «android-latest»
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: Gaming Coins for Android (nyeste)
+          body: |
+            Last ned **GamingCoins.apk** på Android-nettbrettet og installer den.
+            Versjon 1.0.${{ github.run_number }} – bygget fra ${{ github.sha }}.
+          files: out/GamingCoins.apk
+          make_latest: true

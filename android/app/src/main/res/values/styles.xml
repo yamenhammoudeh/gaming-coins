@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="gc_blue">#2F45FF</color>
+    <color name="gc_dark">#1A1FAE</color>
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/gc_dark</item>
+        <item name="android:statusBarColor">@color/gc_dark</item>
+        <item name="android:navigationBarColor">@color/gc_dark</item>
+        <item name="android:colorAccent">@color/gc_blue</item>
+    </style>
+</resources>

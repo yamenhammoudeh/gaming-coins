@@ -2116,7 +2116,9 @@ function swRow(g, k, label, on, help) {
 function settingsPanels() {
   const s = A.S.settings, g = s.games || {}, lo = s.loans || {}, n = s.notify || {}, ns = A.S.notifyStatus;
   const f2 = (grp, k, label, val, type = 'number', extra = '') => `<label class="fld">${label}<input type="${type}" value="${esc(val ?? '')}" data-up="set2" data-g="${grp}" data-k="${k}" ${extra}></label>`;
-  return `<div class="panel"><h3>E-postvarsel til foreldre</h3>
+  const app = window.GCNative ? `<div class="panel"><h3>📱 Android-appen</h3><p class="mute">Appen er koblet til ${esc(location.host)}${window.GCNative.version ? ' · versjon ' + esc(window.GCNative.version()) : ''}.</p>
+    <button class="btn ghost" data-act="appServer">Bytt server</button></div>` : '';
+  return app + `<div class="panel"><h3>E-postvarsel til foreldre</h3>
     <p class="mute">Få e-post når et barn er ferdig med en oppgave, kjøper en belønning eller vil låne coins. Flere hendelser samles i én e-post.</p>
     ${A.mode === 'demo' ? '<p class="tag late" style="font-size:15px;padding:6px 12px">E-post sendes fra hjemmeserveren – virker ikke i demo-versjonen.</p>' : ''}
     ${swRow('notify', 'enabled', n.enabled ? 'Varsler er PÅ' : 'Varsler er av', n.enabled)}
@@ -2304,6 +2306,7 @@ $app.addEventListener('click', async (e) => {
         openModal(confirmModal('Kjøpe for hele familien?', `${icn(it.emoji)} ${esc(it.title)} for <b>${it.cost} diamanter</b> fra familiepotten.<br><small class="mute">Mamma og pappa får beskjed og bestemmer dag.</small>`, 'fbuyYes', 'Ja, kjøp!', 'gold', `data-id="${id}"`)); break; }
       case 'fbuyYes': A.modal = null; await act({ type: 'familyBuy', itemId: id, kidId: A.famKid || '' }); sound('buy'); boom(70); toast('Kjøpt for hele familien! 💎🎉'); break;
       case 'fdonate': { const n = await act({ type: 'familyDonate', kidId: id, gems: Number(d.v) }); sound('coin'); toast(`Takk! +${n} 💎 til familien`); break; }
+      case 'appServer': if (window.GCNative) window.GCNative.changeServer(); break;
       case 'faceOff': await act({ type: 'setFace', kidId: id, face: '' }); break;
       case 'kidPinOff': await act({ type: 'upsertKid', kid: { id, pin: '' } }); toast('PIN fjernet'); break;
       case 'autoMode': await act({ type: 'setSettings', patch: { auto: { mode: d.v } } }); break;

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Gaming Coins</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#fff;background:linear-gradient(160deg,#3a4cff,#1a1fae) fixed}
+  main{max-width:640px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 22px 40px;text-align:center}
+  .logo{width:110px;height:110px;margin:10px auto 6px;border-radius:50%;display:grid;place-items:center;font-size:64px;font-weight:900;color:#b86f00;
+    background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc21a 55%,#e08e00);box-shadow:0 8px 0 #b86f00,0 18px 40px rgba(0,0,0,.35)}
+  h1{font-size:40px;margin:14px 0 2px}h1 span{color:#ffc21a}
+  p{font-size:18px;opacity:.92;line-height:1.45}
+  .card{background:#fff;color:#121640;border-radius:28px;padding:22px;margin-top:22px;text-align:left;box-shadow:0 8px 0 rgba(0,0,40,.35)}
+  .card h2{margin:0 0 6px;font-size:22px}
+  button{border:0;border-radius:20px;padding:16px 22px;font-size:20px;font-weight:800;cursor:pointer;width:100%}
+  .go{background:#16c28f;color:#fff;box-shadow:0 6px 0 #0d8a64}
+  .alt{background:#eef1ff;color:#1a1fae;box-shadow:0 6px 0 #c9d0ff;margin-top:12px}
+  button:active{transform:translateY(4px)}
+  button:disabled{opacity:.55}
+  input{width:100%;font-size:22px;padding:14px 16px;border-radius:16px;border:3px solid #d7dcff;margin:6px 0 12px;color:#121640}
+  input:focus{outline:none;border-color:#2f45ff}
+  .found{display:grid;gap:10px;margin-top:12px}
+  .found button{background:#2f45ff;color:#fff;box-shadow:0 6px 0 #1a1fae;text-align:left}
+  .msg{min-height:26px;font-weight:700;margin-top:10px;color:#5d6493}
+  .msg.err{color:#d33a2f}
+  .spin{display:inline-block;width:20px;height:20px;border:3px solid #c9d0ff;border-top-color:#2f45ff;border-radius:50%;animation:s 1s linear infinite;vertical-align:-4px;margin-right:8px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  small{color:#5d6493;font-size:15px;line-height:1.4;display:block}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<main>
+  <div class="logo">G</div>
+  <h1>Gaming <span>Coins</span></h1>
+  <p id="lead">Koble appen til Gaming Coins-serveren hjemme. Nettbrettet må være på samme Wi-Fi som serveren.</p>
+
+  <div class="card hide" id="offline">
+    <h2>😴 Fikk ikke kontakt</h2>
+    <small>Serveren svarer ikke akkurat nå. Sjekk at nettbrettet er på hjemme-Wi-Fi og at serveren er på.</small>
+    <button class="go" style="margin-top:14px" onclick="GCNative.openSaved()">🔄 Prøv igjen</button>
+  </div>
+
+  <div class="card">
+    <h2>🔎 Finn serveren automatisk</h2>
+    <small>Appen søker etter Gaming Coins på hjemmenettet ditt.</small>
+    <button class="go" id="scanBtn" style="margin-top:14px" onclick="scan()">Søk etter server</button>
+    <div class="msg" id="scanMsg"></div>
+    <div class="found" id="found"></div>
+  </div>
+
+  <div class="card">
+    <h2>⌨️ Eller skriv adressen</h2>
+    <small>Adressen du bruker i nettleseren, for eksempel <b>192.168.1.50:8012</b></small>
+    <input id="addr" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="192.168.1.50:8012">
+    <button class="alt" id="connBtn" onclick="connect(document.getElementById('addr').value)">Koble til</button>
+    <div class="msg" id="connMsg"></div>
+  </div>
+</main>
+<script>
+  var hasApp = typeof window.GCNative !== 'undefined';
+  var off = location.hash === '#offline';
+  document.getElementById('offline').className = off ? 'card' : 'card hide';
+  if (off) document.getElementById('lead').textContent = 'Fant ikke serveren.';
+  if (hasApp) { var s = GCNative.getServer(); if (s) document.getElementById('addr').value = s.replace(/^https?:\/\//, ''); }
+
+  function scan() {
+    if (!hasApp) return;
+    var b = document.getElementById('scanBtn'), m = document.getElementById('scanMsg');
+    b.disabled = true; m.className = 'msg'; m.innerHTML = '<span class="spin"></span>Søker … (tar opptil et halvt minutt)';
+    document.getElementById('found').innerHTML = '';
+    GCNative.scan();
+  }
+  window.onScan = function (list, nets) {
+    var b = document.getElementById('scanBtn'), m = document.getElementById('scanMsg'), f = document.getElementById('found');
+    b.disabled = false;
+    if (!nets) { m.className = 'msg err'; m.textContent = 'Nettbrettet er ikke koblet til Wi-Fi.'; return; }
+    if (!list.length) { m.className = 'msg err'; m.textContent = 'Fant ingen server. Sjekk at den kjører, eller skriv adressen under.'; return; }
+    m.textContent = list.length === 1 ? 'Fant serveren! 🎉' : 'Fant ' + list.length + ' servere – velg én:';
+    f.innerHTML = list.map(function (u) { return '<button onclick="connect(\'' + u + '\')">🎮 ' + u.replace(/^https?:\/\//, '') + '</button>'; }).join('');
+    if (list.length === 1 && !off) connect(list[0]);
+  };
+  function connect(u) {
+    var m = document.getElementById('connMsg'), b = document.getElementById('connBtn');
+    if (!u || !u.trim()) { m.className = 'msg err'; m.textContent = 'Skriv inn adressen først.'; return; }
+    if (!hasApp) { location.href = /^https?:/.test(u) ? u : 'http://' + u; return; }
+    b.disabled = true; m.className = 'msg'; m.innerHTML = '<span class="spin"></span>Kobler til …';
+    GCNative.connect(u);
+  }
+  window.onConnect = function (ok, url) {
+    var m = document.getElementById('connMsg'); document.getElementById('connBtn').disabled = false;
+    m.className = 'msg err'; m.textContent = 'Fikk ikke svar fra ' + url + '. Er adressen og porten riktig?';
+  };
+</script>
+</body>
+</html>

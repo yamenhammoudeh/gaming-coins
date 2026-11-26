@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gullmynt med «G» -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#E08E00" android:pathData="M54,82a26,26 0,1 0,0 -52a26,26 0,1 0,0 52z" />
+    <path android:fillColor="#FFC21A" android:pathData="M54,79a26,26 0,1 0,0 -52a26,26 0,1 0,0 52z" />
+    <path android:fillColor="#FFE07A" android:pathData="M54,73a20,20 0,1 0,0 -40a20,20 0,1 0,0 40z" />
+    <path android:fillColor="#B86F00"
+        android:pathData="M63,44.5C60.8,41.9 57.6,40.5 54,40.5C46.8,40.5 41.5,46 41.5,53S46.8,65.5 54,65.5C60.4,65.5 64.6,61.5 65,55.5L65,51.5L54.5,51.5L54.5,56L60,56C59.2,58.7 56.9,60.5 54,60.5C49.6,60.5 46.5,57.2 46.5,53S49.6,45.5 54,45.5C56.1,45.5 58,46.3 59.4,47.8Z" />
+</vector>
