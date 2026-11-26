@@ -149,3 +149,12 @@ Ti ekte spill uten tekst, laget for barn fra 2–3 år: bilspill, ballonger, teg
 
 ## Kunnskapsløpet 🏁 (live mot hverandre)
 Et lærerikt racerspill der hvert barn kjører en bil med **sitt eget fjes** som hode. Ta bilde av fjeset under Spill-fanen eller Foreldre → Barn og enheter. Et barn starter et løp og inviterer søsken (eller Robo 🤖); invitasjonen dukker opp på de andres skjerm, og de spiller live fra hver sin iPad. Hvert riktig svar kjører bilen ett felt frem – først til 10 vinner. Alle velger sitt eget nivå, så små og store kan spille mot hverandre. Spørsmålene hentes fra læringsspillene barnet har tilgang til (matte, norsk, engelsk, kunnskap eller blandet). Coins: 1 per riktig svar (innenfor dagsgrensen) + vinnerbonus (standard 5). Andre i huset ser «LIVE»-løpet på forsiden og kan se på.
+
+## Android-app 📱
+En ekte app (APK) for Android-nettbrett og -telefoner. Den viser Gaming Coins i fullskjerm, finner serveren i hjemmenettet selv, holder skjermen på, kan ta fjes-bilder med kameraet og har norsk stemme i Lekeland.
+
+- **Last ned:** GitHub → repoet → *Releases* → «Gaming Coins for Android (nyeste)» → `GamingCoins.apk`.
+- **Installer:** åpne filen på nettbrettet og tillat «Installer ukjente apper» for nettleseren/Filer når Android spør.
+- **Første start:** trykk «Søk etter server» (eller skriv f.eks. `192.168.1.50:8012`).
+- **Bytte server senere:** Foreldre → Mer → «Android-appen» → Bytt server.
+- **Oppdateringer:** appen viser alltid nyeste versjon av Gaming Coins fra serveren. Selve APK-en bygges på nytt automatisk av GitHub (Actions) bare når koden i `android/` endres, og nye versjoner installeres over den gamle.
