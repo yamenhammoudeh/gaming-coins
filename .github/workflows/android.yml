@@ -50,3 +50,14 @@ jobs:
             Versjon 1.0.${{ github.run_number }} – bygget fra ${{ github.sha }}.
           files: out/GamingCoins.apk
           make_latest: true
+
+      # Legg APK-en også i public/, så Gaming Coins-serveren deler den ut på http://<server>:8012/app
+      # (nyttig for TV: skriv adressen i «Downloader»-appen)
+      - name: Legg APK-en i public/ for nedlasting fra serveren
+        run: |
+          cp out/GamingCoins.apk public/GamingCoins.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/GamingCoins.apk
+          git diff --cached --quiet || git commit -m "Android-app: ny APK (versjon 1.0.${{ github.run_number }})"
+          git push

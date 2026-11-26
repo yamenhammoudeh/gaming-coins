@@ -158,3 +158,12 @@ En ekte app (APK) for Android-nettbrett og -telefoner. Den viser Gaming Coins i 
 - **Første start:** trykk «Søk etter server» (eller skriv f.eks. `192.168.1.50:8012`).
 - **Bytte server senere:** Foreldre → Mer → «Android-appen» → Bytt server.
 - **Oppdateringer:** appen viser alltid nyeste versjon av Gaming Coins fra serveren. Selve APK-en bygges på nytt automatisk av GitHub (Actions) bare når koden i `android/` endres, og nye versjoner installeres over den gamle.
+
+### På TV (TCL / Google TV / Android TV)
+Samme app fungerer på Android TV og Google TV, og styres med fjernkontrollen (piltaster + OK). Den dukker opp blant appene på TV-en med eget banner.
+
+1. Oppdater serveren (`bash install.sh update`) – da ligger appen på `http://<server>:8012/app`.
+2. På TV-en: åpne Google Play og installer **Downloader** (fra AFTVnews).
+3. Innstillinger → System → Om → trykk 7 ganger på «Android TV OS-versjon» for å slå på utviklermodus, og tillat deretter **Downloader** å installere ukjente apper (Innstillinger → Apper → Sikkerhet og begrensninger → Ukjente kilder).
+4. I Downloader: skriv `http://<server-IP>:8012/app` → Last ned → Installer.
+5. Start Gaming Coins → «Søk etter server».

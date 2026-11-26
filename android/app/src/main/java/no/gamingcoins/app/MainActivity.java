@@ -79,7 +79,10 @@ public class MainActivity extends Activity {
 
         web = new WebView(this);
         web.setBackgroundColor(Color.parseColor("#1A1FAE"));
+        web.setFocusable(true);
+        web.setFocusableInTouchMode(true);
         setContentView(web);
+        web.requestFocus();
         fullscreen();
 
         WebSettings s = web.getSettings();
@@ -90,7 +93,7 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(true);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         s.setTextZoom(100);
-        s.setUserAgentString(s.getUserAgentString() + " GamingCoinsApp/" + BuildConfigVersion());
+        s.setUserAgentString(s.getUserAgentString() + " GamingCoinsApp/" + BuildConfigVersion() + (isTv() ? " GamingCoinsTV" : ""));
         web.addJavascriptInterface(new Bridge(), "GCNative");
 
         web.setWebViewClient(new WebViewClient() {
@@ -138,6 +141,14 @@ public class MainActivity extends Activity {
         String server = prefs.getString("server", "");
         if (state != null) web.restoreState(state);
         else web.loadUrl(server.isEmpty() ? SETUP : server);
+    }
+
+    /** Kjører vi på Android TV / Google TV (fjernkontroll i stedet for berøring)? */
+    private boolean isTv() {
+        try {
+            android.app.UiModeManager m = (android.app.UiModeManager) getSystemService(Context.UI_MODE_SERVICE);
+            return m != null && m.getCurrentModeType() == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION;
+        } catch (Exception e) { return false; }
     }
 
     private String BuildConfigVersion() {
@@ -303,6 +314,9 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String version() { return BuildConfigVersion(); }
+
+        @JavascriptInterface
+        public boolean isTv() { return MainActivity.this.isTv(); }
 
         @JavascriptInterface
         public String getServer() { return prefs.getString("server", ""); }

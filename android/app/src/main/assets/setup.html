@@ -19,6 +19,7 @@
   .alt{background:#eef1ff;color:#1a1fae;box-shadow:0 6px 0 #c9d0ff;margin-top:12px}
   button:active{transform:translateY(4px)}
   button:disabled{opacity:.55}
+  button:focus,input:focus{outline:5px solid #ffc21a;outline-offset:3px}
   input{width:100%;font-size:22px;padding:14px 16px;border-radius:16px;border:3px solid #d7dcff;margin:6px 0 12px;color:#121640}
   input:focus{outline:none;border-color:#2f45ff}
   .found{display:grid;gap:10px;margin-top:12px}
@@ -46,7 +47,7 @@
   <div class="card">
     <h2>🔎 Finn serveren automatisk</h2>
     <small>Appen søker etter Gaming Coins på hjemmenettet ditt.</small>
-    <button class="go" id="scanBtn" style="margin-top:14px" onclick="scan()">Søk etter server</button>
+    <button class="go" id="scanBtn" autofocus style="margin-top:14px" onclick="scan()">Søk etter server</button>
     <div class="msg" id="scanMsg"></div>
     <div class="found" id="found"></div>
   </div>
@@ -64,6 +65,7 @@
   var off = location.hash === '#offline';
   document.getElementById('offline').className = off ? 'card' : 'card hide';
   if (off) document.getElementById('lead').textContent = 'Fant ikke serveren.';
+  setTimeout(function () { var b = document.getElementById(off ? 'offline' : 'scanBtn'); (off ? b.querySelector('button') : b).focus(); }, 300);
   if (hasApp) { var s = GCNative.getServer(); if (s) document.getElementById('addr').value = s.replace(/^https?:\/\//, ''); }
 
   function scan() {

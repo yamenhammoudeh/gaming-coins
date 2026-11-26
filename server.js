@@ -228,7 +228,8 @@ setInterval(() => {
 
 /* ---------- HTTP ---------- */
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css',
-  '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
+  '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json',
+  '.apk': 'application/vnd.android.package-archive' };
 
 function send(res, code, obj) {
   res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -349,6 +350,8 @@ http.createServer(async (req, res) => {
     // statiske filer
     let p = decodeURIComponent(url.pathname);
     if (p === '/') p = '/index.html';
+    // kort adresse for å laste ned Android-/TV-appen (f.eks. i «Downloader» på TV-en)
+    if (p === '/app' || p === '/apk' || p === '/app.apk' || p === '/tv') p = '/GamingCoins.apk';
     const file = path.normalize(path.join(PUB, p));
     if (!file.startsWith(PUB)) { res.writeHead(403); return res.end(); }
     fs.readFile(file, (err, data) => {

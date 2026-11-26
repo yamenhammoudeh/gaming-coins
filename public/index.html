@@ -91,6 +91,10 @@ svg.coin{width:1.1em;height:1.1em;flex:none;vertical-align:-.18em;filter:drop-sh
   background:linear-gradient(180deg,#fff6cc,#ffd34d 55%,#ffbf1a);box-shadow:0 5px 0 var(--gold2),inset 0 2px 0 #fff,0 10px 20px rgba(224,142,0,.3)}
 .token svg.coin{width:44px;height:44px}
 
+/* ---------- TV: tydelig fokus for fjernkontroll ---------- */
+.tv :focus{outline:5px solid #ffc21a!important;outline-offset:4px;border-radius:18px;z-index:5;position:relative}
+.tv .kid:focus,.tv .card:focus,.tv .lektile:focus,.tv .app:focus{transform:scale(1.04)}
+.tv body{cursor:none}
 /* ---------- Kunnskapsløpet ---------- */
 .av img.faceimg,.rc-face img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
 .racecard{display:flex;align-items:center;gap:18px;flex-wrap:wrap;border-radius:30px;padding:18px 22px;margin-bottom:22px;color:#fff;
@@ -699,14 +703,34 @@ const editing = () => { const el = document.activeElement; return el && /^(INPUT
 function schedule() { if (editing()) A.pending = true; else render(); }
 document.addEventListener('focusout', () => setTimeout(() => { if (A.pending && !editing()) { A.pending = false; render(); } }, 60));
 
+/* ---------- TV (fjernkontroll): fokus som kan flyttes med piltastene ---------- */
+const TV = /GamingCoinsTV/.test(navigator.userAgent) || !!(window.GCNative && window.GCNative.isTv && window.GCNative.isTv()) || /[?&]tv=1/.test(location.search);
+if (TV) document.documentElement.classList.add('tv');
+function focusKey(el) {
+  if (!el || el === document.body || !$app.contains(el)) return null;
+  const d = el.dataset || {}; return [d.act, d.id, d.v, d.k, d.up].join('|');
+}
+function tvFocus(key) {
+  $app.querySelectorAll('[data-act]:not(button):not(a):not(input):not(select):not(.scrim)').forEach((el) => { if (!el.hasAttribute('tabindex')) el.tabIndex = 0; });
+  let el = null;
+  if (key) el = [...$app.querySelectorAll('[data-act],[data-up]')].find((x) => focusKey(x) === key);
+  if (!el && (!document.activeElement || document.activeElement === document.body)) el = $app.querySelector('.modal button, .modal [data-act]') || $app.querySelector('main [data-act], .pane [data-act], [data-act]:not(.scrim)');
+  if (el) el.focus({ preventScroll: !!key });
+}
+if (TV) document.addEventListener('keydown', (e) => {
+  const el = document.activeElement;
+  if ((e.key === 'Enter' || e.key === ' ') && el && el.dataset && (el.dataset.act || el.dataset.rc) && !/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) { e.preventDefault(); el.click(); }
+});
+
 function render() {
   A.pending = false;
   if (A.screen === 'kid' && !kidById(A.kidId)) A.screen = 'home';
   if (A.screen === 'parent' && !A.pin) A.screen = 'home';
   const body = A.screen === 'kid' ? viewKid(kidById(A.kidId)) : A.screen === 'parent' ? viewParent() : A.screen === 'family' ? viewFamily() : viewHome();
-  const y = window.scrollY;
+  const y = window.scrollY, fk = TV ? focusKey(document.activeElement) : null;
   $app.innerHTML = `<div class="wrap">${A.offline ? '<div class="offline">Mistet kontakt med hjemmeserveren – prøver igjen…</div>' : ''}${body}</div>${A.modal ? `<div class="scrim${A.modalFresh ? ' anim' : ''}" data-act="closeModal"><div class="modal" data-stop>${A.modal()}</div></div>` : ''}`;
   window.scrollTo(0, y);
+  if (TV) tvFocus(fk);
   A.modalFresh = false; A.paneFresh = false;
   celebrate();
   tickUI();
@@ -1415,6 +1439,7 @@ function raceQuestion(r, me) {
     const q = R.q;
     box.innerHTML = `<div class="rq">${q.pic ? `<div class="rq-pic ${q.many ? 'many' : ''}">${q.raw ? q.pic : esc(q.pic)}</div>` : ''}<div class="rq-text">${esc(q.q)}</div>
       <div class="rq-opts">${q.opts.map((o, j) => `<button data-rc="ans" data-v="${j}">${esc(o)}</button>`).join('')}</div></div>`;
+    if (TV) { const f = box.querySelector('button'); if (f) f.focus(); }
   }
   box.classList.toggle('stun', now() < R.lock);
 }
@@ -1439,7 +1464,7 @@ async function raceClick(e) {
   const b = e.target.closest('[data-rc]'); if (!b || b.disabled) return;
   const v = b.dataset.rc, S = A.raceSetup;
   try {
-    if (v === 'ans') return;
+    if (v === 'ans') return raceAnswerPick(Number(b.dataset.v));
     if (v === 'close') { sound('back'); A.raceSetup = null; return raceClose(); }
     if (v === 'inv') { S.invite.has(b.dataset.id) ? S.invite.delete(b.dataset.id) : S.invite.add(b.dataset.id); sound('click'); return S.draw(); }
     if (v === 'bot') { S.bot = !S.bot; sound('click'); return S.draw(); }
